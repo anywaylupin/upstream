@@ -1,3 +1,5 @@
+# Upstream
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -34,3 +36,26 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Set up Neon with your coding agent
+
+Paste the following prompt into your agent chat to connect your app.
+
+Set up this Neon project in the current working directory.
+
+````md
+1. `npm i -g neon@latest && neon login`
+2. `neon skills -y`
+3. `neon mcp -y`
+4. `neon link --project-id orange-rice-33207085 --branch production -y`
+5. `neon config init`
+6. Update `neon.ts`:
+
+\```ts
+import { defineConfig } from "@neon/config/v1";
+
+export default defineConfig({});
+\```
+
+7. `neon deploy`
+````
