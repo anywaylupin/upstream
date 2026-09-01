@@ -5,6 +5,10 @@ on:
         branches: [main]
     pull_request:
 
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     check:
         runs-on: ubuntu-latest
@@ -21,6 +25,9 @@ jobs:
                   cache: pnpm
 
             - run: pnpm install --frozen-lockfile
+
+            - name: Generate Next types
+              run: pnpm next typegen
 
             - run: pnpm typecheck
 
