@@ -8,22 +8,29 @@
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "deploy": "neon deploy"
+    "db:push": "drizzle-kit push",
+    "db:seed": "tsx db/seed.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@neon/config": "^1.1.0",
-    "@neon/env": "^1.1.6",
+    "@neondatabase/serverless": "^1.1.0",
+    "drizzle-orm": "0.45.2",
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
+    "@neon/config": "^1.1.0",
+    "@neon/env": "^1.1.6",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^26",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "0.31.10",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   },
   "packageManager": "pnpm@11.24.0"
