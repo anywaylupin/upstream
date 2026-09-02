@@ -44,7 +44,7 @@ async function main() {
         .onConflictDoNothing();
 
       console.log(
-        `${row.owner}/${row.name} ${row.tag} — ${usage.totalTokens} tokens`,
+        `${row.owner}/${row.name} ${row.tag} - ${usage.totalTokens} tokens`,
       );
     } catch (err) {
       console.error(`${row.owner}/${row.name} ${row.tag} failed:`, err);
