@@ -3,7 +3,7 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 
 export const PROMPT_VERSION = "v1";
-export const MODEL = "gemini-2.5-flash";
+export const MODEL = "gemini-3.6-flash";
 
 export const ReleaseSummary = z.object({
   headline: z
