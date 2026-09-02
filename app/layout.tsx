@@ -3,6 +3,10 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cn } from "tailwind-variants";
+import { AppHeader } from "@/components/app-header";
+import { AppShell } from "@/components/app-shell";
+import { Toaster } from "@/components/ui/sonner";
+import { THEME_SCRIPT } from "@/lib/theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,10 +58,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn(
         geistSans.variable,
         geistMono.variable,
+        geistSans.className,
         "h-full antialiased",
       )}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static, self-authored theme bootstrap */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
+      <body className="min-h-full flex flex-col">
+        <AppShell header={<AppHeader />}>{children}</AppShell>
+        <Toaster />
+      </body>
     </html>
   );
 }
