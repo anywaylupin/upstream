@@ -3,6 +3,7 @@
 import { LogOutIcon, MonitorIcon, MoonIcon, PaletteIcon, SettingsIcon, SunIcon } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { cn } from 'tailwind-variants';
 import { signOutAction } from '@/app/actions';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -19,6 +20,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { DEFAULT_MODE, DEFAULT_PALETTE, MODE_KEY, type Mode, PALETTE_KEY, PALETTES, type Palette } from '@/lib/theme';
 
 const MODES: { id: Mode; icon: typeof SunIcon; label: string }[] = [
@@ -118,22 +120,41 @@ export function UserMenu({ name, image }: { name: string; image?: string }) {
               <PaletteIcon />
               Palette
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="min-w-36">
+            {/* A grid, not a list: eighteen stacked rows would run off the
+                screen, and swatches are recognised by colour anyway. */}
+            <DropdownMenuSubContent className="w-auto p-2">
               <DropdownMenuRadioGroup
+                className="grid grid-cols-6 gap-1"
                 value={mounted ? palette : DEFAULT_PALETTE}
                 onValueChange={(value) => choosePalette(String(value) as Palette)}
               >
-                {PALETTES.map((option) => (
-                  <DropdownMenuRadioItem key={option.id} value={option.id}>
-                    {/* data-theme scopes --brand-* to this swatch, and
-                        background resolves against them here. */}
-                    <span
-                      data-theme={option.id}
-                      className="size-3 rounded-full bg-[oklch(0.62_var(--brand-c)_var(--brand-h))] ring-1 ring-foreground/15"
-                    />
-                    {option.label}
-                  </DropdownMenuRadioItem>
-                ))}
+                {PALETTES.map((option) => {
+                  const isActive = (mounted ? palette : DEFAULT_PALETTE) === option.id;
+                  return (
+                    <Tooltip key={option.id}>
+                      <TooltipTrigger
+                        render={
+                          <DropdownMenuRadioItem
+                            value={option.id}
+                            aria-label={option.label}
+                            className="size-7 justify-center rounded-md p-0 [&_svg]:hidden"
+                          />
+                        }
+                      >
+                        {/* data-theme scopes --brand-* to this swatch, so the
+                            background resolves against them here. */}
+                        <span
+                          data-theme={option.id}
+                          className={cn(
+                            'size-4 rounded-full bg-[oklch(0.62_var(--brand-c)_var(--brand-h))] ring-1 transition-transform',
+                            isActive ? 'scale-110 ring-2 ring-foreground/60' : 'ring-foreground/15'
+                          )}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent>{option.label}</TooltipContent>
+                    </Tooltip>
+                  );
+                })}
               </DropdownMenuRadioGroup>
             </DropdownMenuSubContent>
           </DropdownMenuSub>

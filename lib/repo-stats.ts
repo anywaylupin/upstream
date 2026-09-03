@@ -243,54 +243,6 @@ export const getStackStats = cache(async function getStackStats(
   };
 });
 
-/**
- * Counts behind the header's attention buttons. Each one is a real filtered
- * view of the digest, not a decoration.
- */
-export async function getHeaderCounts(userId: string) {
-  const stack = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
-
-  const repoIds = stack.map((row) => row.repoId);
-  if (repoIds.length === 0) return { breaking: 0, upgrades: 0, fresh: 0 };
-
-  const [windowRows, freshRows] = await Promise.all([
-    db
-      .select({ data: summaries.data })
-      .from(releases)
-      .innerJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
-      .where(
-        and(
-          inArray(releases.repoId, repoIds),
-          isNotNull(releases.publishedAt),
-          gte(releases.publishedAt, windowStart())
-        )
-      ),
-    db
-      .select({ total: count() })
-      .from(releases)
-      .where(
-        and(
-          inArray(releases.repoId, repoIds),
-          isNotNull(releases.publishedAt),
-          gte(releases.publishedAt, windowStart(7))
-        )
-      )
-  ]);
-
-  let breaking = 0;
-  let upgrades = 0;
-  for (const row of windowRows) {
-    const parsed = ReleaseSummary.safeParse(row.data);
-    if (!parsed.success) continue;
-    if (parsed.data.changes.some((change) => change.type === 'breaking')) {
-      breaking += 1;
-    }
-    if (['medium', 'high'].includes(parsed.data.upgradeEffort)) upgrades += 1;
-  }
-
-  return { breaking, upgrades, fresh: freshRows[0]?.total ?? 0 };
-}
-
 /** Small counts for the nav tabs - deliberately cheaper than the full stats. */
 export async function getNavCounts(userId: string) {
   const stack = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));

@@ -37,7 +37,8 @@ not feature count.
 - Neon (Postgres) via Drizzle ORM 0.45 - `drizzle-orm/neon-http`
 - Tailwind v4 + shadcn/ui (`base-nova` style, built on **base-ui**, not Radix)
 - Auth.js v5 (next-auth) with GitHub OAuth, JWT sessions
-- Vercel AI SDK - Google, Groq, Mistral, OpenRouter
+- Vercel AI SDK - Google, Groq, Mistral, Anthropic, DeepSeek, xAI, OpenAI,
+  OpenRouter
 - Zod for boundary validation
 - Biome for lint + format (not ESLint/Prettier)
 - pnpm, Node 22, deployed on Vercel
@@ -88,7 +89,8 @@ Path alias is `@/*` -> `./*`.
 - `stackRepos` - the user's stack. Unique on `(userId, repoId)`.
 - `aiKeys` - one provider key per user, AES-256-GCM encrypted.
 - `userInstructions` - per feature (`global`, `summary`, `guide`).
-- `userPreferences` - digest email, opt-out, frequency/hour/weekday, model.
+- `userPreferences` - digest email, opt-out, model, and the schedule:
+  frequency, hour, IANA timezone, weekday, day-of-month, interval.
 
 ### Key design decision: hash-based dedupe
 
@@ -119,9 +121,44 @@ Users without instructions keep hitting the shared cache.
   to ids inside the client component.
 - Long-running AI work goes in `after()` from `next/server`, never inline in a
   click. Toasts for both success and failure, via sonner.
+- **Same-route param changes should not round-trip.** Settings sections used to
+  navigate `?section=`, which re-ran two GitHub calls and the whole page to swap
+  a panel. The page renders every panel once and `SettingsShell` switches them
+  on the client, keeping the URL honest with `history.replaceState`. The entries
+  stay real anchors so ctrl-click still opens a section in a tab.
+- **Every route segment has a `loading.tsx`.** Without one, Next blocks on the
+  server before committing the transition and the tab simply looks frozen -
+  which is exactly what happened here. `useLinkStatus` (in
+  `components/link-pending.tsx`) covers the remaining gap by swapping a nav
+  icon for a spinner; it must live in a descendant of the `<Link>`, and the
+  pending phase is skipped entirely once a route is prefetched.
 - Every pending control sets `aria-busy`, which drives the wait cursor.
-- Tooltips are shadcn's `Tooltip`, never a `title` attribute.
+- Tooltips are shadcn's `Tooltip`, never a `title` attribute. base-ui's
+  `render` prop does not forward an `onClick` onto the element it renders, so a
+  handler there silently never fires - the settings rail delegates from the
+  `<nav>` instead.
+- Provider brand marks are inlined SVG paths in `components/provider-icon.tsx`,
+  taken from simple-icons and lobehub (both CC0). Neither package is a
+  dependency: they were installed once to lift the paths, then removed.
+- Every text input carries `name` and a real `type` (`email`, `url`, `search`,
+  `number`), plus an explicit `autoComplete`. Search and secret fields opt out
+  with `autoComplete="off"`; the digest address opts in with `email`.
+- A control rendered conditionally still needs its value submitted. The custom
+  interval renders a hidden `intervalDays` when its visible field is not shown,
+  so exactly one field of that name always posts.
 - Hyphens are `-`. No em or en dashes in source or copy.
+
+## Theming
+
+`--brand-h` and `--brand-c` (an OKLCH hue and chroma) drive every themed token,
+so a palette is two numbers rather than a full set of colour variables. The 18
+shadcn accent ramps live in `lib/theme.ts` and one `[data-theme]` block each in
+`app/globals.css`. The swatches set `data-theme` on themselves so each renders
+its own colour instead of inheriting the active one.
+
+Mode and palette are applied by an inline script from the server layout before
+first paint - see `lib/theme.ts`. Keeping it out of a client component is what
+avoids React 19's "script tag while rendering" error.
 
 ## shadcn/ui
 
@@ -137,10 +174,10 @@ is why the a11y exceptions for that directory live in `biome.json` `overrides`.
 ```
 pnpm dev
 pnpm db:push        # drizzle-kit push (no migration files yet; solo project)
-pnpm db:seed
 pnpm ingest         # fetch releases for every catalogue repo
 pnpm summarize      # summarize un-summarized releases, batched
 pnpm sync           # a full manual run, recorded in `runs`
+pnpm check:schedule # asserts the digest date maths (no env needed)
 pnpm typecheck      # tsc --noEmit
 pnpm lint           # biome check
 pnpm format         # biome format --write
@@ -152,6 +189,21 @@ because ES import hoisting causes `db/index.ts` to read `process.env` before any
 in-file dotenv call executes.
 
 Env vars are documented in `.env.example`.
+
+## Caching
+
+React's `cache()` only dedupes within one request. The user-scoped GitHub reads
+are wrapped in `unstable_cache` in `lib/github-cache.ts` with a 5 minute TTL and
+a `github:<userId>` tag, so switching repository tabs stops re-hitting the API -
+the starred list alone went from ~2.5s to ~0.6s.
+
+The access token is deliberately not part of the cache key. It rotates every
+eight hours, so keying on it would miss on every refresh and would write
+short-lived credentials into cache keys. The key parts carry the user id.
+
+`unstable_cache` is deprecated in Next 16 in favour of `use cache`, but that
+needs `cacheComponents: true`, which changes prerendering for the whole app.
+Not worth it for five calls.
 
 ## GitHub notes
 
@@ -174,28 +226,71 @@ Env vars are documented in `.env.example`.
   spaced 1.5s apart, and BYOK exists so users can run on their own quota.
 - Model ids go stale. `gemini-2.5-flash` was retired mid-project and broke every
   summary silently. Keys and models are probed with a live call before saving.
+- `lib/ai-models.ts` is the catalogue - pure and client-safe, no `db` and no
+  `process.env`. Each model carries a `tier`: `free` means a recurring
+  allowance that refills, not a trial.
+- A provider is offered only when there is a key to run it with: `serverKeyFor()`
+  (its env var) or the user's own stored key. Providers with neither are hidden
+  from the picker but stay reachable in the "Add an API key" dialog, which is
+  how BYOK unlocks them. Listing a model that cannot run is worse than omitting
+  it.
+- `serverKeyFor()` writes the env vars out statically. Bundlers inline
+  `process.env.X` by literal name, so `process.env[provider.envVar]` quietly
+  resolves to undefined in some builds.
+- The key dialog's model select is keyed on the provider. Switching provider
+  unmounts the selected item and base-ui resets its own value to null rather
+  than to the new list's first entry, which rendered a literal "null" in the
+  trigger. Remounting re-seeds it.
 - The "needs summarizing" query is a left join from `releases` to `summaries` on
   `(bodyHash, instructionsHash)` with `isNull(summaries.id)` - a SQL anti-join.
   A run cut short simply resumes.
 
-## Scheduling
+## Scheduling and delivery
 
 Vercel Cron is project-level and cannot fire per user. `/api/cron/ingest` runs
-hourly; `isDigestDue()` decides whose digest is due this tick from their own
-frequency, weekday and UTC hour. `CRON_SECRET` must be set in Vercel too.
+hourly; `isDigestDue()` decides whose digest is due this tick. That hourly tick
+is the precision limit - there is no point offering minutes.
 
-Digest **delivery is not implemented** - no mail provider is wired. The schedule
-is stored and the due-check runs, but nothing is sent.
+Frequencies are `daily`, `weekly`, `biweekly`, `monthly` and `custom` (every N
+days). `biweekly` and `custom` need no anchor column: the weekday pins the day
+and the gap since `lastDigestAt` pins the week. Monthly is capped at day 28 so
+every month actually has the date.
+
+The hour is read in the user's own IANA zone, so the maths lives in
+`lib/digest-schedule.ts` - deliberately free of any `db` import so the settings
+form (a client component) can share the constants and render a live "next run".
+`nextDigestAt()` predicts by walking candidates and reusing `isDigestDue()`, so
+the prediction cannot drift from the rule the cron applies.
+
+Two bugs worth not reintroducing, both covered by `pnpm check:schedule`:
+
+- Correcting a wall-clock guess must measure the error against the **target**,
+  not the running guess, or each pass re-subtracts the UTC offset and the second
+  pass undoes the first.
+- The correction must be to the **minute**. Whole hours put `Asia/Kolkata`
+  (+05:30) and `Pacific/Chatham` (+12:45) half an hour late.
+
+Delivery goes through Resend over plain `fetch` (`lib/digest-email.ts`) - a mail
+SDK would be a dependency for one HTTP call. Without `RESEND_API_KEY` the app
+still ingests, summarizes and renders the digest; only sending is off, and it
+says so rather than failing silently. `CRON_SECRET` must be set in Vercel too.
+
+`sendDigestNow()` (the Send now button) runs the same `sendDigestToUser()` path
+as the cron, so a manual send is a rehearsal of the scheduled one rather than a
+second code path that can drift. It deliberately does **not** touch
+`lastDigestAt` - a test send should not push the next scheduled one out a cycle.
+Release bodies and model output are both untrusted, so every value interpolated
+into the email HTML is escaped.
 
 ## Status
 
 Done: ingestion, hash-deduped summarization, auth, per-user stacks, digest with
 filters, repo pages with ratings/guides/alternatives, BYOK multi-provider, search,
-scheduled runs with a `runs` log, account erase.
+scheduled runs with a `runs` log, account erase, per-user digest schedules and
+email delivery.
 
 Not done:
 
-- Email delivery for the digest
 - Eval harness (hand-labelled releases + accuracy score)
 - Playwright E2E in CI. Note: Next 16 type checks everything the tsconfig
   includes during `next build`, so test files will fail production builds

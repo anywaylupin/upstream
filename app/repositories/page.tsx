@@ -1,36 +1,15 @@
 import { eq } from 'drizzle-orm';
-import { EyeIcon, SearchIcon, StarIcon, TriangleAlertIcon, UserIcon } from 'lucide-react';
-import Link from 'next/link';
+import { SearchIcon, TriangleAlertIcon } from 'lucide-react';
 import { GitHubReposTable } from '@/components/github-repos-table';
+import { RepoSourceTabs } from '@/components/repo-source-tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { db } from '@/db';
 import { repos, stackRepos } from '@/db/schema';
-import {
-  type GitHubRepo,
-  getGitHubToken,
-  listGitHubWatchedRepos,
-  listOwnRepos,
-  listStarredRepos,
-  searchRepos
-} from '@/lib/github';
+import { type GitHubRepo, getGitHubToken, searchRepos } from '@/lib/github';
+import { cachedOwnRepos, cachedStarredRepos, cachedWatchedRepos } from '@/lib/github-cache';
+import { emptyMessageFor, type RepoSource, toRepoSource } from '@/lib/repo-sources';
 import { requireUser } from '@/lib/session';
-
-const SOURCES = [
-  { id: 'owned', label: 'Owned', icon: UserIcon },
-  { id: 'watched', label: 'Watched', icon: EyeIcon },
-  { id: 'starred', label: 'Starred', icon: StarIcon },
-  { id: 'search', label: 'Search', icon: SearchIcon }
-] as const;
-
-type Source = (typeof SOURCES)[number]['id'];
-
-const EMPTY: Record<Source, string> = {
-  owned: 'No public repos on your account.',
-  watched: "You aren't watching anything on GitHub.",
-  starred: "You haven't starred anything.",
-  search: 'Search GitHub for a repo.'
-};
 
 export default async function RepositoriesPage({
   searchParams
@@ -39,7 +18,7 @@ export default async function RepositoriesPage({
 }) {
   const user = await requireUser();
   const params = await searchParams;
-  const source: Source = SOURCES.find((s) => s.id === params.source)?.id ?? 'owned';
+  const source: RepoSource = toRepoSource(params.source);
   const q = params.q?.trim() ?? '';
 
   const stackRows = await db
@@ -58,10 +37,12 @@ export default async function RepositoriesPage({
     error = 'Your GitHub sign-in has expired. Sign out and back in to reconnect.';
   } else {
     try {
-      if (source === 'owned') results = await listOwnRepos(token);
+      // Cached per user, so switching tabs does not re-hit the API each time.
+      if (source === 'owned') results = await cachedOwnRepos(user.id, token);
       else if (source === 'watched') {
-        results = await listGitHubWatchedRepos(token);
-      } else if (source === 'starred') results = await listStarredRepos(token);
+        results = await cachedWatchedRepos(user.id, token);
+      } else if (source === 'starred') results = await cachedStarredRepos(user.id, token);
+      // Search is a different query every time; caching it would only bloat.
       else if (q) results = await searchRepos(token, q);
     } catch (err) {
       console.error(`GitHub lookup failed for ${source}:`, err);
@@ -77,34 +58,20 @@ export default async function RepositoriesPage({
         </p>
       </header>
 
-      <div className="flex flex-wrap items-center gap-1 border-border border-b">
-        {SOURCES.map((option) => {
-          const active = option.id === source;
-          return (
-            <Link
-              key={option.id}
-              href={`/repositories?source=${option.id}`}
-              aria-current={active ? 'page' : undefined}
-              className={
-                active
-                  ? '-mb-px flex items-center gap-1.5 border-primary border-b-2 px-3 py-2 font-semibold text-sm'
-                  : '-mb-px flex items-center gap-1.5 border-transparent border-b-2 px-3 py-2 text-muted-foreground text-sm transition-colors hover:border-border hover:text-foreground'
-              }
-            >
-              <option.icon className="size-4" />
-              {option.label}
-            </Link>
-          );
-        })}
-      </div>
+      <RepoSourceTabs active={source} />
 
       {source === 'search' && (
-        <form action="/repositories" className="flex items-center gap-2">
+        <form action="/repositories" method="get" className="flex items-center gap-2">
           <input type="hidden" name="source" value="search" />
           <Input
+            id="repo-search"
             name="q"
+            type="search"
+            autoComplete="off"
+            enterKeyHint="search"
+            spellCheck={false}
             defaultValue={q}
-            placeholder="react query, orm, testing…"
+            placeholder="react query, orm, testing"
             className="max-w-md"
             aria-label="Search GitHub"
           />
@@ -125,7 +92,7 @@ export default async function RepositoriesPage({
       <GitHubReposTable
         repos={results}
         repoIdByFullName={repoIdByFullName}
-        emptyMessage={source === 'search' && q ? 'No matches.' : EMPTY[source]}
+        emptyMessage={source === 'search' && q ? 'No matches.' : emptyMessageFor(source)}
       />
     </div>
   );

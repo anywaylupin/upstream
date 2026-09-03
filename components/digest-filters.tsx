@@ -3,15 +3,49 @@
 import { SearchIcon, XIcon } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { cn } from 'tailwind-variants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CHANGE_TYPES, type DigestFilterState, EFFORTS, WINDOWS } from '@/lib/digest-filters';
+import {
+  CHANGE_TYPE_DOT,
+  CHANGE_TYPES,
+  type DigestFilterState,
+  EFFORT_DOT,
+  EFFORTS,
+  WINDOWS
+} from '@/lib/digest-filters';
 
 const ALL = 'all';
 
 function labelFor(value: string, all: string) {
   return value === ALL ? all : value;
+}
+
+/**
+ * A small colour key, so the option means something before you read it.
+ *
+ * `self-center` matters: shadcn's SelectItem lays its text out as a flex row
+ * that defaults to `stretch`, so a fixed-height dot pins to the top of the row
+ * instead of sitting level with the label.
+ */
+function Dot({ tone }: { tone: string | undefined }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn('size-2 shrink-0 self-center rounded-full', tone ?? 'bg-muted-foreground')}
+    />
+  );
+}
+
+/** Trigger content: the dot travels with the selection, not just the list. */
+function Chosen({ tone, children }: { tone?: string; children: string }) {
+  return (
+    <span className="flex items-center gap-1.5">
+      <Dot tone={tone} />
+      {children}
+    </span>
+  );
 }
 
 /**
@@ -41,12 +75,20 @@ export function DigestFilters({ repos, selected }: { repos: string[]; selected: 
     <div className="flex flex-wrap items-center gap-2">
       <Select value={selected.types[0] ?? ALL} onValueChange={(value) => setParam('types', String(value))}>
         <SelectTrigger size="sm" className="w-36">
-          <SelectValue>{(value: string) => labelFor(value, 'All types')}</SelectValue>
+          <SelectValue>
+            {(value: string) => (
+              <Chosen tone={CHANGE_TYPE_DOT[value] ?? 'bg-muted-foreground/30'}>{labelFor(value, 'All types')}</Chosen>
+            )}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All types</SelectItem>
+          <SelectItem value={ALL}>
+            <Dot tone="bg-muted-foreground/30" />
+            All types
+          </SelectItem>
           {CHANGE_TYPES.map((type) => (
             <SelectItem key={type} value={type}>
+              <Dot tone={CHANGE_TYPE_DOT[type]} />
               {type}
             </SelectItem>
           ))}
@@ -55,12 +97,20 @@ export function DigestFilters({ repos, selected }: { repos: string[]; selected: 
 
       <Select value={selected.effort[0] ?? ALL} onValueChange={(value) => setParam('effort', String(value))}>
         <SelectTrigger size="sm" className="w-36">
-          <SelectValue>{(value: string) => labelFor(value, 'Any effort')}</SelectValue>
+          <SelectValue>
+            {(value: string) => (
+              <Chosen tone={EFFORT_DOT[value] ?? 'bg-muted-foreground/30'}>{labelFor(value, 'Any effort')}</Chosen>
+            )}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>Any effort</SelectItem>
+          <SelectItem value={ALL}>
+            <Dot tone="bg-muted-foreground/30" />
+            Any effort
+          </SelectItem>
           {EFFORTS.map((effort) => (
             <SelectItem key={effort} value={effort}>
+              <Dot tone={EFFORT_DOT[effort]} />
               {effort}
             </SelectItem>
           ))}
@@ -106,6 +156,11 @@ export function DigestFilters({ repos, selected }: { repos: string[]; selected: 
       >
         <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
+          name="q"
+          type="search"
+          autoComplete="off"
+          enterKeyHint="search"
+          spellCheck={false}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Find in summaries"

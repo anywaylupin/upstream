@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from 'tailwind-variants';
+import { LinkPendingIcon } from '@/components/link-pending';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
@@ -62,7 +63,7 @@ export function MobileNav({ stackCount, digestCount }: { stackCount: number; dig
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 )}
               >
-                <link.icon className={cn('size-4', active && 'text-primary')} />
+                <LinkPendingIcon icon={link.icon} className={cn('size-4', active && 'text-primary')} />
                 {link.label}
                 {count !== undefined && count > 0 && (
                   <span className="ml-auto rounded-full bg-muted px-1.5 text-muted-foreground text-xs tabular-nums">

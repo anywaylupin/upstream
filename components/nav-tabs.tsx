@@ -4,6 +4,7 @@ import { BookMarkedIcon, GaugeIcon, LayersIcon, type LucideIcon, NewspaperIcon }
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from 'tailwind-variants';
+import { LinkPendingBar, LinkPendingIcon } from '@/components/link-pending';
 
 type Tab = { href: string; label: string; icon: LucideIcon; count?: number };
 
@@ -41,13 +42,14 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
               href={tab.href}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'group flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition-colors',
+                'group relative flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm transition-colors',
                 active
                   ? 'bg-muted font-semibold text-foreground'
                   : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
               )}
             >
-              <tab.icon
+              <LinkPendingIcon
+                icon={tab.icon}
                 className={cn(
                   'size-4 transition-transform duration-200 group-hover:scale-110',
                   active && 'text-primary'
@@ -59,6 +61,7 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
                   {tab.count}
                 </span>
               )}
+              <LinkPendingBar />
             </Link>
           );
         })}

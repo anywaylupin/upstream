@@ -1,11 +1,21 @@
 import { eq } from 'drizzle-orm';
-import { ExternalLinkIcon, TimerIcon, TriangleAlertIcon } from 'lucide-react';
+import {
+  ExternalLinkIcon,
+  HistoryIcon,
+  KeyRoundIcon,
+  type LucideIcon,
+  MailIcon,
+  SparklesIcon,
+  TimerIcon,
+  TriangleAlertIcon,
+  UserRoundIcon
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { AiKeyList } from '@/components/ai-key-list';
 import { DeleteAccountDialog } from '@/components/delete-account-dialog';
 import { DigestSettingsForm } from '@/components/digest-settings-form';
 import { InstructionTabs } from '@/components/instruction-tabs';
-import { SettingsNav } from '@/components/settings-nav';
+import { SettingsShell } from '@/components/settings-shell';
 import { Badge } from '@/components/ui/badge';
 import { db } from '@/db';
 import { userInstructions, userPreferences } from '@/db/schema';
@@ -15,19 +25,26 @@ import { getUserAiSummary } from '@/lib/ai-settings';
 import { mailProviderConfigured } from '@/lib/digest-email';
 import { previewErase } from '@/lib/erase-account';
 import { formatDate, formatRelative } from '@/lib/format';
-import { getGitHubToken, getGitHubUser, getPrimaryEmail } from '@/lib/github';
+import { getGitHubToken } from '@/lib/github';
+import { cachedGitHubUser, cachedPrimaryEmail } from '@/lib/github-cache';
 import { requireUser } from '@/lib/session';
 import { SETTINGS_SECTIONS, type SettingsSectionId } from '@/lib/settings-sections';
 import { getRecentRuns } from '@/lib/sync';
 
+/**
+ * One icon per panel, in a tinted square. Enough to tell the panels apart when
+ * scanning; deliberately not repeated on every row inside them.
+ */
 function Panel({
   title,
   description,
+  icon: Icon,
   children,
   danger
 }: {
   title: string;
   description?: string;
+  icon: LucideIcon;
   children: ReactNode;
   danger?: boolean;
 }) {
@@ -35,9 +52,20 @@ function Panel({
     <section
       className={danger ? 'rounded-lg p-4 ring-1 ring-destructive/40' : 'rounded-lg p-4 ring-1 ring-foreground/10'}
     >
-      <div className="mb-3 flex flex-col gap-0.5">
-        <h2 className="font-semibold text-sm">{title}</h2>
-        {description && <p className="text-muted-foreground text-sm">{description}</p>}
+      <div className="mb-3 flex items-start gap-2.5">
+        <span
+          className={
+            danger
+              ? 'flex size-7 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-destructive'
+              : 'flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary'
+          }
+        >
+          <Icon className="size-4" />
+        </span>
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h2 className="font-semibold text-sm">{title}</h2>
+          {description && <p className="text-muted-foreground text-sm">{description}</p>}
+        </div>
       </div>
       {children}
     </section>
@@ -60,7 +88,10 @@ export default async function Settings({ searchParams }: { searchParams: Promise
 
   const token = await getGitHubToken(user.id);
   const [profile, githubEmail] = token
-    ? await Promise.all([getGitHubUser(token).catch(() => null), getPrimaryEmail(token).catch(() => null)])
+    ? await Promise.all([
+        cachedGitHubUser(user.id, token).catch(() => null),
+        cachedPrimaryEmail(user.id, token).catch(() => null)
+      ])
     : [null, null];
 
   const [[prefs], instructionRows, ai, recentRuns, erasePreview] = await Promise.all([
@@ -105,12 +136,11 @@ export default async function Settings({ searchParams }: { searchParams: Promise
   };
 
   return (
-    <div className="grid w-full gap-6 md:grid-cols-[12rem_minmax(0,1fr)]">
-      <SettingsNav active={section} />
-
-      <div className="flex max-w-2xl flex-col gap-4">
-        {section === 'account' && (
-          <Panel title="GitHub account" description="Read from GitHub.">
+    <SettingsShell
+      initial={section}
+      panels={{
+        account: (
+          <Panel title="GitHub account" description="Read from GitHub." icon={UserRoundIcon}>
             {profile ? (
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
@@ -152,11 +182,10 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               </p>
             )}
           </Panel>
-        )}
-
-        {section === 'digest' && (
+        ),
+        digest: (
           <>
-            <Panel title="Digest" description="Where it goes and how often.">
+            <Panel title="Digest" description="Where it goes and how often." icon={MailIcon}>
               <DigestSettingsForm
                 email={prefs?.digestEmail ?? ''}
                 fallbackEmail={fallbackEmail}
@@ -173,6 +202,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             </Panel>
 
             <Panel
+              icon={HistoryIcon}
               title="Recent syncs"
               description="Upstream checks every stacked repo hourly and picks up whoever is due."
             >
@@ -197,19 +227,22 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               )}
             </Panel>
           </>
-        )}
-
-        {section === 'keys' && (
+        ),
+        keys: (
           <Panel
+            icon={KeyRoundIcon}
             title="AI keys"
             description={`Running ${findModel(ai.modelId)?.label ?? ai.modelId}. Encrypted, yours only.`}
           >
             <AiKeyList keys={ai.keys} />
           </Panel>
-        )}
-
-        {section === 'instructions' && (
-          <Panel title="Instructions" description="Per feature. Blank falls back to the global one.">
+        ),
+        instructions: (
+          <Panel
+            title="Instructions"
+            description="Per feature. Blank falls back to the global one."
+            icon={SparklesIcon}
+          >
             <InstructionTabs
               tabs={FEATURES.map((feature) => ({
                 id: feature.id,
@@ -220,14 +253,18 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               }))}
             />
           </Panel>
-        )}
-
-        {section === 'danger' && (
-          <Panel title="Delete account" description="Erases everything tied to your account. Cannot be undone." danger>
+        ),
+        danger: (
+          <Panel
+            title="Delete account"
+            description="Erases everything tied to your account. Cannot be undone."
+            icon={TriangleAlertIcon}
+            danger
+          >
             <DeleteAccountDialog preview={erasePreview} />
           </Panel>
-        )}
-      </div>
-    </div>
+        )
+      }}
+    />
   );
 }

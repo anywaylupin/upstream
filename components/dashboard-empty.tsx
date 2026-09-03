@@ -1,5 +1,15 @@
-import { CompassIcon, KeyRoundIcon, LayersIcon, SparklesIcon } from 'lucide-react';
+import {
+  BoxesIcon,
+  CompassIcon,
+  FolderGit2Icon,
+  KeyRoundIcon,
+  LayersIcon,
+  ListChecksIcon,
+  MessageSquareTextIcon,
+  PlusIcon
+} from 'lucide-react';
 import Link from 'next/link';
+import { AddRepoDialog } from '@/components/add-repo-dialog';
 import { OwnerAvatar } from '@/components/owner-avatar';
 import { StackButton } from '@/components/stack-button';
 import { Button } from '@/components/ui/button';
@@ -9,14 +19,14 @@ import { SUGGESTED_REPOS } from '@/lib/suggested-repos';
 
 const NEXT_STEPS = [
   {
-    icon: CompassIcon,
+    icon: FolderGit2Icon,
     title: 'Browse your GitHub',
     body: 'Pull in repos you already own or watch.',
     href: '/repositories',
     cta: 'Open'
   },
   {
-    icon: SparklesIcon,
+    icon: MessageSquareTextIcon,
     title: 'Tell it what you care about',
     body: 'Per-feature instructions shape every summary.',
     href: '/settings?section=instructions',
@@ -46,17 +56,27 @@ export function DashboardEmpty() {
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button size="sm" nativeButton={false} render={<Link href="/repositories" />}>
-            <CompassIcon data-icon="inline-start" />
-            Find repos
-          </Button>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <AddRepoDialog
+              trigger={
+                <Button size="sm">
+                  <PlusIcon data-icon="inline-start" />
+                  Add a repo
+                </Button>
+              }
+            />
+            <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/repositories" />}>
+              <CompassIcon data-icon="inline-start" />
+              Find repos
+            </Button>
+          </div>
         </EmptyContent>
       </Empty>
 
       <section className="flex flex-col gap-2.5">
         <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          <SparklesIcon className="size-3.5" />
-          Popular starting points
+          <BoxesIcon className="size-3.5" />
+          What Upstream runs on
         </h2>
 
         <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -92,7 +112,7 @@ export function DashboardEmpty() {
 
       <section className="flex flex-col gap-2.5">
         <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          <CompassIcon className="size-3.5" />
+          <ListChecksIcon className="size-3.5" />
           Next steps
         </h2>
 

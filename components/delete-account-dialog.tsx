@@ -76,9 +76,13 @@ export function DeleteAccountDialog({
           </Label>
           <Input
             id="confirm-delete"
+            name="confirmDelete"
+            type="text"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
             value={typed}
             onChange={(event) => setTyped(event.target.value)}
-            autoComplete="off"
             disabled={pending}
           />
         </div>
