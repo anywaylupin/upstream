@@ -1,61 +1,106 @@
+<div align="center">
+
+<img src="app/icon.svg" width="72" height="72" alt="" />
+
 # Upstream
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**Release intel for the repos you depend on.**
 
-## Getting Started
+Upstream reads every changelog in your stack, flags what breaks, estimates the
+upgrade effort and rates the project.
 
-First, run the development server:
+</div>
+
+---
+
+## What it does
+
+- **Digest** - every release across your stack, summarized into what changed,
+  what breaks and how much work the upgrade is.
+- **Breaking radar** - breaking changes and deprecations surfaced first.
+- **Repo reports** - a five-part rating, an AI guide to the project, and
+  alternatives lined up against it.
+- **Your key, your model** - bring a key for any of eight providers, or run on
+  the shared one.
+- **On your schedule** - daily, weekly, biweekly, monthly or every N days, in
+  your own time zone, delivered by email.
+
+## Stack
+
+| Tech | Why |
+| --- | --- |
+| ![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=nextdotjs&logoColor=white) | App Router, server components |
+| ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=000000) | UI |
+| ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript&logoColor=white) | No `any`, no non-null assertions |
+| ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) | Styling |
+| ![shadcn/ui](https://img.shields.io/badge/shadcn/ui-base--nova-000000?style=flat-square&logo=shadcnui&logoColor=white) | Components, built on Base UI |
+| ![Drizzle](https://img.shields.io/badge/Drizzle-0.45-C5F74F?style=flat-square&logo=drizzle&logoColor=000000) | ORM |
+| ![Neon](https://img.shields.io/badge/Neon-Postgres-00E599?style=flat-square&logo=neon&logoColor=000000) | Serverless Postgres |
+| ![Auth.js](https://img.shields.io/badge/Auth.js-v5-000000?style=flat-square&logo=auth0&logoColor=white) | GitHub OAuth, JWT sessions |
+| ![Vercel AI SDK](https://img.shields.io/badge/AI_SDK-7-000000?style=flat-square&logo=vercel&logoColor=white) | Structured LLM output |
+| ![Zod](https://img.shields.io/badge/Zod-4-3E67B1?style=flat-square&logo=zod&logoColor=white) | Boundary validation |
+| ![Biome](https://img.shields.io/badge/Biome-2.4-60A5FA?style=flat-square&logo=biome&logoColor=white) | Lint and format |
+| ![pnpm](https://img.shields.io/badge/pnpm-Node_22-F69220?style=flat-square&logo=pnpm&logoColor=white) | Package manager |
+| ![Vercel](https://img.shields.io/badge/Vercel-deploy_+_cron-000000?style=flat-square&logo=vercel&logoColor=white) | Hosting and scheduling |
+
+No Redis, no queues, no Docker, no monorepo.
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
+cp .env.example .env   # then fill it in
+pnpm db:push
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Every variable is documented in [`.env.example`](.env.example), including how
+to obtain each key. The minimum to boot: `DATABASE_URL`, `AUTH_SECRET`, a
+GitHub OAuth app, and one AI provider key.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Does |
+| --- | --- |
+| `pnpm dev` | Dev server |
+| `pnpm db:push` | Push the schema to Neon |
+| `pnpm ingest` | Fetch releases for every catalogue repo |
+| `pnpm summarize` | Summarize un-summarized releases |
+| `pnpm sync` | A full manual run, recorded in `runs` |
+| `pnpm check:schedule` | Assert the digest date maths |
+| `pnpm typecheck` | `tsc --noEmit` |
+| `pnpm lint` | `biome check` |
 
-## Learn More
+## How it works
 
-To learn more about Next.js, take a look at the following resources:
+**Summaries are deduped by content hash.** A summary is keyed on the sha256 of
+the release body, not the release id, so identical notes across repos or re-runs
+are summarized once, ever. That is what keeps the project inside free-tier LLM
+quota.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Repos are a shared catalogue; a stack is one user's slice of it.** Ingestion
+and summary dedupe stay global while every view is scoped to the person asking.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**The cron tick is project-wide, the schedule is per user.** Vercel Cron cannot
+fire per user, so `/api/cron/ingest` runs hourly and `isDigestDue()` decides
+whose digest is due, reading the hour in each user's own IANA zone.
 
-## Deploy on Vercel
+**Model ids are never trusted.** `gemini-2.5-flash` was retired mid-project and
+broke every summary silently. Keys and models are now probed with a live call
+before they are saved.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+More detail, and the traps worth not reintroducing, live in
+[`AGENTS.md`](AGENTS.md).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Status
 
-## Set up Neon with your coding agent
+Working: ingestion, summarization, auth, per-user stacks, digest with filters,
+repo reports, BYOK across eight providers, search, scheduled runs, email
+delivery, account erase.
 
-Paste the following prompt into your agent chat to connect your app.
+Not built yet: an eval harness, Playwright E2E, read state, non-GitHub-Release
+changelogs, and rate-limit backoff.
 
-Set up this Neon project in the current working directory.
+## License
 
-````md
-1. `npm i -g neon@latest && neon login`
-2. `neon skills -y`
-3. `neon mcp -y`
-4. `neon link --project-id orange-rice-33207085 --branch production -y`
-5. `neon config init`
-6. Update `neon.ts`:
-
-\```ts
-import { defineConfig } from "@neon/config/v1";
-
-export default defineConfig({});
-\```
-
-7. `neon deploy`
-````
+[MIT](LICENSE)
