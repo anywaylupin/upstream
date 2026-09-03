@@ -100,3 +100,7 @@ delivery, account erase.
 
 Not built yet: an eval harness, Playwright E2E, read state, non-GitHub-Release
 changelogs, and rate-limit backoff.
+
+## License
+
+[MIT](LICENSE)
