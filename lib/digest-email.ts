@@ -37,6 +37,10 @@ export type BuiltDigest = {
   since: Date;
 };
 
+function plural(count: number, noun: string) {
+  return `${count} ${noun}${count === 1 ? '' : 's'}`;
+}
+
 function escapeHtml(value: string) {
   return value
     .replaceAll('&', '&amp;')
@@ -110,7 +114,7 @@ export async function buildDigest(userId: string, options: { since?: Date } = {}
   const summary =
     breakingCount > 0
       ? `${entries.length} releases, ${breakingCount} breaking`
-      : `${entries.length} releases across ${repoCount} repos`;
+      : `${entries.length} releases across ${plural(repoCount, 'repo')}`;
 
   return {
     subject: `Upstream: ${summary}`,
@@ -168,7 +172,7 @@ function renderHtml(entries: DigestEntry[], meta: { breakingCount: number; repoC
 <table role="presentation" style="max-width:600px;margin:0 auto;width:100%;border-collapse:collapse">
 <tr><td>
   <div style="font:600 18px/1.3 ${font};color:#00786f">Upstream</div>
-  <div style="font:400 14px/1.5 ${font};color:#78716c;margin-top:4px">${entries.length} releases across ${meta.repoCount} repos since ${escapeHtml(meta.since.toDateString())}${breakingNote}</div>
+  <div style="font:400 14px/1.5 ${font};color:#78716c;margin-top:4px">${plural(entries.length, 'release')} across ${plural(meta.repoCount, 'repo')} since ${escapeHtml(meta.since.toDateString())}${breakingNote}</div>
 </td></tr>
 ${items}
 <tr><td style="padding-top:20px">
@@ -181,7 +185,7 @@ ${items}
 }
 
 function renderText(entries: DigestEntry[], since: Date) {
-  const lines = [`Upstream - ${entries.length} releases since ${since.toDateString()}`, ''];
+  const lines = [`Upstream - ${plural(entries.length, 'release')} since ${since.toDateString()}`, ''];
 
   for (const entry of entries.slice(0, MAX_ENTRIES)) {
     lines.push(`${entry.repo} ${entry.tag}`, `  ${entry.headline}`);

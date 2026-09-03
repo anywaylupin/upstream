@@ -129,25 +129,77 @@
    Teal is spelled out rather than left to the :root default: the swatches set
    data-theme on themselves, so without this rule a teal swatch would inherit
    whatever palette is active and stop looking teal. */
+[data-theme="slate"] {
+  --brand-h: 257;
+  --brand-c: 0.032;
+}
+[data-theme="red"] {
+  --brand-h: 27;
+  --brand-c: 0.19;
+}
+[data-theme="orange"] {
+  --brand-h: 52;
+  --brand-c: 0.18;
+}
+[data-theme="amber"] {
+  --brand-h: 75;
+  --brand-c: 0.16;
+}
+[data-theme="yellow"] {
+  --brand-h: 93;
+  --brand-c: 0.16;
+}
+[data-theme="lime"] {
+  --brand-h: 128;
+  --brand-c: 0.18;
+}
+[data-theme="green"] {
+  --brand-h: 150;
+  --brand-c: 0.15;
+}
+[data-theme="emerald"] {
+  --brand-h: 163;
+  --brand-c: 0.13;
+}
 [data-theme="teal"] {
   --brand-h: 186.4;
   --brand-c: 0.096;
 }
+[data-theme="cyan"] {
+  --brand-h: 212;
+  --brand-c: 0.12;
+}
+[data-theme="sky"] {
+  --brand-h: 237;
+  --brand-c: 0.14;
+}
 [data-theme="blue"] {
-  --brand-h: 258;
-  --brand-c: 0.16;
+  --brand-h: 259;
+  --brand-c: 0.18;
+}
+[data-theme="indigo"] {
+  --brand-h: 277;
+  --brand-c: 0.185;
 }
 [data-theme="violet"] {
-  --brand-h: 300;
-  --brand-c: 0.17;
+  --brand-h: 294;
+  --brand-c: 0.195;
 }
-[data-theme="amber"] {
-  --brand-h: 75;
-  --brand-c: 0.15;
+[data-theme="purple"] {
+  --brand-h: 304;
+  --brand-c: 0.19;
+}
+[data-theme="fuchsia"] {
+  --brand-h: 322;
+  --brand-c: 0.2;
+}
+[data-theme="pink"] {
+  --brand-h: 355;
+  --brand-c: 0.185;
 }
 [data-theme="rose"] {
   --brand-h: 14;
-  --brand-c: 0.17;
+  --brand-c: 0.175;
 }
 
 @layer base {

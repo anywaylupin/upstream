@@ -90,7 +90,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <header className="flex flex-col gap-3">
         <form action="/search">
           <Input
+            id="site-search"
             name="q"
+            type="search"
+            autoComplete="off"
+            enterKeyHint="search"
+            spellCheck={false}
             defaultValue={q}
             placeholder="Search repos and releases"
             aria-label="Search"

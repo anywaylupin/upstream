@@ -1,13 +1,16 @@
 import { createHash } from 'node:crypto';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createGroq } from '@ai-sdk/groq';
 import { createMistral } from '@ai-sdk/mistral';
 import { createOpenAI } from '@ai-sdk/openai';
+import { createXai } from '@ai-sdk/xai';
 import type { LanguageModel } from 'ai';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { aiKeys, userInstructions, userPreferences } from '@/db/schema';
-import { DEFAULT_MODEL_ID, findModel, type ProviderId } from '@/lib/ai-models';
+import { DEFAULT_MODEL_ID, findModel, MODELS, PROVIDERS, type ProviderId } from '@/lib/ai-models';
 import { decryptSecret } from '@/lib/crypto';
 
 /** Keeps instruction-free output on the shared cache key. */
@@ -52,6 +55,42 @@ export type AiContext = {
   ownKey: boolean;
 };
 
+/**
+ * Server-side keys, one per provider. Written out statically rather than looked
+ * up from `PROVIDERS[].envVar`: bundlers inline `process.env.X` by literal name,
+ * and a dynamic index quietly resolves to undefined in some builds.
+ *
+ * A provider with no key here is BYOK-only - it never appears in the picker
+ * until the user adds their own key.
+ */
+export function serverKeyFor(provider: ProviderId): string | undefined {
+  switch (provider) {
+    case 'google':
+      return process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    case 'groq':
+      return process.env.GROQ_API_KEY;
+    case 'mistral':
+      return process.env.MISTRAL_API_KEY;
+    case 'openai':
+      return process.env.OPENAI_API_KEY;
+    case 'anthropic':
+      return process.env.ANTHROPIC_API_KEY;
+    case 'deepseek':
+      return process.env.DEEPSEEK_API_KEY;
+    case 'xai':
+      return process.env.XAI_API_KEY;
+    case 'openrouter':
+      return process.env.OPENROUTER_API_KEY;
+    default:
+      return undefined;
+  }
+}
+
+/** Providers the server can cover for everyone, with no key from the user. */
+export function serverProviders(): ProviderId[] {
+  return PROVIDERS.map((provider) => provider.id).filter((id) => Boolean(serverKeyFor(id)));
+}
+
 function buildModel(provider: ProviderId, apiKey: string, modelId: string) {
   switch (provider) {
     case 'google':
@@ -60,6 +99,14 @@ function buildModel(provider: ProviderId, apiKey: string, modelId: string) {
       return createGroq({ apiKey })(modelId);
     case 'mistral':
       return createMistral({ apiKey })(modelId);
+    case 'openai':
+      return createOpenAI({ apiKey })(modelId);
+    case 'anthropic':
+      return createAnthropic({ apiKey })(modelId);
+    case 'deepseek':
+      return createDeepSeek({ apiKey })(modelId);
+    case 'xai':
+      return createXai({ apiKey })(modelId);
     case 'openrouter':
       // OpenRouter speaks the OpenAI protocol.
       return createOpenAI({
@@ -105,8 +152,9 @@ export async function getAiContext(userId: string, feature: Feature = 'global'):
   const stored = keys.find((key) => key.provider === wanted.provider);
   const ownKey = stored ? decryptSecret(stored.encryptedKey) : null;
 
-  // Only Google has a server-side fallback key; the rest need the user's own.
-  const apiKey = ownKey ?? (wanted.provider === 'google' ? process.env.GOOGLE_GENERATIVE_AI_API_KEY : undefined);
+  // The user's own key wins; otherwise fall back to a server key if one is set
+  // for that provider. Providers with neither are not offered in the picker.
+  const apiKey = ownKey ?? serverKeyFor(wanted.provider);
 
   if (!apiKey) {
     throw new Error(`No API key for ${wanted.provider}. Add one from the model picker.`);
@@ -123,12 +171,20 @@ export async function getAiContext(userId: string, feature: Feature = 'global'):
 
 /** The server-key context used by the CLI batch scripts. */
 export function serverAiContext(): AiContext {
-  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!apiKey) throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not set');
+  const preferred = findModel(DEFAULT_MODEL_ID);
+  const fallback = MODELS.find((model) => model.tier === 'free' && serverKeyFor(model.provider));
+
+  // The default model if its key is set, else any free model the server can run.
+  const model = preferred && serverKeyFor(preferred.provider) ? preferred : fallback;
+  const apiKey = model ? serverKeyFor(model.provider) : undefined;
+
+  if (!model || !apiKey) {
+    throw new Error('No server AI key is set. Add one of the provider keys from .env.example.');
+  }
 
   return {
-    model: createGoogleGenerativeAI({ apiKey })(DEFAULT_MODEL_ID),
-    modelId: DEFAULT_MODEL_ID,
+    model: buildModel(model.provider, apiKey, model.id),
+    modelId: model.id,
     instructions: null,
     instructionsHash: DEFAULT_INSTRUCTIONS_HASH,
     ownKey: false

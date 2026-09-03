@@ -41,6 +41,11 @@ export function HeaderSearch() {
         </InputGroupAddon>
         <InputGroupInput
           ref={inputRef}
+          name="q"
+          type="search"
+          autoComplete="off"
+          enterKeyHint="search"
+          spellCheck={false}
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder="Search repos and releases"

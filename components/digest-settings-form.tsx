@@ -188,6 +188,9 @@ export function DigestSettingsForm({
           id={emailId}
           name="email"
           type="email"
+          autoComplete="email"
+          inputMode="email"
+          spellCheck={false}
           defaultValue={email}
           placeholder={fallbackEmail ?? 'you@example.com'}
           disabled={pending || !on}
@@ -203,7 +206,6 @@ export function DigestSettingsForm({
       <input type="hidden" name="weekday" value={selectedDay} />
       <input type="hidden" name="timezone" value={zone} />
       <input type="hidden" name="dayOfMonth" value={monthDay} />
-      <input type="hidden" name="intervalDays" value={gap} />
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1.5">
@@ -289,6 +291,8 @@ export function DigestSettingsForm({
         </div>
       )}
 
+      {freq !== 'custom' && <input type="hidden" name="intervalDays" value={gap} />}
+
       {freq === 'custom' && (
         <div className="flex flex-col gap-1.5">
           <label htmlFor={gapId} className="font-medium text-sm">
@@ -297,7 +301,9 @@ export function DigestSettingsForm({
           <div className="flex items-center gap-2">
             <Input
               id={gapId}
+              name="intervalDays"
               type="number"
+              inputMode="numeric"
               min={MIN_INTERVAL_DAYS}
               max={MAX_INTERVAL_DAYS}
               value={gap}

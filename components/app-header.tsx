@@ -1,4 +1,4 @@
-import { BellIcon, GitPullRequestArrowIcon, LayersIcon, SearchIcon, ShieldAlertIcon } from 'lucide-react';
+import { LayersIcon, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
 import { signInWithGitHub } from '@/app/actions';
 import { auth } from '@/auth';
@@ -11,61 +11,16 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { UserMenu } from '@/components/user-menu';
 import { getUserAiSummary } from '@/lib/ai-settings';
-import { getHeaderCounts, getNavCounts } from '@/lib/repo-stats';
-
-function CountLink({
-  href,
-  label,
-  count,
-  icon: Icon,
-  danger
-}: {
-  href: string;
-  label: string;
-  count: number;
-  icon: typeof BellIcon;
-  danger?: boolean;
-}) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Link
-            href={href}
-            aria-label={`${label}: ${count}`}
-            className="relative hidden rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:block"
-          />
-        }
-      >
-        <Icon className="size-4" />
-        {count > 0 && (
-          <span
-            className={
-              danger
-                ? 'absolute -top-0.5 -right-0.5 flex min-w-4 justify-center rounded-full bg-destructive px-1 font-medium text-[10px] text-white leading-4'
-                : 'absolute -top-0.5 -right-0.5 flex min-w-4 justify-center rounded-full bg-primary px-1 font-medium text-[10px] text-primary-foreground leading-4'
-            }
-          >
-            {count > 99 ? '99+' : count}
-          </span>
-        )}
-      </TooltipTrigger>
-      <TooltipContent>
-        {label}: {count}
-      </TooltipContent>
-    </Tooltip>
-  );
-}
+import { getNavCounts } from '@/lib/repo-stats';
 
 export async function AppHeader() {
   const session = await auth();
   const user = session?.user;
-  const [counts, nav, ai] = user?.id
-    ? await Promise.all([getHeaderCounts(user.id), getNavCounts(user.id), getUserAiSummary(user.id)])
+  const [nav, ai] = user?.id
+    ? await Promise.all([getNavCounts(user.id), getUserAiSummary(user.id)])
     : [
-        { breaking: 0, upgrades: 0, fresh: 0 },
         { stack: 0, releases30d: 0 },
-        { modelId: '', keyedProviders: [] as string[] }
+        { modelId: '', keyedProviders: [] as string[], serverProviders: [] as string[] }
       ];
 
   return (
@@ -105,25 +60,12 @@ export async function AppHeader() {
                 </TooltipTrigger>
                 <TooltipContent>Search</TooltipContent>
               </Tooltip>
-              <ModelMenu activeModelId={ai.modelId} keyedProviders={ai.keyedProviders} />
+              <ModelMenu
+                activeModelId={ai.modelId}
+                keyedProviders={ai.keyedProviders}
+                serverProviders={ai.serverProviders}
+              />
               <CreateMenu />
-
-              <div className="flex items-center gap-0.5">
-                <CountLink
-                  href="/digest?types=breaking"
-                  label="Breaking changes"
-                  count={counts.breaking}
-                  icon={ShieldAlertIcon}
-                  danger
-                />
-                <CountLink
-                  href="/digest?effort=medium,high"
-                  label="Upgrades needing work"
-                  count={counts.upgrades}
-                  icon={GitPullRequestArrowIcon}
-                />
-                <CountLink href="/digest?days=7" label="Released this week" count={counts.fresh} icon={BellIcon} />
-              </div>
 
               <UserMenu name={user.name ?? user.email ?? 'You'} image={user.image ?? undefined} />
             </>

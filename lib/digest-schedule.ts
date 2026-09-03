@@ -71,7 +71,8 @@ function formatterFor(timeZone: string) {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    hour: '2-digit'
+    hour: '2-digit',
+    minute: '2-digit'
   });
   formatters.set(timeZone, formatter);
   return formatter;
@@ -97,29 +98,36 @@ export function zonedParts(at: Date, timeZone: string) {
   const month = read('month');
   const day = read('day');
   const hour = read('hour') % 24;
+  const minute = read('minute');
 
   // Derived rather than parsed from a localized weekday string, which varies.
   const weekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
 
-  return { year, month, day, hour, weekday };
+  return { year, month, day, hour, minute, weekday };
 }
 
 /**
  * The instant at which `timeZone` reads the given wall-clock time. Guess in UTC,
- * measure how far off the zone renders it, correct. Twice, because a correction
- * can itself cross a DST boundary.
+ * measure how far the zone's rendering of that guess misses the target, correct.
+ * Twice, because a correction can itself cross a DST boundary.
+ *
+ * The error is measured against the target, never against the running guess -
+ * against the guess it would keep re-subtracting the zone's UTC offset and the
+ * second pass would undo the first.
  */
 export function zonedTimeToUtc(
   parts: { year: number; month: number; day: number; hour: number },
   timeZone: string
 ): Date {
-  let stamp = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour);
+  const target = Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour);
+  let stamp = target;
 
   for (let pass = 0; pass < 2; pass += 1) {
     const seen = zonedParts(new Date(stamp), timeZone);
-    const offset = Date.UTC(seen.year, seen.month - 1, seen.day, seen.hour) - stamp;
-    if (offset === 0) break;
-    stamp -= offset;
+    // To the minute, or zones offset by :30 and :45 land half an hour late.
+    const error = Date.UTC(seen.year, seen.month - 1, seen.day, seen.hour, seen.minute) - target;
+    if (error === 0) break;
+    stamp -= error;
   }
 
   return new Date(stamp);

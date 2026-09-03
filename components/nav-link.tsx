@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { cn } from 'tailwind-variants';
+import { LinkPendingBar } from '@/components/link-pending';
 
 export function NavLink({ href, children }: { href: string; children: ReactNode }) {
   const pathname = usePathname();
@@ -14,7 +15,7 @@ export function NavLink({ href, children }: { href: string; children: ReactNode 
       href={href}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-all duration-200',
+        'group relative flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-all duration-200',
         '[&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-200',
         'hover:[&_svg]:scale-110',
         active
@@ -23,6 +24,7 @@ export function NavLink({ href, children }: { href: string; children: ReactNode 
       )}
     >
       {children}
+      <LinkPendingBar />
     </Link>
   );
 }
