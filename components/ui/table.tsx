@@ -1,7 +1,5 @@
 'use client';
 
-import type * as React from 'react';
-
 import { cn } from 'tailwind-variants';
 
 function Table({ className, ...props }: React.ComponentProps<'table'>) {
