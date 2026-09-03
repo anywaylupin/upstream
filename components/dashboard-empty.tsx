@@ -1,19 +1,15 @@
 import {
   BoxesIcon,
-  CompassIcon,
   FolderGit2Icon,
   KeyRoundIcon,
   LayersIcon,
   ListChecksIcon,
-  MessageSquareTextIcon,
-  PlusIcon
+  MessageSquareTextIcon
 } from 'lucide-react';
 import Link from 'next/link';
-import { AddRepoDialog } from '@/components/add-repo-dialog';
+import { EmptyStack } from '@/components/empty-stack';
 import { OwnerAvatar } from '@/components/owner-avatar';
 import { StackButton } from '@/components/stack-button';
-import { Button } from '@/components/ui/button';
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { SUGGESTED_REPOS } from '@/lib/suggested-repos';
 
@@ -45,33 +41,11 @@ const NEXT_STEPS = [
 export function DashboardEmpty() {
   return (
     <div className="flex w-full flex-col gap-6">
-      <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <LayersIcon />
-          </EmptyMedia>
-          <EmptyTitle>Your stack is empty</EmptyTitle>
-          <EmptyDescription>
-            Add a repo and Upstream starts reading its releases, flagging what breaks and rating the project.
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <AddRepoDialog
-              trigger={
-                <Button size="sm">
-                  <PlusIcon data-icon="inline-start" />
-                  Add a repo
-                </Button>
-              }
-            />
-            <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/repositories" />}>
-              <CompassIcon data-icon="inline-start" />
-              Find repos
-            </Button>
-          </div>
-        </EmptyContent>
-      </Empty>
+      <EmptyStack
+        icon={LayersIcon}
+        title="Your stack is empty"
+        description="Add a repo and Upstream starts reading its releases, flagging what breaks and rating the project."
+      />
 
       <section className="flex flex-col gap-2.5">
         <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
