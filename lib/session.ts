@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { redirect } from 'next/navigation';
+import { auth } from '@/auth';
 
 /**
  * Every page except the landing teaser is behind this. The check lives in the
@@ -8,7 +8,7 @@ import { auth } from "@/auth";
 export async function requireUser() {
   const session = await auth();
   const user = session?.user;
-  if (!user?.id) redirect("/");
+  if (!user?.id) redirect('/');
 
   return { id: user.id, name: user.name, email: user.email, image: user.image };
 }

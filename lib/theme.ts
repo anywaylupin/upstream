@@ -1,20 +1,20 @@
-export const MODES = ["light", "dark", "system"] as const;
+export const MODES = ['light', 'dark', 'system'] as const;
 export type Mode = (typeof MODES)[number];
 
 export const PALETTES = [
-  { id: "teal", label: "Teal" },
-  { id: "blue", label: "Blue" },
-  { id: "violet", label: "Violet" },
-  { id: "amber", label: "Amber" },
-  { id: "rose", label: "Rose" },
+  { id: 'teal', label: 'Teal' },
+  { id: 'blue', label: 'Blue' },
+  { id: 'violet', label: 'Violet' },
+  { id: 'amber', label: 'Amber' },
+  { id: 'rose', label: 'Rose' }
 ] as const;
 
-export type Palette = (typeof PALETTES)[number]["id"];
+export type Palette = (typeof PALETTES)[number]['id'];
 
-export const MODE_KEY = "upstream:mode";
-export const PALETTE_KEY = "upstream:palette";
-export const DEFAULT_MODE: Mode = "system";
-export const DEFAULT_PALETTE: Palette = "teal";
+export const MODE_KEY = 'upstream:mode';
+export const PALETTE_KEY = 'upstream:palette';
+export const DEFAULT_MODE: Mode = 'system';
+export const DEFAULT_PALETTE: Palette = 'teal';
 
 /**
  * Applies the stored theme to <html> before first paint, so there is no flash.

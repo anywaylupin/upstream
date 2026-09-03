@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { CheckIcon, Loader2Icon, PlusIcon } from "lucide-react";
-import { useTransition } from "react";
-import { toast } from "sonner";
-import { addToStack, removeFromStack } from "@/app/actions";
-import { Button } from "@/components/ui/button";
+import { CheckIcon, PlusIcon } from 'lucide-react';
+import { useTransition } from 'react';
+import { toast } from 'sonner';
+import { addToStack, removeFromStack } from '@/app/actions';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 
 export function StackButton({
   owner,
   name,
-  repoId,
+  repoId
 }: {
   owner: string;
   name: string;
@@ -25,6 +26,7 @@ export function StackButton({
         variant="ghost"
         size="sm"
         disabled={pending}
+        aria-busy={pending}
         onClick={(event) => {
           event.stopPropagation();
           startTransition(async () => {
@@ -33,12 +35,8 @@ export function StackButton({
           });
         }}
       >
-        {pending ? (
-          <Loader2Icon className="animate-spin" data-icon="inline-start" />
-        ) : (
-          <CheckIcon data-icon="inline-start" />
-        )}
-        {pending ? "Removing…" : "In stack"}
+        {pending ? <Spinner data-icon="inline-start" /> : <CheckIcon data-icon="inline-start" />}
+        {pending ? 'Removing…' : 'In stack'}
       </Button>
     );
   }
@@ -48,24 +46,22 @@ export function StackButton({
       variant="outline"
       size="sm"
       disabled={pending}
+      aria-busy={pending}
       onClick={(event) => {
         event.stopPropagation();
+        // addToStack redirects to the repo page on success, so nothing after
+        // the await runs - the toast has to be raised up front.
+        toast.success(`Adding ${label}`, {
+          description: 'Opening its page while the analysis runs…'
+        });
         startTransition(async () => {
           const res = await addToStack(owner, name);
-          if (res.error) toast.error(res.error);
-          else
-            toast.success(`Added ${label}`, {
-              description: "Pulling releases…",
-            });
+          if (res?.error) toast.error(res.error);
         });
       }}
     >
-      {pending ? (
-        <Loader2Icon className="animate-spin" data-icon="inline-start" />
-      ) : (
-        <PlusIcon data-icon="inline-start" />
-      )}
-      {pending ? "Adding…" : "Add"}
+      {pending ? <Spinner data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
+      {pending ? 'Adding…' : 'Add'}
     </Button>
   );
 }

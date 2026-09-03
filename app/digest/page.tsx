@@ -1,34 +1,27 @@
-import { and, desc, eq, gte, inArray, isNotNull } from "drizzle-orm";
-import { CalendarDaysIcon, SearchXIcon } from "lucide-react";
-import Link from "next/link";
-import { DigestFilters } from "@/components/digest-filters";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { db } from "@/db";
-import {
-  releases,
-  repos,
-  stackRepos,
-  summaries,
-  userPreferences,
-} from "@/db/schema";
-import { CHANGE_TYPES, EFFORTS, WINDOWS } from "@/lib/digest-filters";
-import { windowStart } from "@/lib/repo-stats";
-import { requireUser } from "@/lib/session";
-import {
-  type ReleaseSummary,
-  ReleaseSummary as ReleaseSummarySchema,
-} from "@/lib/summarize";
+import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
+import { CalendarDaysIcon, SearchXIcon } from 'lucide-react';
+import Link from 'next/link';
+import { DigestFilters } from '@/components/digest-filters';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { db } from '@/db';
+import { releases, repos, stackRepos, summaries, userInstructions } from '@/db/schema';
+import { CHANGE_TYPES, EFFORTS, WINDOWS } from '@/lib/digest-filters';
+import { windowStart } from '@/lib/repo-stats';
+import { requireUser } from '@/lib/session';
+import { type ReleaseSummary, ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
 
 const BADGE_VARIANT: Record<
-  ReleaseSummary["changes"][number]["type"],
-  "default" | "secondary" | "destructive" | "outline"
+  ReleaseSummary['changes'][number]['type'],
+  'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-  breaking: "destructive",
-  feature: "default",
-  fix: "secondary",
-  perf: "outline",
-  deprecation: "outline",
+  breaking: 'destructive',
+  feature: 'default',
+  fix: 'secondary',
+  perf: 'outline',
+  deprecation: 'outline'
 };
 
 type Entry = {
@@ -49,16 +42,16 @@ function startOfWeek(date: Date) {
 }
 
 function formatWeekLabel(date: Date) {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC'
   });
 }
 
 function parseList(value: string | undefined, allowed?: readonly string[]) {
-  const items = (value ?? "")
-    .split(",")
+  const items = (value ?? '')
+    .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
   return allowed ? items.filter((item) => allowed.includes(item)) : items;
@@ -70,13 +63,13 @@ function keywordsFrom(instructions: string) {
       instructions
         .toLowerCase()
         .split(/[^a-z0-9.+#-]+/)
-        .filter((word) => word.length >= 4),
-    ),
+        .filter((word) => word.length >= 4)
+    )
   ].slice(0, 25);
 }
 
 export default async function Digest({
-  searchParams,
+  searchParams
 }: {
   searchParams: Promise<{
     types?: string;
@@ -93,12 +86,9 @@ export default async function Digest({
   const effort = parseList(params.effort, EFFORTS);
   const repoFilter = parseList(params.repos);
   const days = WINDOWS.find((w) => String(w) === params.days) ?? 30;
-  const q = (params.q ?? "").trim().toLowerCase();
+  const q = (params.q ?? '').trim().toLowerCase();
 
-  const watched = await db
-    .select({ repoId: stackRepos.repoId })
-    .from(stackRepos)
-    .where(eq(stackRepos.userId, user.id));
+  const watched = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, user.id));
   const repoIds = watched.map((w) => w.repoId);
 
   const [rows, repoList, preferences] = await Promise.all([
@@ -110,7 +100,7 @@ export default async function Digest({
             publishedAt: releases.publishedAt,
             owner: repos.owner,
             name: repos.name,
-            data: summaries.data,
+            data: summaries.data
           })
           .from(releases)
           .innerJoin(repos, eq(repos.id, releases.repoId))
@@ -119,8 +109,8 @@ export default async function Digest({
             and(
               inArray(releases.repoId, repoIds),
               isNotNull(releases.publishedAt),
-              gte(releases.publishedAt, windowStart(days)),
-            ),
+              gte(releases.publishedAt, windowStart(days))
+            )
           )
           .orderBy(desc(releases.publishedAt))
       : Promise.resolve([]),
@@ -132,12 +122,17 @@ export default async function Digest({
           .orderBy(repos.owner, repos.name)
       : Promise.resolve([]),
     db
-      .select({ aiInstructions: userPreferences.aiInstructions })
-      .from(userPreferences)
-      .where(eq(userPreferences.userId, user.id)),
+      .select({
+        feature: userInstructions.feature,
+        text: userInstructions.text
+      })
+      .from(userInstructions)
+      .where(eq(userInstructions.userId, user.id))
   ]);
 
-  const keywords = keywordsFrom(preferences[0]?.aiInstructions ?? "");
+  // The digest highlights against the summary instruction, else the global one.
+  const byFeature = new Map(preferences.map((row) => [row.feature, row.text]));
+  const keywords = keywordsFrom(byFeature.get('summary') ?? byFeature.get('global') ?? '');
 
   const entries: Entry[] = [];
   for (const row of rows) {
@@ -160,13 +155,8 @@ export default async function Digest({
     if (types.length && changes.length === 0) continue;
 
     const summary = { ...parsed.data, changes };
-    const haystack = [
-      repo,
-      tag,
-      summary.headline,
-      ...summary.changes.map((c) => c.description),
-    ]
-      .join(" ")
+    const haystack = [repo, tag, summary.headline, ...summary.changes.map((c) => c.description)]
+      .join(' ')
       .toLowerCase();
 
     if (q && !haystack.includes(q)) continue;
@@ -177,9 +167,7 @@ export default async function Digest({
       publishedAt,
       repo,
       summary,
-      relevant:
-        keywords.length > 0 &&
-        keywords.some((keyword) => haystack.includes(keyword)),
+      relevant: keywords.length > 0 && keywords.some((keyword) => haystack.includes(keyword))
     });
   }
 
@@ -189,8 +177,7 @@ export default async function Digest({
     const key = weekStart.getTime();
     const bucket = weeks.get(key);
     if (bucket) bucket.entries.push(entry);
-    else
-      weeks.set(key, { label: formatWeekLabel(weekStart), entries: [entry] });
+    else weeks.set(key, { label: formatWeekLabel(weekStart), entries: [entry] });
   }
   for (const week of weeks.values()) {
     week.entries.sort((a, b) => Number(b.relevant) - Number(a.relevant));
@@ -198,17 +185,15 @@ export default async function Digest({
   const sortedWeeks = [...weeks.entries()].sort(([a], [b]) => b - a);
 
   const breakingCount = entries.filter((entry) =>
-    entry.summary.changes.some((change) => change.type === "breaking"),
+    entry.summary.changes.some((change) => change.type === 'breaking')
   ).length;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
       <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="flex items-center gap-2 text-sm text-muted-foreground tabular-nums">
+        <p className="flex items-center gap-2 text-muted-foreground text-sm tabular-nums">
           <span>{entries.length} releases</span>
-          {breakingCount > 0 && (
-            <Badge variant="destructive">{breakingCount} breaking</Badge>
-          )}
+          {breakingCount > 0 && <Badge variant="destructive">{breakingCount} breaking</Badge>}
           <span>{days}d</span>
         </p>
       </header>
@@ -219,38 +204,37 @@ export default async function Digest({
       />
 
       {sortedWeeks.length === 0 && (
-        <div className="animate-rise flex flex-col items-center gap-2 rounded-lg py-12 text-sm text-muted-foreground ring-1 ring-foreground/10">
-          <SearchXIcon className="size-6 opacity-60" />
-          {repoIds.length === 0 ? (
-            <span>
-              No repos yet.{" "}
-              <Link
-                href="/stack"
-                className="underline transition-colors hover:text-primary"
-              >
-                Add one
-              </Link>
-              .
-            </span>
-          ) : (
-            <span>No matches.</span>
+        <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <SearchXIcon />
+            </EmptyMedia>
+            <EmptyTitle>{repoIds.length === 0 ? 'Your stack is empty' : 'No matches'}</EmptyTitle>
+            <EmptyDescription>
+              {repoIds.length === 0 ? 'Add a repo and its releases show up here.' : 'Try widening the filters.'}
+            </EmptyDescription>
+          </EmptyHeader>
+          {repoIds.length === 0 && (
+            <EmptyContent>
+              <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/repositories" />}>
+                Browse repos
+              </Button>
+            </EmptyContent>
           )}
-        </div>
+        </Empty>
       )}
 
       <div className="flex flex-col gap-8">
         {sortedWeeks.map(([key, week]) => (
           <section key={key} className="flex flex-col gap-3">
-            <h2 className="flex items-center gap-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+            <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
               <CalendarDaysIcon className="size-3.5" />
               {week.label} · {week.entries.length}
             </h2>
 
             <div className="flex flex-col gap-3">
               {week.entries.map((entry, i) => {
-                const hasBreaking = entry.summary.changes.some(
-                  (change) => change.type === "breaking",
-                );
+                const hasBreaking = entry.summary.changes.some((change) => change.type === 'breaking');
                 return (
                   <Card
                     key={entry.releaseId}
@@ -258,8 +242,8 @@ export default async function Digest({
                     style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
                     className={
                       hasBreaking
-                        ? "lift animate-rise ring-2 ring-destructive/50 hover:ring-destructive"
-                        : "lift animate-rise hover:ring-primary/40"
+                        ? 'lift animate-rise ring-2 ring-destructive/50 hover:ring-destructive'
+                        : 'lift animate-rise hover:ring-primary/40'
                     }
                   >
                     <CardHeader>
@@ -270,41 +254,25 @@ export default async function Digest({
                         >
                           {entry.repo}
                         </Link>
-                        <span className="font-mono text-xs font-normal text-muted-foreground">
-                          {entry.tag}
-                        </span>
-                        {hasBreaking && (
-                          <Badge variant="destructive">breaking</Badge>
-                        )}
-                        {entry.relevant && (
-                          <Badge variant="secondary">for you</Badge>
-                        )}
-                        <span className="ml-auto text-xs font-normal text-muted-foreground">
+                        <span className="font-mono font-normal text-muted-foreground text-xs">{entry.tag}</span>
+                        {hasBreaking && <Badge variant="destructive">breaking</Badge>}
+                        {entry.relevant && <Badge variant="secondary">for you</Badge>}
+                        <span className="ml-auto font-normal text-muted-foreground text-xs">
                           {entry.summary.upgradeEffort} effort
                         </span>
                       </CardTitle>
-                      <span className="text-sm text-muted-foreground">
-                        {entry.summary.headline}
-                      </span>
+                      <span className="text-muted-foreground text-sm">{entry.summary.headline}</span>
                     </CardHeader>
                     <CardContent>
                       <ul className="flex flex-col gap-1.5">
                         {entry.summary.changes.map((change, i) => (
-                          <li
-                            key={`${entry.releaseId}-${i}`}
-                            className="flex items-start gap-2 text-sm"
-                          >
-                            <Badge
-                              variant={BADGE_VARIANT[change.type]}
-                              className="mt-0.5 shrink-0"
-                            >
+                          <li key={`${entry.releaseId}-${i}`} className="flex items-start gap-2 text-sm">
+                            <Badge variant={BADGE_VARIANT[change.type]} className="mt-0.5 shrink-0">
                               {change.type}
                             </Badge>
                             <span
                               className={
-                                change.type === "breaking"
-                                  ? "font-medium text-foreground"
-                                  : "text-muted-foreground"
+                                change.type === 'breaking' ? 'font-medium text-foreground' : 'text-muted-foreground'
                               }
                             >
                               {change.description}

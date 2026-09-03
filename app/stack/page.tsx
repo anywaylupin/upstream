@@ -1,7 +1,7 @@
-import { StackTable } from "@/components/stack-table";
-import { SyncStackButton } from "@/components/sync-stack-button";
-import { getStackStats } from "@/lib/repo-stats";
-import { requireUser } from "@/lib/session";
+import { StackTable } from '@/components/stack-table';
+import { SyncStackButton } from '@/components/sync-stack-button';
+import { getStackStats } from '@/lib/repo-stats';
+import { requireUser } from '@/lib/session';
 
 export default async function StackPage() {
   const user = await requireUser();
@@ -13,11 +13,7 @@ export default async function StackPage() {
         {rows.length > 0 && <SyncStackButton />}
       </header>
 
-      <StackTable
-        rows={rows}
-        showStackToggle
-        emptyMessage="Nothing here yet. Add repos from the Repositories tab."
-      />
+      <StackTable rows={rows} showStackToggle emptyMessage="Nothing here yet. Add repos from the Repositories tab." />
     </div>
   );
 }

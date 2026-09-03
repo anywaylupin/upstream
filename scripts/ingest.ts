@@ -1,7 +1,7 @@
-import "dotenv/config";
-import { db } from "../db";
-import { repos } from "../db/schema";
-import { ingestRepo } from "../lib/ingest";
+import 'dotenv/config';
+import { db } from '@/db';
+import { repos } from '@/db/schema';
+import { ingestRepo } from '@/lib/ingest';
 
 async function main() {
   const allRepos = await db.select().from(repos);
@@ -13,7 +13,7 @@ async function main() {
       console.log(
         fetched === 0
           ? `${repo.owner}/${repo.name}: no releases`
-          : `${repo.owner}/${repo.name}: ${fetched} fetched, ${inserted} new`,
+          : `${repo.owner}/${repo.name}: ${fetched} fetched, ${inserted} new`
       );
     } catch (err) {
       console.error(`${repo.owner}/${repo.name} failed:`, err);
@@ -21,7 +21,7 @@ async function main() {
     }
   }
 
-  console.log("Done");
+  console.log('Done');
 }
 
 main();

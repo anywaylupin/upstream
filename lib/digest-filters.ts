@@ -1,4 +1,4 @@
-import type { ReleaseSummary } from "@/lib/summarize";
+import type { ReleaseSummary } from '@/lib/summarize';
 
 /**
  * Shared by the server page and the client filter bar. These must live outside
@@ -6,19 +6,14 @@ import type { ReleaseSummary } from "@/lib/summarize";
  * client-reference proxy, not the array.
  */
 export const CHANGE_TYPES = [
-  "breaking",
-  "feature",
-  "fix",
-  "perf",
-  "deprecation",
-] as const satisfies readonly ReleaseSummary["changes"][number]["type"][];
+  'breaking',
+  'feature',
+  'fix',
+  'perf',
+  'deprecation'
+] as const satisfies readonly ReleaseSummary['changes'][number]['type'][];
 
-export const EFFORTS = [
-  "none",
-  "low",
-  "medium",
-  "high",
-] as const satisfies readonly ReleaseSummary["upgradeEffort"][];
+export const EFFORTS = ['none', 'low', 'medium', 'high'] as const satisfies readonly ReleaseSummary['upgradeEffort'][];
 
 export const WINDOWS = [7, 30, 90] as const;
 

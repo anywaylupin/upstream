@@ -161,6 +161,12 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+  /* While an action is in flight the control is disabled, so this also has to
+     cover the children the pointer actually lands on. */
+  [aria-busy="true"],
+  [aria-busy="true"] * {
+    cursor: wait;
+  }
   html {
     @apply font-sans;
     color-scheme: light;

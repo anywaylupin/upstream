@@ -12,10 +12,14 @@
     "db:push": "drizzle-kit push",
     "db:seed": "tsx db/seed.ts",
     "ingest": "tsx scripts/ingest.ts",
-    "summarize": "tsx scripts/summarize.ts"
+    "summarize": "tsx scripts/summarize.ts",
+    "sync": "tsx --env-file=.env scripts/sync.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.58",
+    "@ai-sdk/groq": "^4.0.36",
+    "@ai-sdk/mistral": "^4.0.38",
+    "@ai-sdk/openai": "^4.0.55",
     "@auth/drizzle-adapter": "1.11.3",
     "@base-ui/react": "^1.7.0",
     "@neondatabase/serverless": "^1.1.0",

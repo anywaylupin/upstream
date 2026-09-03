@@ -1,25 +1,14 @@
-"use client";
+'use client';
 
-import { SearchIcon, XIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  CHANGE_TYPES,
-  type DigestFilterState,
-  EFFORTS,
-  WINDOWS,
-} from "@/lib/digest-filters";
+import { SearchIcon, XIcon } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CHANGE_TYPES, type DigestFilterState, EFFORTS, WINDOWS } from '@/lib/digest-filters';
 
-const ALL = "all";
+const ALL = 'all';
 
 function labelFor(value: string, all: string) {
   return value === ALL ? all : value;
@@ -29,13 +18,7 @@ function labelFor(value: string, all: string) {
  * One row of selects. The previous chip grid supported multi-select but took
  * five rows to say what four dropdowns say here.
  */
-export function DigestFilters({
-  repos,
-  selected,
-}: {
-  repos: string[];
-  selected: DigestFilterState;
-}) {
+export function DigestFilters({ repos, selected }: { repos: string[]; selected: DigestFilterState }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -50,21 +33,15 @@ export function DigestFilters({
   }
 
   const active =
-    selected.types.length + selected.effort.length + selected.repos.length >
-      0 ||
+    selected.types.length + selected.effort.length + selected.repos.length > 0 ||
     Boolean(selected.q) ||
     selected.days !== 30;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Select
-        value={selected.types[0] ?? ALL}
-        onValueChange={(value) => setParam("types", String(value))}
-      >
+      <Select value={selected.types[0] ?? ALL} onValueChange={(value) => setParam('types', String(value))}>
         <SelectTrigger size="sm" className="w-36">
-          <SelectValue>
-            {(value: string) => labelFor(value, "All types")}
-          </SelectValue>
+          <SelectValue>{(value: string) => labelFor(value, 'All types')}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>All types</SelectItem>
@@ -76,14 +53,9 @@ export function DigestFilters({
         </SelectContent>
       </Select>
 
-      <Select
-        value={selected.effort[0] ?? ALL}
-        onValueChange={(value) => setParam("effort", String(value))}
-      >
+      <Select value={selected.effort[0] ?? ALL} onValueChange={(value) => setParam('effort', String(value))}>
         <SelectTrigger size="sm" className="w-36">
-          <SelectValue>
-            {(value: string) => labelFor(value, "Any effort")}
-          </SelectValue>
+          <SelectValue>{(value: string) => labelFor(value, 'Any effort')}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>Any effort</SelectItem>
@@ -95,16 +67,9 @@ export function DigestFilters({
         </SelectContent>
       </Select>
 
-      <Select
-        value={selected.repos[0] ?? ALL}
-        onValueChange={(value) => setParam("repos", String(value))}
-      >
+      <Select value={selected.repos[0] ?? ALL} onValueChange={(value) => setParam('repos', String(value))}>
         <SelectTrigger size="sm" className="w-48">
-          <SelectValue>
-            {(value: string) =>
-              value === ALL ? "All repos" : (value.split("/")[1] ?? value)
-            }
-          </SelectValue>
+          <SelectValue>{(value: string) => (value === ALL ? 'All repos' : (value.split('/')[1] ?? value))}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>All repos</SelectItem>
@@ -118,9 +83,7 @@ export function DigestFilters({
 
       <Select
         value={String(selected.days)}
-        onValueChange={(value) =>
-          setParam("days", String(value) === "30" ? null : String(value))
-        }
+        onValueChange={(value) => setParam('days', String(value) === '30' ? null : String(value))}
       >
         <SelectTrigger size="sm" className="w-28">
           <SelectValue>{(value: string) => `${value} days`}</SelectValue>
@@ -137,7 +100,7 @@ export function DigestFilters({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          setParam("q", query.trim() || null);
+          setParam('q', query.trim() || null);
         }}
         className="relative"
       >
@@ -156,7 +119,7 @@ export function DigestFilters({
           size="sm"
           variant="ghost"
           onClick={() => {
-            setQuery("");
+            setQuery('');
             router.push(pathname);
           }}
         >
