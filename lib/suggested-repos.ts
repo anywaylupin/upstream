@@ -7,10 +7,9 @@
  */
 export const SUGGESTED_REPOS = [
   { owner: 'vercel', name: 'next.js', blurb: 'The framework this runs on' },
-  { owner: 'drizzle-team', name: 'drizzle-orm', blurb: 'Queries the Neon database' },
-  { owner: 'tailwindlabs', name: 'tailwindcss', blurb: 'Every style here' },
   { owner: 'vercel', name: 'ai', blurb: 'Summarizes the changelogs' },
   { owner: 'nextauthjs', name: 'next-auth', blurb: 'GitHub sign-in' },
+  { owner: 'drizzle-team', name: 'drizzle-orm', blurb: 'Queries the Neon database' },
   { owner: 'colinhacks', name: 'zod', blurb: 'Validates every boundary' },
   { owner: 'biomejs', name: 'biome', blurb: 'Lint and format' }
 ] as const;
