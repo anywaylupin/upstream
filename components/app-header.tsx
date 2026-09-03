@@ -1,4 +1,4 @@
-import { LayersIcon, SearchIcon } from 'lucide-react';
+import { GitGraphIcon, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
 import { signInWithGitHub } from '@/app/actions';
 import { auth } from '@/auth';
@@ -29,7 +29,7 @@ export async function AppHeader() {
         {user && <MobileNav stackCount={nav.stack} digestCount={nav.releases30d} />}
 
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
-          <LayersIcon className="size-5 text-primary" />
+          <GitGraphIcon className="size-5 text-primary" />
           <span className="font-heading font-semibold text-sm tracking-tight">Upstream</span>
         </Link>
 
