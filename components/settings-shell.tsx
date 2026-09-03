@@ -85,7 +85,8 @@ export function SettingsShell({
                     aria-label={section.label}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-md p-2 text-sm transition-colors',
+                      'flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-md p-2 text-sm',
+                      'transition-[background-color,color,transform] duration-200 active:scale-[0.97]',
                       'md:flex-none md:justify-start md:px-2.5 md:py-1.5',
                       isActive
                         ? 'bg-muted font-medium text-foreground'
@@ -104,8 +105,12 @@ export function SettingsShell({
       </nav>
 
       {/* A floor on the height so the page does not collapse when a short
-          panel replaces a tall one, which is the other half of the jump. */}
-      <div className="flex min-h-[28rem] min-w-0 flex-col gap-4">{panels[active]}</div>
+          panel replaces a tall one, which is the other half of the jump.
+          Keyed on the section so React remounts it and the entrance animation
+          replays on every switch rather than only the first. */}
+      <div key={active} className="flex min-h-[28rem] min-w-0 animate-panel flex-col gap-4">
+        {panels[active]}
+      </div>
     </div>
   );
 }

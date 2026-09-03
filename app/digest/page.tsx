@@ -1,11 +1,11 @@
 import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
-import { CalendarDaysIcon, SearchXIcon } from 'lucide-react';
+import { CalendarDaysIcon, NewspaperIcon, SearchXIcon } from 'lucide-react';
 import Link from 'next/link';
 import { DigestFilters } from '@/components/digest-filters';
+import { EmptyStack } from '@/components/empty-stack';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { db } from '@/db';
 import { releases, repos, stackRepos, summaries, userInstructions } from '@/db/schema';
 import { CHANGE_TYPES, EFFORTS, WINDOWS } from '@/lib/digest-filters';
@@ -203,26 +203,26 @@ export default async function Digest({
         selected={{ types, effort, repos: repoFilter, days, q }}
       />
 
-      {sortedWeeks.length === 0 && (
-        <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <SearchXIcon />
-            </EmptyMedia>
-            <EmptyTitle>{repoIds.length === 0 ? 'Your stack is empty' : 'No matches'}</EmptyTitle>
-            <EmptyDescription>
-              {repoIds.length === 0 ? 'Add a repo and its releases show up here.' : 'Try widening the filters.'}
-            </EmptyDescription>
-          </EmptyHeader>
-          {repoIds.length === 0 && (
-            <EmptyContent>
-              <Button size="sm" variant="outline" nativeButton={false} render={<Link href="/repositories" />}>
-                Browse repos
-              </Button>
-            </EmptyContent>
-          )}
-        </Empty>
-      )}
+      {sortedWeeks.length === 0 &&
+        // An empty stack and an over-tight filter are different problems, so
+        // only the first one offers the add-a-repo actions.
+        (repoIds.length === 0 ? (
+          <EmptyStack
+            icon={NewspaperIcon}
+            title="No releases yet"
+            description="Add a repo and its releases show up here, summarized and rated."
+          />
+        ) : (
+          <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <SearchXIcon />
+              </EmptyMedia>
+              <EmptyTitle>No matches</EmptyTitle>
+              <EmptyDescription>Try widening the filters.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ))}
 
       <div className="flex flex-col gap-8">
         {sortedWeeks.map(([key, week]) => (

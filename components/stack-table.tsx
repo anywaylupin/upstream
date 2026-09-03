@@ -1,13 +1,12 @@
 import { PackageOpenIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { ReactNode } from 'react';
 import { ClickableRow } from '@/components/clickable-row';
+import { EmptyStack } from '@/components/empty-stack';
 import { OwnerAvatar } from '@/components/owner-avatar';
 import { RatingBadge } from '@/components/rating-badge';
 import { RefreshRepoButton } from '@/components/refresh-repo-button';
 import { StackButton } from '@/components/stack-button';
 import { Badge } from '@/components/ui/badge';
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatDate, formatRelative } from '@/lib/format';
 import type { RepoGuide } from '@/lib/repo-guide';
@@ -40,28 +39,16 @@ export type StackRow = {
 export function StackTable({
   rows,
   showStackToggle = false,
-  emptyMessage,
-  emptyAction
+  emptyTitle = 'Nothing here',
+  emptyMessage
 }: {
   rows: StackRow[];
   showStackToggle?: boolean;
+  emptyTitle?: string;
   emptyMessage: string;
-  /** A way out of the empty state, rather than only telling you where to go. */
-  emptyAction?: ReactNode;
 }) {
   if (rows.length === 0) {
-    return (
-      <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <PackageOpenIcon />
-          </EmptyMedia>
-          <EmptyTitle>Nothing here</EmptyTitle>
-          <EmptyDescription>{emptyMessage}</EmptyDescription>
-        </EmptyHeader>
-        {emptyAction && <EmptyContent>{emptyAction}</EmptyContent>}
-      </Empty>
-    );
+    return <EmptyStack icon={PackageOpenIcon} title={emptyTitle} description={emptyMessage} />;
   }
 
   return (
