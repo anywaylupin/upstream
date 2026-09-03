@@ -1,7 +1,7 @@
 'use client';
 
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react';
-import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
 
 /**
@@ -10,9 +10,9 @@ import { Toaster as Sonner, type ToasterProps } from 'sonner';
  * is observed rather than read once.
  */
 function useIsDark() {
-  const [dark, setDark] = React.useState(false);
+  const [dark, setDark] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const root = document.documentElement;
     const sync = () => setDark(root.classList.contains('dark'));
     sync();

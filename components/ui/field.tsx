@@ -1,9 +1,8 @@
 'use client';
 
-import { cva, type VariantProps } from 'class-variance-authority';
 import { useMemo } from 'react';
 
-import { cn } from 'tailwind-variants';
+import { cn, tv, type VariantProps } from 'tailwind-variants';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
@@ -48,7 +47,8 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
   );
 }
 
-const fieldVariants = cva('group/field flex w-full gap-2 data-[invalid=true]:text-destructive', {
+const fieldVariants = tv({
+  base: 'group/field flex w-full gap-2 data-[invalid=true]:text-destructive',
   variants: {
     orientation: {
       vertical: 'flex-col *:w-full [&>.sr-only]:w-auto',
