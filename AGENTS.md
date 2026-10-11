@@ -59,7 +59,7 @@ app/
   repositories/         # owned / watched / starred / search on GitHub
   repos/[owner]/[name]/ # per-repo report
   search/               # stack + releases + GitHub
-  settings/             # ?section= driven panels
+  settings/             # ?section= tabs, switched on the client
   api/auth/[...nextauth]/
   api/cron/ingest/      # scheduled run, CRON_SECRET bearer
   actions/              # server actions by domain: stack, ai, settings, account
@@ -67,7 +67,8 @@ components/
   ui/                   # shadcn primitives - generated, do not hand-edit
 db/                     # schema, client, seed
 lib/                    # ai, github, ingest, summarize, rating, sync, crypto
-scripts/                # ingest, summarize, sync CLIs
+scripts/                # ingest, summarize, sync, checks, eval CLIs
+eval/                   # hand-labelled release notes for `pnpm eval`
 ```
 
 Path alias is `@/*` -> `./*`.
@@ -135,7 +136,7 @@ Users without instructions keep hitting the shared cache.
   click. Toasts for both success and failure, via sonner.
 - **Same-route param changes should not round-trip.** Settings sections used to
   navigate `?section=`, which re-ran two GitHub calls and the whole page to swap
-  a panel. The page renders every panel once and `SettingsShell` switches them
+  a panel. The page renders every panel once and `UrlTabs` switches them
   on the client, keeping the URL honest with `history.replaceState`. The entries
   stay real anchors so ctrl-click still opens a section in a tab.
 - **Every route segment has a `loading.tsx`.** Without one, Next blocks on the
@@ -147,8 +148,8 @@ Users without instructions keep hitting the shared cache.
 - Every pending control sets `aria-busy`, which drives the wait cursor.
 - Tooltips are shadcn's `Tooltip`, never a `title` attribute. base-ui's
   `render` prop does not forward an `onClick` onto the element it renders, so a
-  handler there silently never fires - the settings rail delegates from the
-  `<nav>` instead.
+  handler there silently never fires - delegate from a parent element
+  instead.
 - Never put an animation class on a base-ui `TabsContent` (or any base-ui part
   with exit states). base-ui waits for animations on that element to end before
   hiding it, so every old panel stayed on screen. Animate an inner wrapper.

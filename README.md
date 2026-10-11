@@ -68,6 +68,8 @@ GitHub OAuth app, and one AI provider key.
 | `pnpm summarize` | Summarize un-summarized releases |
 | `pnpm sync` | A full manual run, recorded in `runs` |
 | `pnpm check:schedule` | Assert the digest date maths |
+| `pnpm check:rating` | Assert the rating weights maths |
+| `pnpm eval` | Score breaking-change detection on labelled releases (live AI calls) |
 | `pnpm typecheck` | `tsc --noEmit` |
 | `pnpm lint` | `biome check` |
 
@@ -98,7 +100,7 @@ Working: ingestion, summarization, auth, per-user stacks, digest with filters,
 repo reports, BYOK across eight providers, search, scheduled runs, email
 delivery, account erase.
 
-Not built yet: an eval harness, Playwright E2E, read state, non-GitHub-Release
+Not built yet: Playwright E2E, read state, non-GitHub-Release
 changelogs, and rate-limit backoff.
 
 ## License
