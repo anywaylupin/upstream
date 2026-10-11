@@ -21,7 +21,7 @@ import {
   MIN_INTERVAL_DAYS
 } from '@/lib/digest-schedule';
 import { eraseAccount } from '@/lib/erase-account';
-import { getGitHubToken, getReadme } from '@/lib/github';
+import { getGitHubToken, getReadme, getRepoMeta } from '@/lib/github';
 import { ingestRepo } from '@/lib/ingest';
 import { GUIDE_PROMPT_VERSION, generateRepoGuide } from '@/lib/repo-guide';
 import { RepoUrlInput } from '@/lib/repo-url';
@@ -219,6 +219,20 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
       ai
     );
     console.log(`guide ${repo.owner}/${repo.name} - ${usage.totalTokens} tokens`);
+
+    // The prompt asks for real repos, but a model cannot be held to that: it
+    // misremembers owners and names repos that were renamed or never existed.
+    // Each one is checked against GitHub, which also returns the canonical
+    // name for a renamed repo. Anything that does not resolve is dropped.
+    const checked = await Promise.all(
+      output.alternatives.map(async (alt) => {
+        const [owner, name] = alt.repo.split('/');
+        if (!owner || !name) return null;
+        const meta = await getRepoMeta(owner, name, token).catch(() => null);
+        return meta ? { ...alt, repo: meta.full_name } : null;
+      })
+    );
+    output.alternatives = checked.filter((alt) => alt !== null);
 
     await db
       .insert(repoGuides)

@@ -3,7 +3,8 @@ import { z } from 'zod';
 import type { AiContext } from '@/lib/ai';
 
 /** Bumped when the schema or prompt changes, so stored guides can be spotted as stale. */
-export const GUIDE_PROMPT_VERSION = 'v2';
+/** v3: alternatives are verified against GitHub, so v2 guides may hold dead links. */
+export const GUIDE_PROMPT_VERSION = 'v3';
 
 /** README text sent to the model. Enough to work with, bounded for cost. */
 const README_LIMIT = 12_000;
