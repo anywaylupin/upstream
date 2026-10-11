@@ -41,7 +41,7 @@ const NEXT_STEPS = [
 export function DashboardEmpty() {
   return (
     <div className="flex w-full flex-col gap-6">
-      <EmptyStack icon={LayersIcon} title="Your stack is empty" description="Add a repo to start." />
+      <EmptyStack icon={LayersIcon} title="Not following anything yet" description="Add a repo to start." />
 
       <section className="flex flex-col gap-2.5">
         <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
@@ -54,7 +54,7 @@ export function DashboardEmpty() {
             <li
               key={`${repo.owner}/${repo.name}`}
               style={{ animationDelay: `${i * 50}ms` }}
-              className="lift animate-rise rounded-lg p-3 ring-1 ring-foreground/10 hover:ring-primary/40"
+              className="lift animate-rise rounded-lg p-3 ring-1 ring-foreground/10 hover:ring-foreground/25"
             >
               <Item size="sm" className="p-0">
                 <ItemMedia>
@@ -62,10 +62,7 @@ export function DashboardEmpty() {
                 </ItemMedia>
                 <ItemContent>
                   <ItemTitle>
-                    <Link
-                      href={`/repos/${repo.owner}/${repo.name}`}
-                      className="transition-colors hover:text-primary hover:underline"
-                    >
+                    <Link href={`/repos/${repo.owner}/${repo.name}`} className="hover:underline">
                       {repo.owner}/{repo.name}
                     </Link>
                   </ItemTitle>
@@ -91,10 +88,10 @@ export function DashboardEmpty() {
             <li key={step.title} style={{ animationDelay: `${(i + 3) * 50}ms` }} className="animate-rise">
               <Link
                 href={step.href}
-                className="lift group flex h-full flex-col gap-1 rounded-lg p-4 ring-1 ring-foreground/10 hover:ring-primary/40"
+                className="lift group flex h-full flex-col gap-1 rounded-lg p-4 ring-1 ring-foreground/10 hover:ring-foreground/25"
               >
-                <span className="flex items-center gap-2 font-medium text-sm transition-colors group-hover:text-primary">
-                  <step.icon className="size-4 text-primary" />
+                <span className="flex items-center gap-2 font-medium text-sm transition-colors group-hover:underline">
+                  <step.icon className="size-4 text-muted-foreground" />
                   {step.title}
                 </span>
                 <span className="text-muted-foreground text-sm">{step.body}</span>

@@ -18,11 +18,11 @@ export function SyncStackButton() {
         disabled={pending}
         aria-busy={pending}
         onClick={() => {
-          const id = toast.loading('Syncing your stack…');
+          const id = toast.loading('Syncing...');
           startTransition(async () => {
             const res = await syncStack();
             if (res.error) toast.error(res.error, { id });
-            else toast.success('Stack synced', { id, description: res.message });
+            else toast.success('Synced', { id, description: res.message });
           });
         }}
       >

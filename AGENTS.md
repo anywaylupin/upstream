@@ -28,6 +28,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - **Stack** - the repos a user follows. Deliberately not "watching" or "tracking":
   those words belong to GitHub and mean something else there.
+- **UI copy says "Following" and "Updates"**; code, routes and tables still say
+  `stack` and `digest`. Plain words for people, stable names for the code - so
+  `/stack` renders a page titled Following. Don't rename one to match the other.
 - **Catalogue** - the shared `repos` table. Visiting a repo page adds it to the
   catalogue but not to anyone's stack.
 

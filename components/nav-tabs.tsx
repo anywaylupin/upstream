@@ -16,11 +16,11 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
     { href: '/', label: 'Dashboard', icon: GaugeIcon },
     {
       href: '/digest',
-      label: 'Digest',
+      label: 'Updates',
       icon: NewspaperIcon,
       count: digestCount
     },
-    { href: '/stack', label: 'Stack', icon: LayersIcon, count: stackCount },
+    { href: '/stack', label: 'Following', icon: LayersIcon, count: stackCount },
     { href: '/repositories', label: 'Repositories', icon: BookMarkedIcon }
   ];
 
@@ -50,10 +50,7 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
             >
               <LinkPendingIcon
                 icon={tab.icon}
-                className={cn(
-                  'size-4 transition-transform duration-200 group-hover:scale-110',
-                  active && 'text-primary'
-                )}
+                className={cn('size-4 transition-transform duration-200 group-hover:scale-110')}
               />
               {tab.label}
               {tab.count !== undefined && tab.count > 0 && (

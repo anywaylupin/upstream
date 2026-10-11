@@ -120,7 +120,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
         <section className="flex flex-col gap-2">
           <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
             <LayersIcon className="size-3.5" />
-            In your stack · {matchedRepos.length}
+            Following · {matchedRepos.length}
           </h2>
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-lg ring-1 ring-foreground/10">
             {matchedRepos.map((row) => (
@@ -150,10 +150,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             {matchedReleases.map((row) => (
               <li key={row.releaseId} className="flex flex-col gap-1 px-3 py-2.5 transition-colors hover:bg-muted">
                 <div className="flex flex-wrap items-baseline gap-2">
-                  <Link
-                    href={`/repos/${row.owner}/${row.name}`}
-                    className="font-medium text-sm transition-colors hover:text-primary hover:underline"
-                  >
+                  <Link href={`/repos/${row.owner}/${row.name}`} className="font-medium text-sm hover:underline">
                     {row.owner}/{row.name}
                   </Link>
                   <span className="font-mono text-muted-foreground text-xs">{row.tag}</span>

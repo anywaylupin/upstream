@@ -31,12 +31,12 @@ export function StackButton({
           event.stopPropagation();
           startTransition(async () => {
             await removeFromStack(repoId);
-            toast.success(`Removed ${label} from your stack`);
+            toast.success(`Unfollowed ${label}`);
           });
         }}
       >
         {pending ? <Spinner data-icon="inline-start" /> : <CheckIcon data-icon="inline-start" />}
-        {pending ? 'Removing…' : 'In stack'}
+        {pending ? 'Unfollowing...' : 'Following'}
       </Button>
     );
   }
@@ -51,7 +51,7 @@ export function StackButton({
         event.stopPropagation();
         // addToStack redirects to the repo page on success, so nothing after
         // the await runs - the toast has to be raised up front.
-        toast.success(`Adding ${label}`, {
+        toast.success(`Following ${label}`, {
           description: 'Opening...'
         });
         startTransition(async () => {
@@ -61,7 +61,7 @@ export function StackButton({
       }}
     >
       {pending ? <Spinner data-icon="inline-start" /> : <PlusIcon data-icon="inline-start" />}
-      {pending ? 'Adding…' : 'Add'}
+      {pending ? 'Following...' : 'Follow'}
     </Button>
   );
 }

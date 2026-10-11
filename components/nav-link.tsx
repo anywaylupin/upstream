@@ -19,7 +19,7 @@ export function NavLink({ href, children }: { href: string; children: ReactNode 
         '[&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-200',
         'hover:[&_svg]:scale-110',
         active
-          ? 'bg-muted font-medium text-foreground [&_svg]:text-primary'
+          ? 'bg-muted font-medium text-foreground'
           : 'text-muted-foreground hover:translate-x-0.5 hover:bg-muted/60 hover:text-foreground'
       )}
     >

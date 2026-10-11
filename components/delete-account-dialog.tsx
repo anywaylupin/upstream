@@ -39,11 +39,11 @@ export function DeleteAccountDialog({
     'Your GitHub connection and stored tokens',
     'Every AI key you added',
     `${preview.instructions} saved instruction${preview.instructions === 1 ? '' : 's'}`,
-    'Digest email, schedule and model choice',
-    `${preview.stack} repo${preview.stack === 1 ? '' : 's'} in your stack`,
+    'Email, schedule and model choice',
+    `${preview.stack} followed repo${preview.stack === 1 ? '' : 's'}`,
     'Summaries and guides generated from your instructions',
     preview.repos > 0
-      ? `${preview.releases} stored releases for ${preview.repos} repo${preview.repos === 1 ? '' : 's'} nobody else tracks`
+      ? `${preview.releases} stored releases for ${preview.repos} repo${preview.repos === 1 ? '' : 's'} nobody else follows`
       : null
   ].filter((line): line is string => line !== null);
 
@@ -66,7 +66,7 @@ export function DeleteAccountDialog({
         </ul>
 
         <p className="text-muted-foreground text-xs">
-          Repos others stack stay. Revoke GitHub access separately in GitHub settings.
+          Repos others follow stay. Revoke GitHub access separately in GitHub settings.
         </p>
 
         <div className="flex flex-col gap-2">

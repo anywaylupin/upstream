@@ -11,8 +11,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 
 const LINKS = [
   { href: '/', label: 'Dashboard', icon: GaugeIcon },
-  { href: '/digest', label: 'Digest', icon: NewspaperIcon },
-  { href: '/stack', label: 'Stack', icon: LayersIcon },
+  { href: '/digest', label: 'Updates', icon: NewspaperIcon },
+  { href: '/stack', label: 'Following', icon: LayersIcon },
   { href: '/repositories', label: 'Repositories', icon: BookMarkedIcon },
   { href: '/search', label: 'Search', icon: SearchIcon },
   { href: '/settings', label: 'Settings', icon: SettingsIcon }
@@ -63,7 +63,7 @@ export function MobileNav({ stackCount, digestCount }: { stackCount: number; dig
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 )}
               >
-                <LinkPendingIcon icon={link.icon} className={cn('size-4', active && 'text-primary')} />
+                <LinkPendingIcon icon={link.icon} className="size-4" />
                 {link.label}
                 {count !== undefined && count > 0 && (
                   <span className="ml-auto rounded-full bg-muted px-1.5 text-muted-foreground text-xs tabular-nums">

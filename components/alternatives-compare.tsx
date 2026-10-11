@@ -27,7 +27,7 @@ export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
             <TableHead className="hidden w-20 lg:table-cell">Activity</TableHead>
             <TableHead className="hidden w-20 lg:table-cell">Stability</TableHead>
             <TableHead className="hidden sm:table-cell">Tradeoff</TableHead>
-            <TableHead className="w-28 text-right">Stack</TableHead>
+            <TableHead className="w-28 text-right">Follow</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -62,7 +62,7 @@ export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
                   {row.rating ? (
                     <RatingBadge rating={row.rating} />
                   ) : (
-                    <span className="text-muted-foreground text-xs">not in stack</span>
+                    <span className="text-muted-foreground text-xs">not followed</span>
                   )}
                 </TableCell>
                 <TableCell className="hidden text-muted-foreground tabular-nums lg:table-cell">

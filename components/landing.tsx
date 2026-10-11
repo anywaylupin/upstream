@@ -12,9 +12,9 @@ const SAMPLE_RATING = {
   parts: [
     { label: 'Activity', score: 9.4, hint: '18 releases in 90d', weight: 3 },
     { label: 'Stability', score: 7.8, hint: '2 breaking in 90d', weight: 3 },
-    { label: 'Reach', score: 9.1, hint: '128,000 stars', weight: 2 },
-    { label: 'Community', score: 8.6, hint: '27,000 forks', weight: 2 },
-    { label: 'Upkeep', score: 9.2, hint: 'pushed 1d ago', weight: 2 }
+    { label: 'Popularity', score: 9.1, hint: '128,000 stars', weight: 2 },
+    { label: 'Adoption', score: 8.6, hint: '27,000 forks', weight: 2 },
+    { label: 'Maintained', score: 9.2, hint: 'pushed 1d ago', weight: 2 }
   ]
 };
 
@@ -45,7 +45,7 @@ export function Landing() {
           Release intel for the repos you depend on.
         </h1>
         <p className="max-w-xl text-muted-foreground">
-          Every changelog in your stack, summarized. Breaking changes first.
+          Every changelog you follow, summarized. Breaking changes first.
         </p>
         <form action={signInWithGitHub}>
           <Button type="submit" size="lg" className="group">
@@ -112,7 +112,7 @@ export function Landing() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 Rating
-                <Badge>A · 8.2</Badge>
+                <Badge>8.2 / 10</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">

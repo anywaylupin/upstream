@@ -27,7 +27,7 @@ export const FEATURES = [
   {
     id: 'summary',
     label: 'Release summaries',
-    hint: 'Digest summaries.',
+    hint: 'Release summaries.',
     placeholder: 'e.g. Lead with anything that breaks a build. Ignore docs-only changes.'
   },
   {

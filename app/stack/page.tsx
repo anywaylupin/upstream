@@ -17,7 +17,7 @@ export default async function StackPage() {
         rows={rows}
         weights={weights}
         showStackToggle
-        emptyTitle="Your stack is empty"
+        emptyTitle="Not following anything yet"
         emptyMessage="Paste a repo URL, or pick one from the repos you already own and watch."
       />
     </div>

@@ -82,7 +82,7 @@ export function AddRepoDialog({
           <DialogFooter className="mt-2">
             <Button type="submit" disabled={pending} aria-busy={pending}>
               {pending && <Spinner />}
-              {pending ? 'Adding' : 'Add to stack'}
+              {pending ? 'Following...' : 'Follow'}
             </Button>
           </DialogFooter>
         </form>

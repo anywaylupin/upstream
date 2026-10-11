@@ -21,12 +21,14 @@ export function StatTile({
       size="sm"
       style={{ animationDelay: `${delay}ms` }}
       className={
-        tone === 'danger' ? 'lift animate-rise hover:ring-destructive/40' : 'lift animate-rise hover:ring-primary/40'
+        tone === 'danger' ? 'lift animate-rise hover:ring-destructive/40' : 'lift animate-rise hover:ring-foreground/25'
       }
     >
       <CardHeader>
         <span className="flex items-center gap-1.5 text-muted-foreground text-xs uppercase tracking-wider">
-          {Icon && <Icon className={tone === 'danger' ? 'size-3.5 text-destructive' : 'size-3.5 text-primary'} />}
+          {Icon && (
+            <Icon className={tone === 'danger' ? 'size-3.5 text-destructive' : 'size-3.5 text-muted-foreground'} />
+          )}
           {label}
         </span>
         <CardTitle className="text-2xl tabular-nums">{value}</CardTitle>

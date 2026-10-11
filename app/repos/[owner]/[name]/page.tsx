@@ -19,9 +19,11 @@ import { StackButton } from '@/components/stack-button';
 import { StatTile } from '@/components/stat-tile';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
 import { releases, repos, stackRepos, summaries } from '@/db/schema';
 import { getAiContext } from '@/lib/ai';
+import { upgradeVerdict } from '@/lib/digest-filters';
 import { formatDate, formatRelative } from '@/lib/format';
 import { getGitHubToken, getRepoMeta } from '@/lib/github';
 import { rateRepo } from '@/lib/repo-rating';
@@ -181,7 +183,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
               href={`https://github.com/${repo.owner}/${repo.name}`}
               target="_blank"
               rel="noreferrer"
-              className="text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-primary"
+              className="text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-foreground"
               aria-label="Open on GitHub"
             >
               <ExternalLinkIcon className="size-4" />
@@ -218,7 +220,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
         <StatTile
           icon={GaugeIcon}
           label="Rating"
-          value={rating ? `${rating.grade} · ${rating.overall.toFixed(1)}` : '-'}
+          value={rating ? `${rating.overall.toFixed(1)} / 10` : '-'}
           hint={guide ? 'measured + README' : 'measured only'}
         />
         <StatTile icon={TagIcon} label="Releases" value={totalRows[0]?.total ?? 0} delay={60} />
@@ -260,7 +262,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
           </h2>
 
           <div className="grid gap-3 lg:grid-cols-2">
-            <div className="lift flex animate-rise flex-col gap-3 rounded-lg p-3 ring-1 ring-foreground/10 hover:ring-primary/40">
+            <div className="lift flex animate-rise flex-col gap-3 rounded-lg p-3 ring-1 ring-foreground/10 hover:ring-foreground/25">
               {guide.install && (
                 <div className="flex flex-col gap-1">
                   <span className="text-muted-foreground text-xs">Install</span>
@@ -275,7 +277,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
               )}
             </div>
 
-            <div className="lift flex animate-rise flex-col gap-3 rounded-lg p-3 ring-1 ring-foreground/10 hover:ring-primary/40">
+            <div className="lift flex animate-rise flex-col gap-3 rounded-lg p-3 ring-1 ring-foreground/10 hover:ring-foreground/25">
               {guide.keyConcepts.length > 0 && (
                 <div className="flex flex-col gap-1.5">
                   <span className="text-muted-foreground text-xs">Key concepts</span>
@@ -316,7 +318,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
             Alternatives
           </h2>
           <AlternativesCompare rows={compareRows} />
-          <p className="text-muted-foreground text-xs">Add one to your stack to score it.</p>
+          <p className="text-muted-foreground text-xs">Follow one to score it.</p>
         </section>
       )}
 
@@ -336,7 +338,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
                   <TableHead className="hidden w-28 sm:table-cell">Date</TableHead>
                   <TableHead>Summary</TableHead>
                   <TableHead className="hidden w-40 lg:table-cell">Changes</TableHead>
-                  <TableHead className="w-20">Effort</TableHead>
+                  <TableHead className="w-24">Upgrade</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -362,8 +364,8 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {parsed.success ? parsed.data.upgradeEffort : '-'}
+                      <TableCell>
+                        {parsed.success ? <VerdictBadge verdict={upgradeVerdict(parsed.data)} /> : '-'}
                       </TableCell>
                     </TableRow>
                   );

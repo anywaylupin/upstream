@@ -11,7 +11,7 @@ const GRADE_VARIANT: Record<RepoRating['grade'], 'default' | 'secondary' | 'outl
 export function RatingBadge({ rating }: { rating: RepoRating }) {
   return (
     <Badge variant={GRADE_VARIANT[rating.grade]} className="tabular-nums">
-      {rating.grade} · {rating.overall.toFixed(1)}
+      {rating.overall.toFixed(1)}
     </Badge>
   );
 }
@@ -21,7 +21,7 @@ export function RatingBars({ rating }: { rating: RepoRating }) {
     <ul className="flex flex-col gap-1.5">
       {rating.parts.map((part, i) => (
         <li key={part.label} className="flex items-center gap-2 text-xs">
-          <span className="w-16 shrink-0 text-muted-foreground">{part.label}</span>
+          <span className="w-20 shrink-0 text-muted-foreground">{part.label}</span>
           <span className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-muted">
             <span
               className="block h-full animate-grow rounded-full bg-primary"

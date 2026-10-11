@@ -42,7 +42,7 @@ export function GitHubReposTable({
             <TableHead className="hidden lg:table-cell">About</TableHead>
             <TableHead className="hidden w-24 sm:table-cell">Lang</TableHead>
             <TableHead className="w-20 text-right">Stars</TableHead>
-            <TableHead className="w-28 text-right">Stack</TableHead>
+            <TableHead className="w-28 text-right">Follow</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,7 +56,7 @@ export function GitHubReposTable({
                   {/* Repo names always lead to the Upstream page, never off-site. */}
                   <Link
                     href={`/repos/${repo.owner.login}/${repo.name}`}
-                    className="min-w-0 whitespace-normal break-words transition-colors hover:underline group-hover/row:text-primary"
+                    className="min-w-0 whitespace-normal break-words transition-colors hover:underline group-hover/row:underline"
                   >
                     {repo.full_name}
                   </Link>

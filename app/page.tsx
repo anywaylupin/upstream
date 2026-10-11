@@ -106,7 +106,7 @@ export default async function Dashboard() {
       </header>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile icon={LayersIcon} label="Stack" value={totals.repos} />
+        <StatTile icon={LayersIcon} label="Following" value={totals.repos} />
         <StatTile icon={TagIcon} label={`Releases ${WINDOW_DAYS}d`} value={totals.releases30d} delay={60} />
         <StatTile
           icon={ShieldAlertIcon}
@@ -130,10 +130,10 @@ export default async function Dashboard() {
               <li key={row.repoId} style={{ animationDelay: `${i * 50}ms` }}>
                 <Link
                   href={`/repos/${row.owner}/${row.name}`}
-                  className="lift group block animate-rise rounded-lg p-4 ring-1 ring-foreground/10 hover:ring-primary/40"
+                  className="lift group block animate-rise rounded-lg p-4 ring-1 ring-foreground/10 hover:ring-foreground/25"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-sm transition-colors group-hover:text-primary">
+                    <span className="font-medium text-sm transition-colors group-hover:underline">
                       {row.owner}/{row.name}
                     </span>
                     <RatingBadge rating={rating} />
@@ -168,11 +168,11 @@ export default async function Dashboard() {
                     className={`lift group flex animate-rise flex-col gap-1 rounded-lg p-4 ring-1 ${
                       hasBreaking
                         ? 'ring-destructive/50 hover:ring-destructive'
-                        : 'ring-foreground/10 hover:ring-primary/40'
+                        : 'ring-foreground/10 hover:ring-foreground/25'
                     }`}
                   >
                     <div className="flex flex-wrap items-baseline gap-2">
-                      <span className="font-medium text-sm transition-colors group-hover:text-primary">
+                      <span className="font-medium text-sm transition-colors group-hover:underline">
                         {row.owner}/{row.name}
                       </span>
                       <span className="font-mono text-muted-foreground text-xs">{row.tag}</span>

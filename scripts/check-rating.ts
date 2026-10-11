@@ -1,5 +1,6 @@
 /** Asserts the rating weights maths. Run with `pnpm check:rating`; needs no env. */
 import assert from 'node:assert/strict';
+import { upgradeVerdict } from '@/lib/digest-filters';
 import { DEFAULT_WEIGHTS, PRESETS, parseWeights, presetFor, rateRepo } from '@/lib/repo-rating';
 
 const input = {
@@ -11,6 +12,7 @@ const input = {
   archived: false,
   license: 'MIT',
   releases90d: 12,
+  summarized90d: 12,
   breaking90d: 0,
   totalReleases: 100,
   lastRelease: new Date(),
@@ -46,10 +48,27 @@ assert.equal(presetFor(PRESETS[2].weights)?.id, 'bleeding');
 assert.equal(presetFor({ ...DEFAULT_WEIGHTS, ease: 0 }), null);
 
 // Presets actually reorder: a quiet, very stable repo beats a busy, breaking one on Production-safe.
-const steady = { ...input, releases90d: 2, breaking90d: 0, stars: 2_000 };
-const churny = { ...input, releases90d: 30, breaking90d: 12, stars: 90_000 };
+const steady = { ...input, releases90d: 2, summarized90d: 2, breaking90d: 0, stars: 2_000 };
+const churny = { ...input, releases90d: 30, summarized90d: 30, breaking90d: 12, stars: 90_000 };
 const production = PRESETS[1].weights;
 assert.ok(rateRepo(steady, production).overall > rateRepo(churny, production).overall);
 assert.ok(rateRepo(churny, PRESETS[3].weights).overall > rateRepo(steady, PRESETS[3].weights).overall);
+
+// Unsummarized releases count as activity but not as evidence of stability.
+const unsummarized = { ...input, releases90d: 5, summarized90d: 0, breaking90d: 0 };
+const activityOf = (r: typeof input) => rateRepo(r, { ...zero, activity: 1 }).overall;
+assert.ok(activityOf(unsummarized) > 0);
+assert.equal(rateRepo(unsummarized, { ...zero, stability: 1 }).overall, 5); // no guide, no evidence: neutral
+
+// The upgrade verdict: breaking wins, then effort or a deprecation, else safe.
+const release = (type: 'feature' | 'breaking' | 'deprecation', upgradeEffort: 'none' | 'low' | 'medium' | 'high') => ({
+  headline: 'x',
+  upgradeEffort,
+  changes: [{ type, description: 'x' }]
+});
+assert.equal(upgradeVerdict(release('breaking', 'none')), 'breaking');
+assert.equal(upgradeVerdict(release('feature', 'high')), 'review');
+assert.equal(upgradeVerdict(release('deprecation', 'low')), 'review');
+assert.equal(upgradeVerdict(release('feature', 'low')), 'safe');
 
 console.log('ALL PASS');

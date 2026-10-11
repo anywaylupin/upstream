@@ -34,7 +34,7 @@ export function CreateMenu() {
           className="w-auto min-w-52 [&_[data-slot=dropdown-menu-item]]:whitespace-nowrap"
         >
           <DropdownMenuGroup>
-            <DropdownMenuLabel>Add to stack</DropdownMenuLabel>
+            <DropdownMenuLabel>Follow a repo</DropdownMenuLabel>
             <DropdownMenuItem onClick={() => setOpen(true)}>
               <PlusIcon />
               Repo by URL

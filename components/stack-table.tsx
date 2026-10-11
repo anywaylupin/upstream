@@ -31,6 +31,7 @@ export type StackRow = {
   breaking30d: number;
   lastRelease: Date | null;
   releases90d: number;
+  summarized90d: number;
   breaking90d: number;
   guide: RepoGuide | null;
   /** Set when the repo is in the signed-in user's stack. */
@@ -85,7 +86,7 @@ export function StackTable({
                     </span>
                     <Link
                       href={`/repos/${row.owner}/${row.name}`}
-                      className="min-w-0 whitespace-normal break-words transition-colors hover:underline group-hover/row:text-primary"
+                      className="min-w-0 whitespace-normal break-words transition-colors hover:underline group-hover/row:underline"
                     >
                       {row.owner}/{row.name}
                     </Link>

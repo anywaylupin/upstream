@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
-export const alt = 'Upstream - release digests for the repos in your stack';
+export const alt = 'Upstream - release updates for the repos you follow';
 
 const INK = '#fafaf9';
 const MUTED = '#a8a29e';
@@ -52,7 +52,7 @@ export default function Image() {
           Know what breaks before you upgrade.
         </div>
         <div style={{ display: 'flex', color: MUTED, fontSize: 30, marginTop: 24, lineHeight: 1.4 }}>
-          Every changelog in your stack, read and rated.
+          Every changelog you follow, read and rated.
         </div>
       </div>
 

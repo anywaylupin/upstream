@@ -21,7 +21,7 @@ export function AiKeyList({ keys }: { keys: { provider: string; hint: string }[]
       {keys.map((key) => (
         <li key={key.provider} className="flex items-center justify-between gap-2 py-2 text-sm">
           <span className="flex items-center gap-2">
-            <KeyRoundIcon className="size-4 text-primary" />
+            <KeyRoundIcon className="size-4 text-muted-foreground" />
             <span className="font-medium">{providerOf(key.provider)?.label ?? key.provider}</span>
             <span className="font-mono text-muted-foreground text-xs">{key.hint}</span>
           </span>

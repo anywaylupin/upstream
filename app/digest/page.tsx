@@ -1,14 +1,15 @@
 import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
-import { CalendarDaysIcon, NewspaperIcon, SearchXIcon } from 'lucide-react';
+import { CalendarDaysIcon, HourglassIcon, NewspaperIcon, SearchXIcon } from 'lucide-react';
 import Link from 'next/link';
 import { DigestFilters } from '@/components/digest-filters';
 import { EmptyStack } from '@/components/empty-stack';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
 import { releases, repos, stackRepos, summaries, userInstructions } from '@/db/schema';
-import { CHANGE_TYPES, EFFORTS, WINDOWS } from '@/lib/digest-filters';
+import { CHANGE_TYPES, EFFORTS, upgradeVerdict, WINDOWS } from '@/lib/digest-filters';
 import { windowStart } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { type ReleaseSummary, ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
@@ -104,7 +105,9 @@ export default async function Digest({
           })
           .from(releases)
           .innerJoin(repos, eq(repos.id, releases.repoId))
-          .innerJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
+          // Left join: an unsummarized release is not shown, but it is counted,
+          // so an empty digest can say "on the way" instead of "no matches".
+          .leftJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
           .where(
             and(
               inArray(releases.repoId, repoIds),
@@ -135,9 +138,14 @@ export default async function Digest({
   const keywords = keywordsFrom(byFeature.get('summary') ?? byFeature.get('global') ?? '');
 
   const entries: Entry[] = [];
+  let pending = 0;
   for (const row of rows) {
     const { releaseId, tag, publishedAt, owner, name, data } = row;
     if (!publishedAt) continue;
+    if (data === null) {
+      pending += 1;
+      continue;
+    }
 
     const parsed = ReleaseSummarySchema.safeParse(data);
     if (!parsed.success) {
@@ -208,6 +216,18 @@ export default async function Digest({
         // only the first one offers the add-a-repo actions.
         (repoIds.length === 0 ? (
           <EmptyStack icon={NewspaperIcon} title="No releases yet" description="Add a repo to see its releases." />
+        ) : pending > 0 ? (
+          <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <HourglassIcon />
+              </EmptyMedia>
+              <EmptyTitle>
+                {pending} release{pending === 1 ? '' : 's'} waiting for a summary
+              </EmptyTitle>
+              <EmptyDescription>They appear here once summarized.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
             <EmptyHeader>
@@ -239,22 +259,18 @@ export default async function Digest({
                     className={
                       hasBreaking
                         ? 'lift animate-rise ring-2 ring-destructive/50 hover:ring-destructive'
-                        : 'lift animate-rise hover:ring-primary/40'
+                        : 'lift animate-rise hover:ring-foreground/25'
                     }
                   >
                     <CardHeader>
                       <CardTitle className="flex flex-wrap items-baseline gap-2">
-                        <Link
-                          href={`/repos/${entry.repo}`}
-                          className="transition-colors hover:text-primary hover:underline"
-                        >
+                        <Link href={`/repos/${entry.repo}`} className="hover:underline">
                           {entry.repo}
                         </Link>
                         <span className="font-mono font-normal text-muted-foreground text-xs">{entry.tag}</span>
-                        {hasBreaking && <Badge variant="destructive">breaking</Badge>}
                         {entry.relevant && <Badge variant="secondary">for you</Badge>}
-                        <span className="ml-auto font-normal text-muted-foreground text-xs">
-                          {entry.summary.upgradeEffort} effort
+                        <span className="ml-auto">
+                          <VerdictBadge verdict={upgradeVerdict(entry.summary)} />
                         </span>
                       </CardTitle>
                       <span className="text-muted-foreground text-sm">{entry.summary.headline}</span>

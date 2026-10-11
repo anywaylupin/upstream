@@ -8,6 +8,7 @@ import { saveRatingWeights } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CRITERIA, MAX_WEIGHT, PRESETS, presetFor, type Weights } from '@/lib/repo-rating';
 
 export function RatingWeightsForm({ initial }: { initial: Weights }) {
@@ -46,16 +47,24 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
         )}
       </div>
 
-      <ul className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-2.5">
         {CRITERIA.map((c) => {
           const w = weights[c.id];
           const share = total ? Math.round((w / total) * 100) : 0;
           return (
             <li key={c.id} className="grid grid-cols-[7rem_minmax(0,1fr)_3rem] items-center gap-3">
-              <label htmlFor={`w-${c.id}`} className="flex flex-col text-sm">
-                <span className={cn('font-medium', w === 0 && 'text-muted-foreground line-through')}>{c.label}</span>
-                <span className="text-muted-foreground text-xs">{c.hint}</span>
-              </label>
+              <Tooltip>
+                <TooltipTrigger
+                  type="button"
+                  className={cn(
+                    'w-fit cursor-help text-left font-medium text-sm underline decoration-muted-foreground/50 decoration-dotted underline-offset-4',
+                    w === 0 && 'text-muted-foreground line-through'
+                  )}
+                >
+                  {c.label}
+                </TooltipTrigger>
+                <TooltipContent>{c.hint}</TooltipContent>
+              </Tooltip>
               {/* An array value keeps the shadcn wrapper to one thumb; a bare number renders two. */}
               <Slider
                 id={`w-${c.id}`}

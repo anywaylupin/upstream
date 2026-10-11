@@ -60,7 +60,7 @@ function Panel({
           className={
             danger
               ? 'flex size-7 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-destructive'
-              : 'flex size-7 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary'
+              : 'flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground'
           }
         >
           <Icon className="size-4" />
@@ -162,7 +162,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
                       href={profile.html_url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-primary"
+                      className="inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
                     >
                       @{profile.login}
                       <ExternalLinkIcon className="size-3" />
@@ -189,7 +189,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         ),
         digest: (
           <>
-            <Panel title="Digest" description="Where and how often." icon={MailIcon}>
+            <Panel title="Updates email" description="Where and how often." icon={MailIcon}>
               <DigestSettingsForm
                 email={prefs?.digestEmail ?? ''}
                 fallbackEmail={fallbackEmail}
@@ -205,7 +205,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               />
             </Panel>
 
-            <Panel icon={HistoryIcon} title="Recent syncs" description="Hourly, for every stacked repo.">
+            <Panel icon={HistoryIcon} title="Recent syncs" description="Hourly, for every repo you follow.">
               {recentRuns.length === 0 ? (
                 <p className="flex items-center gap-2 text-muted-foreground text-sm">
                   <TimerIcon className="size-4" />

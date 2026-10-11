@@ -24,6 +24,25 @@ function pickGuides(rows: { repoId: number; instructionsHash: string; data: unkn
   return byRepo;
 }
 
+/**
+ * Release counts for the rating window. Activity counts every release; only
+ * summarized ones can say whether something broke, so they are counted apart.
+ */
+function tally90d(rows: { repoId: number; data: unknown }[]) {
+  const byRepo = new Map<number, { total: number; summarized: number; breaking: number }>();
+  for (const row of rows) {
+    const bucket = byRepo.get(row.repoId) ?? { total: 0, summarized: 0, breaking: 0 };
+    bucket.total += 1;
+    const parsed = ReleaseSummary.safeParse(row.data);
+    if (parsed.success) {
+      bucket.summarized += 1;
+      if (parsed.data.changes.some((change) => change.type === 'breaking')) bucket.breaking += 1;
+    }
+    byRepo.set(row.repoId, bucket);
+  }
+  return byRepo;
+}
+
 export function windowStart(days = WINDOW_DAYS) {
   const since = new Date();
   since.setDate(since.getDate() - days);
@@ -43,6 +62,7 @@ export type RatingInputs = {
   license: string | null;
   totalReleases: number;
   releases90d: number;
+  summarized90d: number;
   breaking90d: number;
   lastRelease: Date | null;
   guide: RepoGuide | null;
@@ -69,7 +89,10 @@ export async function getRatingInputs(repoIds: number[], wantedHash: string = DE
     db
       .select({ repoId: releases.repoId, data: summaries.data })
       .from(releases)
-      .innerJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
+      .leftJoin(
+        summaries,
+        and(eq(summaries.bodyHash, releases.bodyHash), eq(summaries.instructionsHash, DEFAULT_INSTRUCTIONS_HASH))
+      )
       .where(and(mine, isNotNull(releases.publishedAt), gte(releases.publishedAt, ratingSince))),
     db
       .select({
@@ -83,16 +106,7 @@ export async function getRatingInputs(repoIds: number[], wantedHash: string = DE
 
   const latestByRepo = new Map(totals.map((t) => [t.repoId, t.latest]));
 
-  const counts = new Map<number, { total: number; breaking: number }>();
-  for (const row of ratingRows) {
-    const bucket = counts.get(row.repoId) ?? { total: 0, breaking: 0 };
-    bucket.total += 1;
-    const parsed = ReleaseSummary.safeParse(row.data);
-    if (parsed.success && parsed.data.changes.some((change) => change.type === 'breaking')) {
-      bucket.breaking += 1;
-    }
-    counts.set(row.repoId, bucket);
-  }
+  const counts = tally90d(ratingRows);
 
   const guides = pickGuides(guideRows, wantedHash);
 
@@ -110,6 +124,7 @@ export async function getRatingInputs(repoIds: number[], wantedHash: string = DE
       license: repo.license,
       totalReleases: 0,
       releases90d: counts.get(repo.id)?.total ?? 0,
+      summarized90d: counts.get(repo.id)?.summarized ?? 0,
       breaking90d: counts.get(repo.id)?.breaking ?? 0,
       lastRelease: latestByRepo.get(repo.id) ?? null,
       guide: guides.get(repo.id) ?? null
@@ -171,7 +186,10 @@ export const getStackStats = cache(async function getStackStats(
     db
       .select({ repoId: releases.repoId, data: summaries.data })
       .from(releases)
-      .innerJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
+      .leftJoin(
+        summaries,
+        and(eq(summaries.bodyHash, releases.bodyHash), eq(summaries.instructionsHash, DEFAULT_INSTRUCTIONS_HASH))
+      )
       .where(and(mine, isNotNull(releases.publishedAt), gte(releases.publishedAt, ratingSince))),
     db
       .select({
@@ -198,16 +216,7 @@ export const getStackStats = cache(async function getStackStats(
     breakingByRepo.set(row.repoId, (breakingByRepo.get(row.repoId) ?? 0) + 1);
   }
 
-  const rating90dByRepo = new Map<number, { total: number; breaking: number }>();
-  for (const row of ratingRows) {
-    const bucket = rating90dByRepo.get(row.repoId) ?? { total: 0, breaking: 0 };
-    bucket.total += 1;
-    const parsed = ReleaseSummary.safeParse(row.data);
-    if (parsed.success && parsed.data.changes.some((change) => change.type === 'breaking')) {
-      bucket.breaking += 1;
-    }
-    rating90dByRepo.set(row.repoId, bucket);
-  }
+  const rating90dByRepo = tally90d(ratingRows);
 
   const rows: StackRow[] = repoRows.map((repo) => ({
     repoId: repo.id,
@@ -228,6 +237,7 @@ export const getStackStats = cache(async function getStackStats(
     lastRelease: totalsByRepo.get(repo.id)?.latest ?? null,
     stackId: watchedIdByRepo.get(repo.id),
     releases90d: rating90dByRepo.get(repo.id)?.total ?? 0,
+    summarized90d: rating90dByRepo.get(repo.id)?.summarized ?? 0,
     breaking90d: rating90dByRepo.get(repo.id)?.breaking ?? 0,
     guide: guideByRepo.get(repo.id) ?? null
   }));

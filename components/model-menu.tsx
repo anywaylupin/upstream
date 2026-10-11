@@ -233,7 +233,7 @@ export function ModelMenu({
                 href={providerOf(provider)?.keysUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-muted-foreground text-xs underline transition-colors hover:text-primary"
+                className="text-muted-foreground text-xs underline transition-colors hover:text-foreground"
               >
                 Get a {providerOf(provider)?.label} key
               </a>

@@ -13,6 +13,8 @@ export type RatingInput = {
   archived: boolean | null;
   license: string | null;
   releases90d: number;
+  /** Releases in the window that have a summary - the only ones that can show a break. */
+  summarized90d: number;
   breaking90d: number;
   totalReleases: number;
   lastRelease: Date | null;
@@ -22,9 +24,9 @@ export type RatingInput = {
 export const CRITERIA = [
   { id: 'activity', label: 'Activity', hint: 'How often it ships' },
   { id: 'stability', label: 'Stability', hint: 'How rarely releases break' },
-  { id: 'reach', label: 'Reach', hint: 'Stars' },
-  { id: 'community', label: 'Community', hint: 'Forks and watchers' },
-  { id: 'upkeep', label: 'Upkeep', hint: 'Recent pushes, issue load' },
+  { id: 'reach', label: 'Popularity', hint: 'Stars' },
+  { id: 'community', label: 'Adoption', hint: 'Forks and watchers' },
+  { id: 'upkeep', label: 'Maintained', hint: 'Recent pushes, issue load' },
   { id: 'docs', label: 'Docs', hint: 'README quality, AI judged' },
   { id: 'ease', label: 'Ease', hint: 'How quick to pick up, AI judged' }
 ] as const;
@@ -112,8 +114,8 @@ export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS)
   const activity = sinceRelease > 180 ? clamp(3 - sinceRelease / 365) : clamp(Math.log2(input.releases90d + 1) * 2.6);
 
   const stability =
-    input.releases90d > 0
-      ? clamp(10 - (input.breaking90d / input.releases90d) * 10)
+    input.summarized90d > 0
+      ? clamp(10 - (input.breaking90d / input.summarized90d) * 10)
       : (input.guide?.scores.apiStability ?? 5);
 
   const reach = clamp(Math.log10((input.stars ?? 0) + 1) * 2);
@@ -147,19 +149,19 @@ export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS)
     },
     {
       id: 'reach',
-      label: 'Reach',
+      label: 'Popularity',
       score: reach,
       hint: `${(input.stars ?? 0).toLocaleString()} stars`
     },
     {
       id: 'community',
-      label: 'Community',
+      label: 'Adoption',
       score: community,
       hint: `${(input.forks ?? 0).toLocaleString()} forks · ${(input.watchers ?? 0).toLocaleString()} watchers`
     },
     {
       id: 'upkeep',
-      label: 'Upkeep',
+      label: 'Maintained',
       score: upkeep,
       hint: input.archived
         ? 'archived'

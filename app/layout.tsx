@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 export const DOMAIN_URL = 'https://upstreamdev.vercel.app';
 export const TITLE = 'Upstream';
 export const DESCRIPTION =
-  'A weekly digest of releases from the repos you depend on. Upstream reads every changelog, flags breaking changes, and tells you how much work the upgrade is.';
+  'Release updates for the repos you depend on. Upstream reads every changelog, flags breaking changes, and tells you how much work the upgrade is.';
 
 export const metadata: Metadata = {
   title: {

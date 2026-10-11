@@ -49,3 +49,13 @@ export const EFFORT_DOT: Record<string, string> = {
 };
 
 export const WINDOW_DOT = 'bg-muted-foreground';
+
+export type UpgradeVerdict = 'breaking' | 'review' | 'safe';
+
+/** The one-glance answer to "can I just upgrade?". */
+export function upgradeVerdict(summary: ReleaseSummary): UpgradeVerdict {
+  if (summary.changes.some((c) => c.type === 'breaking')) return 'breaking';
+  if (summary.upgradeEffort === 'medium' || summary.upgradeEffort === 'high') return 'review';
+  if (summary.changes.some((c) => c.type === 'deprecation')) return 'review';
+  return 'safe';
+}
