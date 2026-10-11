@@ -44,6 +44,12 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
             >
               <span className="font-medium text-sm">{p.label}</span>
               <span className="text-muted-foreground text-sm">{p.description}</span>
+              <span className="mt-1 text-muted-foreground text-xs">
+                Most weight:{' '}
+                {CRITERIA.filter((c) => p.weights[c.id] === Math.max(...Object.values(p.weights)))
+                  .map((c) => c.label)
+                  .join(', ')}
+              </span>
             </button>
           );
         })}

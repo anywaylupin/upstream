@@ -149,6 +149,9 @@ Users without instructions keep hitting the shared cache.
   `render` prop does not forward an `onClick` onto the element it renders, so a
   handler there silently never fires - the settings rail delegates from the
   `<nav>` instead.
+- Never put an animation class on a base-ui `TabsContent` (or any base-ui part
+  with exit states). base-ui waits for animations on that element to end before
+  hiding it, so every old panel stayed on screen. Animate an inner wrapper.
 - Provider brand marks are inlined SVG paths in `components/provider-icon.tsx`,
   taken from simple-icons and lobehub (both CC0). Neither package is a
   dependency: they were installed once to lift the paths, then removed.
