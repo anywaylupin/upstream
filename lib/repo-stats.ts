@@ -60,6 +60,7 @@ export type RatingInputs = {
   pushedAt: Date | null;
   archived: boolean | null;
   license: string | null;
+  iconUrl: string | null;
   totalReleases: number;
   releases90d: number;
   summarized90d: number;
@@ -122,6 +123,7 @@ export async function getRatingInputs(repoIds: number[], wantedHash: string = DE
       pushedAt: repo.pushedAt,
       archived: repo.archived,
       license: repo.license,
+      iconUrl: repo.iconUrl,
       totalReleases: 0,
       releases90d: counts.get(repo.id)?.total ?? 0,
       summarized90d: counts.get(repo.id)?.summarized ?? 0,
@@ -230,6 +232,7 @@ export const getStackStats = cache(async function getStackStats(
     pushedAt: repo.pushedAt,
     archived: repo.archived,
     license: repo.license,
+    iconUrl: repo.iconUrl,
     lastIngestedAt: repo.lastIngestedAt,
     totalReleases: totalsByRepo.get(repo.id)?.total ?? 0,
     releases30d: windowByRepo.get(repo.id) ?? 0,
@@ -300,6 +303,7 @@ export async function getRecentReleases(repoIds: number[], since: Date, limit?: 
       publishedAt: releases.publishedAt,
       owner: repos.owner,
       name: repos.name,
+      iconUrl: repos.iconUrl,
       data: summaries.data
     })
     .from(releases)

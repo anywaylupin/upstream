@@ -243,6 +243,9 @@ Not worth it for five calls.
   to the server PAT - it belongs to a different account and would show the wrong
   repos. Public lookups may fall back.
 - `draft` releases are filtered out. Prereleases are kept.
+- GitHub has no repo logo. Ingest stores the homepage's best `<link rel=icon>` as
+  `repos.iconUrl` (`lib/repo-icon.ts`: https and public hosts only, 5s, 64 KB);
+  `OwnerAvatar` falls back to the owner avatar when it is missing or fails.
 - GitHub's "used by" (dependents) count is not in the REST API, only on the
   dependency-graph HTML page. The rating deliberately omits it.
 

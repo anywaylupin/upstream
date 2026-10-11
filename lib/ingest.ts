@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { releases as releasesTable, repos as reposTable } from '@/db/schema';
 import { getRepoMeta } from '@/lib/github';
+import { findRepoIcon } from '@/lib/repo-icon';
 
 type GitHubRelease = {
   id: number;
@@ -84,7 +85,8 @@ export async function ingestRepo(repo: { id: number; owner: string; name: string
             openIssues: meta.open_issues_count,
             pushedAt: meta.pushed_at ? new Date(meta.pushed_at) : null,
             archived: meta.archived,
-            license: meta.license?.spdx_id ?? null
+            license: meta.license?.spdx_id ?? null,
+            iconUrl: await findRepoIcon(meta.homepage)
           }
         : {})
     })

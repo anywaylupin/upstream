@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { releases, repos, stackRepos, summaries } from '@/db/schema';
 import { getAiContext } from '@/lib/ai';
 import { getGitHubToken, getRepoMeta } from '@/lib/github';
+import { findRepoIcon } from '@/lib/repo-icon';
 import { rateRepo } from '@/lib/repo-rating';
 import { getRatingInputs, getRatingWeights, windowStart } from '@/lib/repo-stats';
 import { ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
@@ -43,7 +44,8 @@ export async function getRepoReport(userId: string, owner: string, name: string)
         openIssues: meta.open_issues_count,
         pushedAt: meta.pushed_at ? new Date(meta.pushed_at) : null,
         archived: meta.archived,
-        license: meta.license?.spdx_id ?? null
+        license: meta.license?.spdx_id ?? null,
+        iconUrl: await findRepoIcon(meta.homepage)
       })
       .onConflictDoNothing();
 

@@ -67,7 +67,7 @@ export default async function RepoReport({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex min-w-0 flex-col gap-2">
             <h1 className="flex items-center gap-2.5 font-heading font-semibold text-2xl tracking-tight">
-              <OwnerAvatar owner={repo.owner} size={32} />
+              <OwnerAvatar owner={repo.owner} icon={repo.iconUrl} size={32} />
               <span className="truncate">
                 <span className="text-muted-foreground">{repo.owner}/</span>
                 {repo.name}

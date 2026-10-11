@@ -19,6 +19,7 @@ export const GitHubRepoSchema = z.object({
   subscribers_count: z.number().optional(),
   license: z.object({ spdx_id: z.string().nullable() }).nullable().default(null),
   archived: z.boolean().default(false),
+  homepage: z.string().nullable().default(null),
   fork: z.boolean().default(false),
   private: z.boolean().default(false)
 });

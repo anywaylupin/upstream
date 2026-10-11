@@ -24,6 +24,7 @@ export type StackRow = {
   pushedAt: Date | null;
   archived: boolean | null;
   license: string | null;
+  iconUrl: string | null;
   lastIngestedAt: Date | null;
   totalReleases: number;
   releases30d: number;
@@ -61,7 +62,7 @@ export function StackTable({
         return (
           <Item key={row.repoId} variant="outline" className="relative hover:bg-muted/50">
             <ItemMedia>
-              <OwnerAvatar owner={row.owner} size={32} />
+              <OwnerAvatar owner={row.owner} icon={row.iconUrl} size={32} />
             </ItemMedia>
             <ItemContent className="min-w-0">
               {/* Stretched link: the whole row navigates, the buttons stay buttons. */}

@@ -107,7 +107,7 @@ export default async function Dashboard() {
               render={<Link href={`/repos/${row.owner}/${row.name}`} />}
             >
               <ItemMedia>
-                <OwnerAvatar owner={row.owner} size={28} />
+                <OwnerAvatar owner={row.owner} icon={row.iconUrl} size={28} />
               </ItemMedia>
               <ItemContent className="min-w-0">
                 <ItemTitle className="truncate">
@@ -134,7 +134,7 @@ export default async function Dashboard() {
                 render={<Link href={`/repos/${row.owner}/${row.name}`} />}
               >
                 <ItemMedia>
-                  <OwnerAvatar owner={row.owner} size={28} />
+                  <OwnerAvatar owner={row.owner} icon={row.iconUrl} size={28} />
                 </ItemMedia>
                 <ItemContent className="min-w-0">
                   <ItemTitle>

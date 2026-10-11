@@ -27,6 +27,7 @@ export const repos = pgTable(
     pushedAt: timestamp('pushed_at'),
     archived: boolean('archived'),
     license: text('license'),
+    iconUrl: text('icon_url'),
     lastIngestedAt: timestamp('last_ingested_at'),
     addedAt: timestamp('added_at').defaultNow().notNull()
   },
