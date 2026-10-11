@@ -204,6 +204,7 @@ pnpm summarize      # summarize un-summarized releases, batched
 pnpm sync           # a full manual run, recorded in `runs`
 pnpm check:schedule # asserts the digest date maths (no env needed)
 pnpm check:rating   # asserts the rating weights maths (no env needed)
+pnpm eval           # breaking-change recall/precision on eval/cases.json (live AI calls)
 pnpm typecheck      # tsc --noEmit
 pnpm lint           # biome check
 pnpm format         # biome format --write
@@ -315,14 +316,13 @@ into the email HTML is escaped.
 
 ## Status
 
-Done: ingestion, hash-deduped summarization, auth, per-user stacks, digest with
+Done: ingestion, hash-deduped summarization, a breaking-change eval, auth, per-user stacks, digest with
 filters, repo pages with ratings/guides/alternatives, BYOK multi-provider, search,
 scheduled runs with a `runs` log, account erase, per-user digest schedules and
 email delivery.
 
 Not done:
 
-- Eval harness (hand-labelled releases + accuracy score)
 - Playwright E2E in CI. Note: Next 16 type checks everything the tsconfig
   includes during `next build`, so test files will fail production builds
 - Read state (seen/unseen), so the bell count can mean "new since you looked"

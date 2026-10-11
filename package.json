@@ -14,7 +14,8 @@
     "summarize": "tsx scripts/summarize.ts",
     "sync": "tsx --env-file=.env scripts/sync.ts",
     "check:schedule": "tsx scripts/check-schedule.ts",
-    "check:rating": "tsx scripts/check-rating.ts"
+    "check:rating": "tsx scripts/check-rating.ts",
+    "eval": "tsx --env-file=.env scripts/eval.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.48",
