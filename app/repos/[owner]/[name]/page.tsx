@@ -25,7 +25,7 @@ import { getAiContext } from '@/lib/ai';
 import { formatDate, formatRelative } from '@/lib/format';
 import { getGitHubToken, getRepoMeta } from '@/lib/github';
 import { rateRepo } from '@/lib/repo-rating';
-import { getRatingInputs, WINDOW_DAYS, windowStart } from '@/lib/repo-stats';
+import { getRatingInputs, getRatingWeights, WINDOW_DAYS, windowStart } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { type ReleaseSummary, ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
 
@@ -86,7 +86,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
 
   const since = windowStart();
 
-  const [releaseRows, totalRows, windowRows, windowSummaries, ratingInputs] = await Promise.all([
+  const [releaseRows, totalRows, windowRows, windowSummaries, ratingInputs, weights] = await Promise.all([
     db
       .select({
         releaseId: releases.id,
@@ -109,12 +109,13 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
       .from(releases)
       .innerJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
       .where(and(eq(releases.repoId, repo.id), isNotNull(releases.publishedAt), gte(releases.publishedAt, since))),
-    getRatingInputs([repo.id], ai.instructionsHash)
+    getRatingInputs([repo.id], ai.instructionsHash),
+    getRatingWeights(user.id)
   ]);
 
   const self = ratingInputs.get(repo.id);
   const guide = self?.guide ?? null;
-  const rating = self ? rateRepo(self) : null;
+  const rating = self ? rateRepo(self, weights) : null;
 
   const breaking30d = windowSummaries.filter((row) => {
     const parsed = ReleaseSummarySchema.safeParse(row.data);
@@ -161,7 +162,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
       return {
         repo: alt.repo,
         tradeoff: alt.tradeoff,
-        rating: inputs ? rateRepo(inputs) : null,
+        rating: inputs ? rateRepo(inputs, weights) : null,
         stars: inputs?.stars ?? null,
         isCurrent: false,
         repoId: altId && stackIdByRepo.has(altId) ? altId : undefined
@@ -305,9 +306,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
           </div>
         </section>
       ) : (
-        <p className="text-muted-foreground text-sm">
-          No guide yet - hit Explain to rate this repo and find alternatives.
-        </p>
+        <p className="text-muted-foreground text-sm">No guide yet. Run Explain.</p>
       )}
 
       {compareRows.length > 1 && (
@@ -317,9 +316,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
             Alternatives
           </h2>
           <AlternativesCompare rows={compareRows} />
-          <p className="text-muted-foreground text-xs">
-            Add an alternative to your stack to score it on the same scale.
-          </p>
+          <p className="text-muted-foreground text-xs">Add one to your stack to score it.</p>
         </section>
       )}
 
@@ -329,7 +326,7 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
           Releases
         </h2>
         {releaseRows.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No releases pulled yet - hit Sync, or add it to your stack.</p>
+          <p className="text-muted-foreground text-sm">No releases yet. Sync to fetch them.</p>
         ) : (
           <div className="rounded-lg ring-1 ring-foreground/10">
             <Table className="table-fixed">

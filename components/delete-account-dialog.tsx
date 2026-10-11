@@ -56,7 +56,7 @@ export function DeleteAccountDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete your Upstream account</DialogTitle>
-          <DialogDescription>This erases everything tied to your account. It cannot be undone.</DialogDescription>
+          <DialogDescription>Permanent. Erases everything tied to you.</DialogDescription>
         </DialogHeader>
 
         <ul className="flex list-disc flex-col gap-1 rounded-lg p-3 pl-7 text-muted-foreground text-sm ring-1 ring-destructive/30">
@@ -66,8 +66,7 @@ export function DeleteAccountDialog({
         </ul>
 
         <p className="text-muted-foreground text-xs">
-          Repos other people track stay, along with their shared release data. Upstream keeps its authorisation on your
-          GitHub account until you revoke it in GitHub settings.
+          Repos others stack stay. Revoke GitHub access separately in GitHub settings.
         </p>
 
         <div className="flex flex-col gap-2">

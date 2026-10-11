@@ -13,7 +13,8 @@
     "ingest": "tsx scripts/ingest.ts",
     "summarize": "tsx scripts/summarize.ts",
     "sync": "tsx --env-file=.env scripts/sync.ts",
-    "check:schedule": "tsx scripts/check-schedule.ts"
+    "check:schedule": "tsx scripts/check-schedule.ts",
+    "check:rating": "tsx scripts/check-rating.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.48",

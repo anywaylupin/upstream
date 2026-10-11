@@ -207,11 +207,7 @@ export default async function Digest({
         // An empty stack and an over-tight filter are different problems, so
         // only the first one offers the add-a-repo actions.
         (repoIds.length === 0 ? (
-          <EmptyStack
-            icon={NewspaperIcon}
-            title="No releases yet"
-            description="Add a repo and its releases show up here, summarized and rated."
-          />
+          <EmptyStack icon={NewspaperIcon} title="No releases yet" description="Add a repo to see its releases." />
         ) : (
           <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
             <EmptyHeader>

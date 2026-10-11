@@ -52,12 +52,6 @@ export default async function RepositoriesPage({
 
   return (
     <div className="flex w-full flex-col gap-5">
-      <header className="flex flex-col gap-1">
-        <p className="text-muted-foreground text-sm">
-          Read-only views of your GitHub account. Add any of them to your stack.
-        </p>
-      </header>
-
       <RepoSourceTabs active={source} />
 
       {source === 'search' && (

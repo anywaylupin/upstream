@@ -17,21 +17,21 @@ const NEXT_STEPS = [
   {
     icon: FolderGit2Icon,
     title: 'Browse your GitHub',
-    body: 'Pull in repos you already own or watch.',
+    body: 'Repos you own or watch.',
     href: '/repositories',
     cta: 'Open'
   },
   {
     icon: MessageSquareTextIcon,
-    title: 'Tell it what you care about',
-    body: 'Per-feature instructions shape every summary.',
+    title: 'Set instructions',
+    body: 'Shape every summary.',
     href: '/settings?section=instructions',
     cta: 'Set up'
   },
   {
     icon: KeyRoundIcon,
-    title: 'Bring your own AI key',
-    body: 'Run summaries on your own quota, not the shared one.',
+    title: 'Add an AI key',
+    body: 'Use your own quota.',
     href: '/settings?section=keys',
     cta: 'Add key'
   }
@@ -41,11 +41,7 @@ const NEXT_STEPS = [
 export function DashboardEmpty() {
   return (
     <div className="flex w-full flex-col gap-6">
-      <EmptyStack
-        icon={LayersIcon}
-        title="Your stack is empty"
-        description="Add a repo and Upstream starts reading its releases, flagging what breaks and rating the project."
-      />
+      <EmptyStack icon={LayersIcon} title="Your stack is empty" description="Add a repo to start." />
 
       <section className="flex flex-col gap-2.5">
         <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">

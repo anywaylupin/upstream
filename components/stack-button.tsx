@@ -52,7 +52,7 @@ export function StackButton({
         // addToStack redirects to the repo page on success, so nothing after
         // the await runs - the toast has to be raised up front.
         toast.success(`Adding ${label}`, {
-          description: 'Opening its page while the analysis runs…'
+          description: 'Opening...'
         });
         startTransition(async () => {
           const res = await addToStack(owner, name);

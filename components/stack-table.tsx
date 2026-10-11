@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatDate, formatRelative } from '@/lib/format';
 import type { RepoGuide } from '@/lib/repo-guide';
+import type { Weights } from '@/lib/repo-rating';
 import { rateRepo } from '@/lib/repo-rating';
 
 export type StackRow = {
@@ -38,11 +39,13 @@ export type StackRow = {
 
 export function StackTable({
   rows,
+  weights,
   showStackToggle = false,
   emptyTitle = 'Nothing here',
   emptyMessage
 }: {
   rows: StackRow[];
+  weights: Weights;
   showStackToggle?: boolean;
   emptyTitle?: string;
   emptyMessage: string;
@@ -71,7 +74,7 @@ export function StackTable({
         </TableHeader>
         <TableBody>
           {rows.map((row) => {
-            const rating = rateRepo(row);
+            const rating = rateRepo(row, weights);
 
             return (
               <ClickableRow key={row.repoId} href={`/repos/${row.owner}/${row.name}`}>

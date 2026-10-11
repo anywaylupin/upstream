@@ -2,10 +2,10 @@ import { and, count, eq, gte, inArray, isNotNull, max } from 'drizzle-orm';
 import { cache } from 'react';
 import type { StackRow } from '@/components/stack-table';
 import { db } from '@/db';
-import { releases, repoGuides, repos, stackRepos, summaries } from '@/db/schema';
+import { releases, repoGuides, repos, stackRepos, summaries, userPreferences } from '@/db/schema';
 import { DEFAULT_INSTRUCTIONS_HASH } from '@/lib/ai';
 import { RepoGuide } from '@/lib/repo-guide';
-import { RATING_WINDOW_DAYS } from '@/lib/repo-rating';
+import { parseWeights, RATING_WINDOW_DAYS } from '@/lib/repo-rating';
 import { ReleaseSummary } from '@/lib/summarize';
 
 export const WINDOW_DAYS = 30;
@@ -259,3 +259,12 @@ export async function getNavCounts(userId: string) {
 
   return { stack: repoIds.length, releases30d: releaseRows?.total ?? 0 };
 }
+
+/** The user's rating weights, or the default preset. */
+export const getRatingWeights = cache(async function getRatingWeights(userId: string) {
+  const [row] = await db
+    .select({ weights: userPreferences.ratingWeights })
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId));
+  return parseWeights(row?.weights);
+});

@@ -13,12 +13,7 @@ export function AiKeyList({ keys }: { keys: { provider: string; hint: string }[]
   const [pending, startTransition] = useTransition();
 
   if (keys.length === 0) {
-    return (
-      <p className="text-muted-foreground text-sm">
-        No keys yet. Add one from the model picker in the header - Upstream falls back to a shared Google key until
-        then.
-      </p>
-    );
+    return <p className="text-muted-foreground text-sm">No keys. Using the shared key.</p>;
   }
 
   return (

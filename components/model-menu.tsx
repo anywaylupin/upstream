@@ -153,10 +153,7 @@ export function ModelMenu({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add an AI key</DialogTitle>
-            <DialogDescription>
-              Your key is encrypted and only used for your own requests. It is checked against the chosen model before
-              saving.
-            </DialogDescription>
+            <DialogDescription>Encrypted. Tested before saving.</DialogDescription>
           </DialogHeader>
 
           <form action={formAction} className="flex flex-col gap-3">

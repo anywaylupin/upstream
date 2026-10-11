@@ -162,6 +162,8 @@ export const userPreferences = pgTable('user_preferences', {
   /** Gap in days, used by the custom frequency. */
   digestIntervalDays: integer('digest_interval_days').notNull().default(14),
   lastDigestAt: timestamp('last_digest_at'),
+  /** Per-criterion weights for the repo rating. Null means the default preset. */
+  ratingWeights: jsonb('rating_weights'),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 

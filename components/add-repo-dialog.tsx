@@ -52,9 +52,7 @@ export function AddRepoDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add a repo</DialogTitle>
-          <DialogDescription>
-            Paste a GitHub URL. Releases are pulled now, summaries follow in the background.
-          </DialogDescription>
+          <DialogDescription>Paste a GitHub URL.</DialogDescription>
         </DialogHeader>
 
         <form action={formAction} className="flex flex-col gap-2">
@@ -75,7 +73,7 @@ export function AddRepoDialog({
           {pending && (
             <p className="flex items-center gap-2 text-muted-foreground text-sm">
               <Spinner className="size-3.5" />
-              Fetching releases from GitHub...
+              Fetching releases...
             </p>
           )}
 

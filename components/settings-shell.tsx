@@ -1,6 +1,14 @@
 'use client';
 
-import { KeyRoundIcon, type LucideIcon, MailIcon, SparklesIcon, TriangleAlertIcon, UserIcon } from 'lucide-react';
+import {
+  KeyRoundIcon,
+  type LucideIcon,
+  MailIcon,
+  ScaleIcon,
+  SparklesIcon,
+  TriangleAlertIcon,
+  UserIcon
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { cn } from 'tailwind-variants';
@@ -13,6 +21,7 @@ const ICONS: Record<SettingsSectionId, LucideIcon> = {
   account: UserIcon,
   digest: MailIcon,
   keys: KeyRoundIcon,
+  rating: ScaleIcon,
   instructions: SparklesIcon,
   danger: TriangleAlertIcon
 };

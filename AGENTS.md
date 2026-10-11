@@ -89,8 +89,17 @@ Path alias is `@/*` -> `./*`.
 - `stackRepos` - the user's stack. Unique on `(userId, repoId)`.
 - `aiKeys` - one provider key per user, AES-256-GCM encrypted.
 - `userInstructions` - per feature (`global`, `summary`, `guide`).
-- `userPreferences` - digest email, opt-out, model, and the schedule:
-  frequency, hour, IANA timezone, weekday, day-of-month, interval.
+- `userPreferences` - digest email, opt-out, model, the schedule (frequency,
+  hour, IANA timezone, weekday, day-of-month, interval), and `ratingWeights`.
+
+### Ratings are weighted per user
+
+`rateRepo(input, weights)` is a weighted average over fixed criteria, computed
+at render and never stored, so a user's weights apply everywhere instantly.
+Weights are integers 0-5 (0 drops a criterion); presets are plain objects in
+`lib/repo-rating.ts`. Users weight criteria but cannot invent them: a criterion
+needs a measured signal, or it is a number the app makes up. `pnpm check:rating`
+covers the maths.
 
 ### Key design decision: hash-based dedupe
 
@@ -178,6 +187,7 @@ pnpm ingest         # fetch releases for every catalogue repo
 pnpm summarize      # summarize un-summarized releases, batched
 pnpm sync           # a full manual run, recorded in `runs`
 pnpm check:schedule # asserts the digest date maths (no env needed)
+pnpm check:rating   # asserts the rating weights maths (no env needed)
 pnpm typecheck      # tsc --noEmit
 pnpm lint           # biome check
 pnpm format         # biome format --write

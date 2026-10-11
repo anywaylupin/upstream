@@ -21,19 +21,19 @@ export const FEATURES = [
   {
     id: 'global',
     label: 'All AI features',
-    hint: 'Applied to everything unless a feature below overrides it.',
+    hint: 'Default for every feature.',
     placeholder: 'e.g. I work on a Next.js + Postgres app and care about upgrade risk.'
   },
   {
     id: 'summary',
     label: 'Release summaries',
-    hint: 'Shapes how each release in the digest is written.',
+    hint: 'Digest summaries.',
     placeholder: 'e.g. Lead with anything that breaks a build. Ignore docs-only changes.'
   },
   {
     id: 'guide',
     label: 'Repo explanations',
-    hint: 'Shapes the what-it-is, quick start, verdict and alternatives.',
+    hint: 'Repo guides.',
     placeholder: 'e.g. Assume I know React. Compare against what I already use.'
   }
 ] as const;

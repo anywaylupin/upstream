@@ -1,11 +1,11 @@
 import { StackTable } from '@/components/stack-table';
 import { SyncStackButton } from '@/components/sync-stack-button';
-import { getStackStats } from '@/lib/repo-stats';
+import { getRatingWeights, getStackStats } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 
 export default async function StackPage() {
   const user = await requireUser();
-  const { rows } = await getStackStats(user.id);
+  const [{ rows }, weights] = await Promise.all([getStackStats(user.id), getRatingWeights(user.id)]);
 
   return (
     <div className="flex w-full flex-col gap-5">
@@ -15,6 +15,7 @@ export default async function StackPage() {
 
       <StackTable
         rows={rows}
+        weights={weights}
         showStackToggle
         emptyTitle="Your stack is empty"
         emptyMessage="Paste a repo URL, or pick one from the repos you already own and watch."

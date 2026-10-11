@@ -10,11 +10,11 @@ const SAMPLE_RATING = {
   overall: 8.2,
   grade: 'A' as const,
   parts: [
-    { label: 'Activity', score: 9.4, hint: '18 releases in 90d' },
-    { label: 'Stability', score: 7.8, hint: '2 breaking in 90d' },
-    { label: 'Reach', score: 9.1, hint: '128,000 stars' },
-    { label: 'Community', score: 8.6, hint: '27,000 forks' },
-    { label: 'Upkeep', score: 9.2, hint: 'pushed 1d ago' }
+    { label: 'Activity', score: 9.4, hint: '18 releases in 90d', weight: 3 },
+    { label: 'Stability', score: 7.8, hint: '2 breaking in 90d', weight: 3 },
+    { label: 'Reach', score: 9.1, hint: '128,000 stars', weight: 2 },
+    { label: 'Community', score: 8.6, hint: '27,000 forks', weight: 2 },
+    { label: 'Upkeep', score: 9.2, hint: 'pushed 1d ago', weight: 2 }
   ]
 };
 
@@ -22,17 +22,17 @@ const HOW_IT_WORKS = [
   {
     icon: LayersIcon,
     title: 'Add a repo',
-    body: 'Paste a URL, search GitHub, or pull from repos you own and watch.'
+    body: 'Paste a URL or pick from your GitHub.'
   },
   {
     icon: NewspaperIcon,
-    title: 'It reads the changelogs',
-    body: 'Every release is summarized once and cached by content hash, so nothing is paid for twice.'
+    title: 'Changelogs, summarized',
+    body: 'Once per release, cached by content hash.'
   },
   {
     icon: SparklesIcon,
-    title: 'You get the short version',
-    body: 'What changed, what breaks, how much work the upgrade is - shaped by instructions you set per feature.'
+    title: 'The short version',
+    body: 'What changed, what breaks, upgrade effort.'
   }
 ];
 
@@ -45,8 +45,7 @@ export function Landing() {
           Release intel for the repos you depend on.
         </h1>
         <p className="max-w-xl text-muted-foreground">
-          Upstream reads every changelog, flags what breaks, rates the project, and tells you what to use instead. Bring
-          your own AI key or start on the shared one.
+          Every changelog in your stack, summarized. Breaking changes first.
         </p>
         <form action={signInWithGitHub}>
           <Button type="submit" size="lg" className="group">
@@ -55,9 +54,7 @@ export function Landing() {
             <ArrowRightIcon className="transition-transform duration-200 group-hover:translate-x-0.5" />
           </Button>
         </form>
-        <p className="text-muted-foreground text-xs">
-          Read-only access to public repo data. No write scopes, no private repos.
-        </p>
+        <p className="text-muted-foreground text-xs">Read-only. Public repos only.</p>
       </header>
 
       <section className="flex flex-col gap-3">
@@ -133,7 +130,7 @@ export function Landing() {
           </Card>
         </div>
 
-        <p className="text-muted-foreground text-xs">Sample data. Sign in to track your own repos.</p>
+        <p className="text-muted-foreground text-xs">Sample data.</p>
       </section>
     </div>
   );

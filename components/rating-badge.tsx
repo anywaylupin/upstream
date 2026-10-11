@@ -32,6 +32,7 @@ export function RatingBars({ rating }: { rating: RepoRating }) {
             />
           </span>
           <span className="w-7 shrink-0 text-right text-muted-foreground tabular-nums">{part.score.toFixed(1)}</span>
+          <span className="w-6 shrink-0 text-muted-foreground/70 tabular-nums">×{part.weight}</span>
           <span className="hidden truncate text-muted-foreground/70 sm:block">{part.hint}</span>
         </li>
       ))}

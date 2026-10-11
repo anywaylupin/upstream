@@ -111,7 +111,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
               <SearchXIcon />
             </EmptyMedia>
             <EmptyTitle>Nothing matched</EmptyTitle>
-            <EmptyDescription>Try a different term, or search GitHub directly.</EmptyDescription>
+            <EmptyDescription>Try another term.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       )}

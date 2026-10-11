@@ -5,6 +5,7 @@ import {
   KeyRoundIcon,
   type LucideIcon,
   MailIcon,
+  ScaleIcon,
   SparklesIcon,
   TimerIcon,
   TriangleAlertIcon,
@@ -15,6 +16,7 @@ import { AiKeyList } from '@/components/ai-key-list';
 import { DeleteAccountDialog } from '@/components/delete-account-dialog';
 import { DigestSettingsForm } from '@/components/digest-settings-form';
 import { InstructionTabs } from '@/components/instruction-tabs';
+import { RatingWeightsForm } from '@/components/rating-weights-form';
 import { SettingsShell } from '@/components/settings-shell';
 import { Badge } from '@/components/ui/badge';
 import { db } from '@/db';
@@ -27,6 +29,7 @@ import { previewErase } from '@/lib/erase-account';
 import { formatDate, formatRelative } from '@/lib/format';
 import { getGitHubToken } from '@/lib/github';
 import { cachedGitHubUser, cachedPrimaryEmail } from '@/lib/github-cache';
+import { getRatingWeights } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { SETTINGS_SECTIONS, type SettingsSectionId } from '@/lib/settings-sections';
 import { getRecentRuns } from '@/lib/sync';
@@ -94,7 +97,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
       ])
     : [null, null];
 
-  const [[prefs], instructionRows, ai, recentRuns, erasePreview] = await Promise.all([
+  const [[prefs], instructionRows, ai, recentRuns, erasePreview, weights] = await Promise.all([
     db
       .select({
         digestEmail: userPreferences.digestEmail,
@@ -118,7 +121,8 @@ export default async function Settings({ searchParams }: { searchParams: Promise
       .where(eq(userInstructions.userId, user.id)),
     getUserAiSummary(user.id),
     getRecentRuns(5),
-    previewErase(user.id)
+    previewErase(user.id),
+    getRatingWeights(user.id)
   ]);
 
   const byFeature = new Map(instructionRows.map((row) => [row.feature, row.text]));
@@ -185,7 +189,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         ),
         digest: (
           <>
-            <Panel title="Digest" description="Where it goes and how often." icon={MailIcon}>
+            <Panel title="Digest" description="Where and how often." icon={MailIcon}>
               <DigestSettingsForm
                 email={prefs?.digestEmail ?? ''}
                 fallbackEmail={fallbackEmail}
@@ -201,11 +205,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               />
             </Panel>
 
-            <Panel
-              icon={HistoryIcon}
-              title="Recent syncs"
-              description="Upstream checks every stacked repo hourly and picks up whoever is due."
-            >
+            <Panel icon={HistoryIcon} title="Recent syncs" description="Hourly, for every stacked repo.">
               {recentRuns.length === 0 ? (
                 <p className="flex items-center gap-2 text-muted-foreground text-sm">
                   <TimerIcon className="size-4" />
@@ -237,12 +237,13 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             <AiKeyList keys={ai.keys} />
           </Panel>
         ),
+        rating: (
+          <Panel title="Rating" description="Weight what matters to you." icon={ScaleIcon}>
+            <RatingWeightsForm initial={weights} />
+          </Panel>
+        ),
         instructions: (
-          <Panel
-            title="Instructions"
-            description="Per feature. Blank falls back to the global one."
-            icon={SparklesIcon}
-          >
+          <Panel title="Instructions" description="Blank uses Global." icon={SparklesIcon}>
             <InstructionTabs
               tabs={FEATURES.map((feature) => ({
                 id: feature.id,
@@ -255,12 +256,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           </Panel>
         ),
         danger: (
-          <Panel
-            title="Delete account"
-            description="Erases everything tied to your account. Cannot be undone."
-            icon={TriangleAlertIcon}
-            danger
-          >
+          <Panel title="Delete account" description="Permanent. Erases all your data." icon={TriangleAlertIcon} danger>
             <DeleteAccountDialog preview={erasePreview} />
           </Panel>
         )

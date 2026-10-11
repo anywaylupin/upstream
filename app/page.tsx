@@ -12,7 +12,7 @@ import { db } from '@/db';
 import { releases, repos, stackRepos, summaries } from '@/db/schema';
 import { formatRelative } from '@/lib/format';
 import { rateRepo } from '@/lib/repo-rating';
-import { getStackStats, WINDOW_DAYS, windowStart } from '@/lib/repo-stats';
+import { getRatingWeights, getStackStats, WINDOW_DAYS, windowStart } from '@/lib/repo-stats';
 import { ReleaseSummary } from '@/lib/summarize';
 
 function SectionHeading({
@@ -55,8 +55,9 @@ export default async function Dashboard() {
 
   if (repoIds.length === 0) return <DashboardEmpty />;
 
-  const [{ rows, totals }, latest] = await Promise.all([
+  const [{ rows, totals }, weights, latest] = await Promise.all([
     getStackStats(userId),
+    getRatingWeights(userId),
     repoIds.length
       ? db
           .select({
@@ -90,7 +91,7 @@ export default async function Dashboard() {
   const attention = rows
     .map((row) => ({
       row,
-      rating: rateRepo(row)
+      rating: rateRepo(row, weights)
     }))
     .sort((a, b) => b.row.breaking30d - a.row.breaking30d || a.rating.overall - b.rating.overall)
     .slice(0, 4);

@@ -174,9 +174,7 @@ export function DigestSettingsForm({
         />
         <span className="flex flex-col">
           <span className="font-medium">Send me the digest</span>
-          <span className="text-muted-foreground text-xs">
-            Off means Upstream keeps tracking releases but never emails you.
-          </span>
+          <span className="text-muted-foreground text-xs">Off: no emails. Releases still sync.</span>
         </span>
       </label>
 

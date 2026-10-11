@@ -24,6 +24,7 @@ import { eraseAccount } from '@/lib/erase-account';
 import { getGitHubToken, getReadme, getRepoMeta } from '@/lib/github';
 import { ingestRepo } from '@/lib/ingest';
 import { GUIDE_PROMPT_VERSION, generateRepoGuide } from '@/lib/repo-guide';
+import { Weights } from '@/lib/repo-rating';
 import { RepoUrlInput } from '@/lib/repo-url';
 import { MODEL } from '@/lib/summarize';
 import { summarizePending } from '@/lib/summarize-batch';
@@ -402,6 +403,26 @@ export async function selectAiModel(modelId: string): Promise<ActionResult> {
 
   revalidatePath('/', 'layout');
   return { success: true, message: model.label };
+}
+
+/** Weights arrive from a client form, so they are parsed, not trusted. */
+export async function saveRatingWeights(input: unknown): Promise<ActionResult> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Sign in required.' };
+
+  const parsed = Weights.safeParse(input);
+  if (!parsed.success) return { error: 'Those weights are not valid.' };
+
+  await db
+    .insert(userPreferences)
+    .values({ userId: session.user.id, ratingWeights: parsed.data })
+    .onConflictDoUpdate({
+      target: userPreferences.userId,
+      set: { ratingWeights: parsed.data, updatedAt: new Date() }
+    });
+
+  revalidatePath('/', 'layout');
+  return { success: true };
 }
 
 export type InstructionState = { error?: string; success?: boolean };

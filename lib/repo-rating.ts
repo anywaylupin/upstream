@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import type { RepoGuide } from '@/lib/repo-guide';
 
 /** Days of release history the activity and stability scores look at. */
@@ -18,10 +19,69 @@ export type RatingInput = {
   guide: RepoGuide | null;
 };
 
+export const CRITERIA = [
+  { id: 'activity', label: 'Activity', hint: 'How often it ships' },
+  { id: 'stability', label: 'Stability', hint: 'How rarely releases break' },
+  { id: 'reach', label: 'Reach', hint: 'Stars' },
+  { id: 'community', label: 'Community', hint: 'Forks and watchers' },
+  { id: 'upkeep', label: 'Upkeep', hint: 'Recent pushes, issue load' },
+  { id: 'docs', label: 'Docs', hint: 'README quality, AI judged' },
+  { id: 'ease', label: 'Ease', hint: 'How quick to pick up, AI judged' }
+] as const;
+
+export type CriterionId = (typeof CRITERIA)[number]['id'];
+
+export const MAX_WEIGHT = 5;
+
+/** 0 drops a criterion from the score entirely. */
+export const Weights = z.object(
+  Object.fromEntries(CRITERIA.map((c) => [c.id, z.number().int().min(0).max(MAX_WEIGHT)])) as Record<
+    CriterionId,
+    z.ZodNumber
+  >
+);
+
+export type Weights = Record<CriterionId, number>;
+
+export const PRESETS = [
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    weights: { activity: 3, stability: 3, reach: 2, community: 2, upkeep: 2, docs: 1, ease: 1 }
+  },
+  {
+    id: 'production',
+    label: 'Production-safe',
+    weights: { activity: 1, stability: 5, reach: 1, community: 1, upkeep: 4, docs: 2, ease: 1 }
+  },
+  {
+    id: 'bleeding',
+    label: 'Bleeding edge',
+    weights: { activity: 5, stability: 1, reach: 1, community: 1, upkeep: 3, docs: 1, ease: 1 }
+  },
+  {
+    id: 'popular',
+    label: 'Popular',
+    weights: { activity: 1, stability: 1, reach: 5, community: 4, upkeep: 1, docs: 1, ease: 1 }
+  }
+] as const satisfies readonly { id: string; label: string; weights: Weights }[];
+
+export const DEFAULT_WEIGHTS: Weights = PRESETS[0].weights;
+
+/** Stored jsonb is untrusted: anything malformed falls back to the default. */
+export function parseWeights(value: unknown): Weights {
+  const parsed = Weights.safeParse(value);
+  return parsed.success ? parsed.data : DEFAULT_WEIGHTS;
+}
+
+export function presetFor(weights: Weights) {
+  return PRESETS.find((preset) => CRITERIA.every((c) => preset.weights[c.id] === weights[c.id])) ?? null;
+}
+
 export type RepoRating = {
   overall: number;
   grade: 'A' | 'B' | 'C' | 'D';
-  parts: { label: string; score: number; hint: string }[];
+  parts: { label: string; score: number; hint: string; weight: number }[];
 };
 
 function clamp(value: number) {
@@ -44,7 +104,7 @@ function daysSince(date: Date | null) {
  * Note: GitHub's "used by" (dependents) count is not in the REST API - it only
  * exists on the dependency-graph HTML page - so it is deliberately absent.
  */
-export function rateRepo(input: RatingInput): RepoRating {
+export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS): RepoRating {
   const sinceRelease = daysSince(input.lastRelease);
   const sincePush = daysSince(input.pushedAt);
 
@@ -68,74 +128,79 @@ export function rateRepo(input: RatingInput): RepoRating {
   const upkeep = input.archived ? 0 : clamp(10 - sincePush / 30 - issueDrag);
 
   const parts: {
+    id: CriterionId;
     label: string;
     score: number;
     hint: string;
-    weight: number;
   }[] = [
     {
+      id: 'activity',
       label: 'Activity',
       score: activity,
-      hint: `${input.releases90d} releases in ${RATING_WINDOW_DAYS}d`,
-      weight: 0.22
+      hint: `${input.releases90d} releases in ${RATING_WINDOW_DAYS}d`
     },
     {
+      id: 'stability',
       label: 'Stability',
       score: stability,
-      hint: `${input.breaking90d} breaking in ${RATING_WINDOW_DAYS}d`,
-      weight: 0.22
+      hint: `${input.breaking90d} breaking in ${RATING_WINDOW_DAYS}d`
     },
     {
+      id: 'reach',
       label: 'Reach',
       score: reach,
-      hint: `${(input.stars ?? 0).toLocaleString()} stars`,
-      weight: 0.14
+      hint: `${(input.stars ?? 0).toLocaleString()} stars`
     },
     {
+      id: 'community',
       label: 'Community',
       score: community,
-      hint: `${(input.forks ?? 0).toLocaleString()} forks · ${(input.watchers ?? 0).toLocaleString()} watchers`,
-      weight: 0.14
+      hint: `${(input.forks ?? 0).toLocaleString()} forks · ${(input.watchers ?? 0).toLocaleString()} watchers`
     },
     {
+      id: 'upkeep',
       label: 'Upkeep',
       score: upkeep,
       hint: input.archived
         ? 'archived'
         : Number.isFinite(sincePush)
           ? `pushed ${Math.round(sincePush)}d ago`
-          : 'no push data',
-      weight: 0.14
+          : 'no push data'
     }
   ];
 
   if (input.guide) {
     parts.push(
       {
+        id: 'docs',
         label: 'Docs',
         score: clamp(input.guide.scores.docs),
-        hint: 'from the README',
-        weight: 0.07
+        hint: 'from the README'
       },
       {
+        id: 'ease',
         label: 'Ease',
         score: clamp(input.guide.scores.ease),
-        hint: 'from the README',
-        weight: 0.07
+        hint: 'from the README'
       }
     );
   }
 
-  const totalWeight = parts.reduce((sum, part) => sum + part.weight, 0);
-  const overall = round(parts.reduce((sum, part) => sum + part.score * part.weight, 0) / totalWeight);
+  // Every weight at zero would divide by zero; read that as "no preference".
+  const active = parts.some((part) => weights[part.id] > 0) ? weights : DEFAULT_WEIGHTS;
+  const totalWeight = parts.reduce((sum, part) => sum + active[part.id], 0);
+  const overall = round(parts.reduce((sum, part) => sum + part.score * active[part.id], 0) / totalWeight);
 
   return {
     overall,
     grade: overall >= 8 ? 'A' : overall >= 6.5 ? 'B' : overall >= 5 ? 'C' : 'D',
-    parts: parts.map((part) => ({
-      label: part.label,
-      score: round(part.score),
-      hint: part.hint
-    }))
+    parts: parts
+      .filter((part) => active[part.id] > 0)
+      .map((part) => ({
+        label: part.label,
+        score: round(part.score),
+        hint: part.hint,
+        weight: active[part.id]
+      }))
   };
 }
