@@ -3,7 +3,7 @@
 import { SaveIcon, SendIcon } from 'lucide-react';
 import { useActionState, useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { type DigestState, saveDigestSettings, sendDigestNow } from '@/app/actions';
+import { type DigestState, saveDigestSettings, sendDigestNow } from '@/app/actions/settings';
 import { SettingRow } from '@/components/setting-row';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

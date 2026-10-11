@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { BellIcon, CalendarDaysIcon, HourglassIcon, SearchXIcon } from 'lucide-react';
 import Link from 'next/link';
 import { DigestFilters } from '@/components/digest-filters';
@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
-import { releases, repos, stackRepos, summaries, userInstructions } from '@/db/schema';
+import { repos, userInstructions } from '@/db/schema';
 import { CHANGE_TYPES, EFFORTS, upgradeVerdict, WINDOWS } from '@/lib/digest-filters';
-import { windowStart } from '@/lib/repo-stats';
+import { getRecentReleases, getStackRepoIds, windowStart } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { type ReleaseSummary, ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
 
@@ -90,34 +90,10 @@ export default async function Digest({
   const days = WINDOWS.find((w) => String(w) === params.days) ?? 30;
   const q = (params.q ?? '').trim().toLowerCase();
 
-  const watched = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, user.id));
-  const repoIds = watched.map((w) => w.repoId);
+  const repoIds = await getStackRepoIds(user.id);
 
   const [rows, repoList, preferences] = await Promise.all([
-    repoIds.length
-      ? db
-          .select({
-            releaseId: releases.id,
-            tag: releases.tag,
-            publishedAt: releases.publishedAt,
-            owner: repos.owner,
-            name: repos.name,
-            data: summaries.data
-          })
-          .from(releases)
-          .innerJoin(repos, eq(repos.id, releases.repoId))
-          // Left join: an unsummarized release is not shown, but it is counted,
-          // so an empty digest can say "on the way" instead of "no matches".
-          .leftJoin(summaries, eq(summaries.bodyHash, releases.bodyHash))
-          .where(
-            and(
-              inArray(releases.repoId, repoIds),
-              isNotNull(releases.publishedAt),
-              gte(releases.publishedAt, windowStart(days))
-            )
-          )
-          .orderBy(desc(releases.publishedAt))
-      : Promise.resolve([]),
+    getRecentReleases(repoIds, windowStart(days)),
     repoIds.length
       ? db
           .select({ owner: repos.owner, name: repos.name })

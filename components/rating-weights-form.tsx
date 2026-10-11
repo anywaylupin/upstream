@@ -4,7 +4,7 @@ import { SaveIcon } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-variants';
-import { saveRatingWeights } from '@/app/actions';
+import { saveRatingWeights } from '@/app/actions/settings';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';

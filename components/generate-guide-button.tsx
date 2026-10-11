@@ -3,7 +3,7 @@
 import { SparklesIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { buildRepoGuide } from '@/app/actions';
+import { buildRepoGuide } from '@/app/actions/stack';
 import { Button } from '@/components/ui/button';
 
 export function GenerateGuideButton({ repoId, hasGuide }: { repoId: number; hasGuide: boolean }) {

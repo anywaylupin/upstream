@@ -1,6 +1,6 @@
 import { GitGraphIcon, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
-import { signInWithGitHub } from '@/app/actions';
+import { signInWithGitHub } from '@/app/actions/account';
 import { auth } from '@/auth';
 import { CreateMenu } from '@/components/create-menu';
 import { HeaderSearch } from '@/components/header-search';

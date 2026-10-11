@@ -1,5 +1,5 @@
 import { ArrowRightIcon, GitCompareIcon, LayersIcon, LogInIcon, NewspaperIcon, SparklesIcon } from 'lucide-react';
-import { signInWithGitHub } from '@/app/actions';
+import { signInWithGitHub } from '@/app/actions/account';
 import { RatingBars } from '@/components/rating-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

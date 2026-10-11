@@ -1,4 +1,3 @@
-import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
 import { ArrowRightIcon, ShieldCheckIcon, TriangleAlertIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -12,13 +11,10 @@ import { SyncStackButton } from '@/components/sync-stack-button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { VerdictBadge } from '@/components/verdict-badge';
-import { db } from '@/db';
-import { releases, repos, stackRepos, summaries } from '@/db/schema';
-import { DEFAULT_INSTRUCTIONS_HASH } from '@/lib/ai';
 import { upgradeVerdict } from '@/lib/digest-filters';
 import { formatRelative } from '@/lib/format';
 import { rateRepo } from '@/lib/repo-rating';
-import { getRatingWeights, getStackStats, windowStart } from '@/lib/repo-stats';
+import { getRatingWeights, getRecentReleases, getStackRepoIds, getStackStats, windowStart } from '@/lib/repo-stats';
 import { ReleaseSummary } from '@/lib/summarize';
 
 /** A section on the dashboard: a real h2 and an optional "see all" link. */
@@ -57,39 +53,14 @@ export default async function Dashboard() {
   const userId = session?.user?.id;
   if (!userId) return <Landing />;
 
-  const stack = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
-  const repoIds = stack.map((row) => row.repoId);
+  const repoIds = await getStackRepoIds(userId);
 
   if (repoIds.length === 0) return <DashboardEmpty />;
 
   const [{ rows, totals }, weights, latest] = await Promise.all([
     getStackStats(userId),
     getRatingWeights(userId),
-    repoIds.length
-      ? db
-          .select({
-            releaseId: releases.id,
-            tag: releases.tag,
-            owner: repos.owner,
-            name: repos.name,
-            data: summaries.data
-          })
-          .from(releases)
-          .innerJoin(repos, eq(repos.id, releases.repoId))
-          .leftJoin(
-            summaries,
-            and(eq(summaries.bodyHash, releases.bodyHash), eq(summaries.instructionsHash, DEFAULT_INSTRUCTIONS_HASH))
-          )
-          .where(
-            and(
-              inArray(releases.repoId, repoIds),
-              isNotNull(releases.publishedAt),
-              gte(releases.publishedAt, windowStart())
-            )
-          )
-          .orderBy(desc(releases.publishedAt))
-          .limit(5)
-      : Promise.resolve([])
+    getRecentReleases(repoIds, windowStart(), 5)
   ]);
 
   const lastSync = rows

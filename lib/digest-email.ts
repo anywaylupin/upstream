@@ -1,6 +1,7 @@
 import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
 import { db } from '@/db';
-import { releases, repos, stackRepos, summaries, userPreferences, users } from '@/db/schema';
+import { releases, repos, summaries, userPreferences, users } from '@/db/schema';
+import { getStackRepoIds } from '@/lib/repo-stats';
 import { ReleaseSummary } from '@/lib/summarize';
 
 /** How far back a digest looks when nothing has ever been sent. */
@@ -64,9 +65,7 @@ function appUrl() {
 export async function buildDigest(userId: string, options: { since?: Date } = {}): Promise<BuiltDigest | null> {
   const since = options.since ?? new Date(Date.now() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-  const stack = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
-
-  const repoIds = stack.map((row) => row.repoId);
+  const repoIds = await getStackRepoIds(userId);
   if (repoIds.length === 0) return null;
 
   const rows = await db

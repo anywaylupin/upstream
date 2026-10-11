@@ -3,7 +3,7 @@
 import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { addToStack, removeFromStack } from '@/app/actions';
+import { addToStack, removeFromStack } from '@/app/actions/stack';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 

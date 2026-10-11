@@ -4,7 +4,7 @@ import { RefreshCwIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-variants';
-import { refreshRepo } from '@/app/actions';
+import { refreshRepo } from '@/app/actions/stack';
 import { Button } from '@/components/ui/button';
 
 export function RefreshRepoButton({ repoId, label }: { repoId: number; label?: string }) {

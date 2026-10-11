@@ -4,7 +4,7 @@ import { CheckIcon, ChevronDownIcon, KeyRoundIcon, LockIcon, SparklesIcon } from
 import { useActionState, useEffect, useId, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-variants';
-import { type KeyState, saveAiKey, selectAiModel } from '@/app/actions';
+import { type KeyState, saveAiKey, selectAiModel } from '@/app/actions/ai';
 import { ProviderIcon } from '@/components/provider-icon';
 import { Button } from '@/components/ui/button';
 import {

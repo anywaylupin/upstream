@@ -1,4 +1,4 @@
-import { and, count, eq, gte, inArray, isNotNull, max } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNotNull, max } from 'drizzle-orm';
 import { cache } from 'react';
 import type { StackRow } from '@/components/stack-table';
 import { db } from '@/db';
@@ -253,11 +253,18 @@ export const getStackStats = cache(async function getStackStats(
   };
 });
 
+/**
+ * The ids of the repos a user follows. Cached per request, so the header's nav
+ * counts and the page body share one query instead of each running it.
+ */
+export const getStackRepoIds = cache(async function getStackRepoIds(userId: string) {
+  const rows = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
+  return rows.map((row) => row.repoId);
+});
+
 /** Small counts for the nav tabs - deliberately cheaper than the full stats. */
 export async function getNavCounts(userId: string) {
-  const stack = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
-
-  const repoIds = stack.map((row) => row.repoId);
+  const repoIds = await getStackRepoIds(userId);
   if (repoIds.length === 0) return { stack: 0, releases30d: 0 };
 
   const [releaseRows] = await db
@@ -278,3 +285,30 @@ export const getRatingWeights = cache(async function getRatingWeights(userId: st
     .where(eq(userPreferences.userId, userId));
   return parseWeights(row?.weights);
 });
+
+/**
+ * Releases in the window across the given repos, newest first, each joined to
+ * its shared summary. Left join: an unsummarized release still comes back with
+ * `data: null`, so a page can say "waiting for a summary" instead of nothing.
+ */
+export async function getRecentReleases(repoIds: number[], since: Date, limit?: number) {
+  if (repoIds.length === 0) return [];
+  const query = db
+    .select({
+      releaseId: releases.id,
+      tag: releases.tag,
+      publishedAt: releases.publishedAt,
+      owner: repos.owner,
+      name: repos.name,
+      data: summaries.data
+    })
+    .from(releases)
+    .innerJoin(repos, eq(repos.id, releases.repoId))
+    .leftJoin(
+      summaries,
+      and(eq(summaries.bodyHash, releases.bodyHash), eq(summaries.instructionsHash, DEFAULT_INSTRUCTIONS_HASH))
+    )
+    .where(and(inArray(releases.repoId, repoIds), isNotNull(releases.publishedAt), gte(releases.publishedAt, since)))
+    .orderBy(desc(releases.publishedAt));
+  return limit ? query.limit(limit) : query;
+}

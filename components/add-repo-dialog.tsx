@@ -1,7 +1,7 @@
 'use client';
 
 import { type ReactElement, useActionState, useEffect, useId, useState } from 'react';
-import { type AddRepoState, addRepoByUrl } from '@/app/actions';
+import { type AddRepoState, addRepoByUrl } from '@/app/actions/stack';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

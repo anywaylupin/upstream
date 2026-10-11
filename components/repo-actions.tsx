@@ -3,7 +3,7 @@
 import { EllipsisIcon, ExternalLinkIcon, RefreshCwIcon, SparklesIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { buildRepoGuide, refreshRepo } from '@/app/actions';
+import { buildRepoGuide, refreshRepo } from '@/app/actions/stack';
 import { StackButton } from '@/components/stack-button';
 import { Button } from '@/components/ui/button';
 import {

@@ -4,7 +4,7 @@ import { LogOutIcon, MonitorIcon, MoonIcon, PaletteIcon, SettingsIcon, SunIcon }
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { cn } from 'tailwind-variants';
-import { signOutAction } from '@/app/actions';
+import { signOutAction } from '@/app/actions/account';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,

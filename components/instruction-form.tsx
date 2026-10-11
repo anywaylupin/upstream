@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useId } from 'react';
 import { toast } from 'sonner';
-import { type InstructionState, saveInstruction } from '@/app/actions';
+import { type InstructionState, saveInstruction } from '@/app/actions/ai';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';

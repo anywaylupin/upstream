@@ -62,7 +62,7 @@ app/
   settings/             # ?section= driven panels
   api/auth/[...nextauth]/
   api/cron/ingest/      # scheduled run, CRON_SECRET bearer
-  actions.ts            # every server action
+  actions/              # server actions by domain: stack, ai, settings, account
 components/
   ui/                   # shadcn primitives - generated, do not hand-edit
 db/                     # schema, client, seed

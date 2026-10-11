@@ -3,7 +3,7 @@
 import { KeyRoundIcon, Trash2Icon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { removeAiKey } from '@/app/actions';
+import { removeAiKey } from '@/app/actions/ai';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

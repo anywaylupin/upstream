@@ -3,7 +3,7 @@
 import { TriangleAlertIcon } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { deleteAccount } from '@/app/actions';
+import { deleteAccount } from '@/app/actions/account';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

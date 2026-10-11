@@ -4,7 +4,7 @@ import { RefreshCwIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-variants';
-import { syncStack } from '@/app/actions';
+import { syncStack } from '@/app/actions/stack';
 import { Button } from '@/components/ui/button';
 
 export function SyncStackButton() {
