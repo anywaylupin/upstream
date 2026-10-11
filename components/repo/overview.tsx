@@ -3,6 +3,7 @@ import { CodeBlock } from '@/components/code-block';
 import { GenerateGuideButton } from '@/components/generate-guide-button';
 import { RatingBars } from '@/components/rating-badge';
 import { ScoreRing } from '@/components/score-ring';
+import { Card } from '@/components/ui/card';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import type { RepoGuide } from '@/lib/repo-guide';
 import type { RepoRating } from '@/lib/repo-rating';
@@ -22,13 +23,13 @@ export function RepoOverview({
       {rating && (
         <section className="flex flex-col gap-3">
           <h2 className="font-semibold text-lg tracking-tight">Rating</h2>
-          <div className="grid items-center gap-6 rounded-xl p-5 ring-1 ring-foreground/10 sm:grid-cols-[auto_minmax(0,1fr)]">
+          <Card className="grid items-center gap-6 p-5 sm:grid-cols-[auto_minmax(0,1fr)]">
             <div className="flex flex-col items-center gap-1">
               <ScoreRing score={rating.overall} size={96} />
               <span className="text-muted-foreground text-sm">out of 10</span>
             </div>
             <RatingBars rating={rating} />
-          </div>
+          </Card>
         </section>
       )}
 
@@ -36,15 +37,15 @@ export function RepoOverview({
         <section className="flex flex-col gap-3">
           <h2 className="font-semibold text-lg tracking-tight">How to use</h2>
           <div className="grid gap-4 lg:grid-cols-2">
-            <div className="flex flex-col gap-4 rounded-xl p-5 ring-1 ring-foreground/10">
+            <Card className="flex flex-col gap-4 p-5">
               {guide.install && <CodeBlock label="Install" code={guide.install} />}
               {guide.quickStart && <CodeBlock label="Quick start" code={guide.quickStart} />}
               {!guide.install && !guide.quickStart && (
                 <p className="text-muted-foreground text-sm">The README has no install steps.</p>
               )}
-            </div>
+            </Card>
 
-            <div className="flex flex-col gap-5 rounded-xl p-5 ring-1 ring-foreground/10">
+            <Card className="flex flex-col gap-5 p-5">
               {guide.keyConcepts.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <h3 className="font-medium text-sm">Key concepts</h3>
@@ -68,11 +69,11 @@ export function RepoOverview({
                   </ul>
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         </section>
       ) : (
-        <Empty className="rounded-xl ring-1 ring-foreground/10">
+        <Empty className="border">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <SparklesIcon />

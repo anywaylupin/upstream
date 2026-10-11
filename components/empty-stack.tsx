@@ -42,7 +42,7 @@ export function EmptyStack({
   description: string;
 }) {
   return (
-    <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
+    <Empty className="animate-rise border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <Icon />

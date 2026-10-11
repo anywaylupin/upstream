@@ -1,21 +1,14 @@
 import { eq } from 'drizzle-orm';
-import {
-  ExternalLinkIcon,
-  KeyRoundIcon,
-  type LucideIcon,
-  MailIcon,
-  ScaleIcon,
-  SparklesIcon,
-  TriangleAlertIcon,
-  UserRoundIcon
-} from 'lucide-react';
+import { ExternalLinkIcon, TriangleAlertIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { AiKeyList } from '@/components/ai-key-list';
 import { DeleteAccountDialog } from '@/components/delete-account-dialog';
 import { DigestSettingsForm } from '@/components/digest-settings-form';
+import { FactGrid } from '@/components/fact-grid';
 import { InstructionTabs } from '@/components/instruction-tabs';
 import { PageHeader } from '@/components/page-header';
 import { RatingWeightsForm } from '@/components/rating-weights-form';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UrlTabs } from '@/components/url-tabs';
 import { db } from '@/db';
 import { userInstructions, userPreferences } from '@/db/schema';
@@ -32,53 +25,26 @@ import { requireUser } from '@/lib/session';
 import { SETTINGS_SECTIONS, toSettingsSection } from '@/lib/settings-sections';
 import { getRecentRuns } from '@/lib/sync';
 
-/**
- * One icon per panel, in a tinted square. Enough to tell the panels apart when
- * scanning; deliberately not repeated on every row inside them.
- */
+/** A titled section of a settings tab: shadcn Card parts, nothing hand-rolled. */
 function Panel({
   title,
   description,
-  icon: Icon,
   children,
   danger
 }: {
   title: string;
   description?: string;
-  icon: LucideIcon;
   children: ReactNode;
   danger?: boolean;
 }) {
   return (
-    <section
-      className={danger ? 'rounded-lg p-4 ring-1 ring-destructive/40' : 'rounded-lg p-4 ring-1 ring-foreground/10'}
-    >
-      <div className="mb-3 flex items-start gap-2.5">
-        <span
-          className={
-            danger
-              ? 'flex size-7 shrink-0 items-center justify-center rounded-md bg-destructive/10 text-destructive'
-              : 'flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground'
-          }
-        >
-          <Icon className="size-4" />
-        </span>
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <h2 className="font-semibold text-sm">{title}</h2>
-          {description && <p className="text-muted-foreground text-sm">{description}</p>}
-        </div>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-4 py-1.5 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium">{children}</span>
-    </div>
+    <Card className={danger ? 'ring-destructive/40' : undefined}>
+      <CardHeader>
+        <CardTitle className={danger ? 'text-destructive' : undefined}>{title}</CardTitle>
+        {description && <CardDescription>{description}</CardDescription>}
+      </CardHeader>
+      <CardContent>{children}</CardContent>
+    </Card>
   );
 }
 
@@ -146,7 +112,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
         tabs={SETTINGS_SECTIONS.map((s) => ({ id: s.id, label: s.label, danger: s.id === 'danger' }))}
         panels={{
           account: (
-            <Panel title="GitHub account" description="Read from GitHub." icon={UserRoundIcon}>
+            <Panel title="GitHub account" description="Read from GitHub.">
               {profile ? (
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
@@ -172,14 +138,16 @@ export default async function Settings({ searchParams }: { searchParams: Promise
                     </div>
                   </div>
 
-                  <div className="divide-y divide-border">
-                    <Field label="Email">{fallbackEmail ?? 'not public'}</Field>
-                    <Field label="Public repos">{profile.public_repos}</Field>
-                    <Field label="Followers">{profile.followers}</Field>
-                    {profile.company && <Field label="Company">{profile.company}</Field>}
-                    {profile.location && <Field label="Location">{profile.location}</Field>}
-                    <Field label="Joined">{formatDate(new Date(profile.created_at))}</Field>
-                  </div>
+                  <FactGrid
+                    facts={[
+                      { label: 'Email', value: fallbackEmail ?? 'not public' },
+                      { label: 'Public repos', value: profile.public_repos },
+                      { label: 'Followers', value: profile.followers },
+                      ...(profile.company ? [{ label: 'Company', value: profile.company }] : []),
+                      ...(profile.location ? [{ label: 'Location', value: profile.location }] : []),
+                      { label: 'Joined', value: formatDate(new Date(profile.created_at)) }
+                    ]}
+                  />
                 </div>
               ) : (
                 <p className="flex items-center gap-2 text-destructive text-sm">
@@ -191,7 +159,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
           ),
           email: (
             <>
-              <Panel title="Updates email" description="Where and how often." icon={MailIcon}>
+              <Panel title="Updates email" description="Where and how often.">
                 <DigestSettingsForm
                   email={prefs?.digestEmail ?? ''}
                   fallbackEmail={fallbackEmail}
@@ -210,20 +178,19 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             </>
           ),
           rating: (
-            <Panel title="Rating" description="Weight what matters to you." icon={ScaleIcon}>
+            <Panel title="Rating" description="Weight what matters to you.">
               <RatingWeightsForm initial={weights} />
             </Panel>
           ),
           ai: (
             <div className="flex flex-col gap-6">
               <Panel
-                icon={KeyRoundIcon}
                 title="AI keys"
                 description={`Running ${findModel(ai.modelId)?.label ?? ai.modelId}. Encrypted, yours only.`}
               >
                 <AiKeyList keys={ai.keys} />
               </Panel>
-              <Panel title="Instructions" description="Blank uses Global." icon={SparklesIcon}>
+              <Panel title="Instructions" description="Blank uses Global.">
                 <InstructionTabs
                   tabs={FEATURES.map((feature) => ({
                     id: feature.id,
@@ -237,12 +204,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             </div>
           ),
           danger: (
-            <Panel
-              title="Delete account"
-              description="Permanent. Erases all your data."
-              icon={TriangleAlertIcon}
-              danger
-            >
+            <Panel title="Delete account" description="Permanent. Erases all your data." danger>
               <DeleteAccountDialog preview={erasePreview} />
             </Panel>
           )

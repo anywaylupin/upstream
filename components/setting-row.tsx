@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 /**
- * One setting: label and a line of help on the left, the control on the right.
- * Rows stack with a divider, the GitHub/Vercel settings layout.
+ * One setting as shadcn's responsive Field: label and help on the left, the
+ * control on the right, stacking on narrow screens. Kept as a component only
+ * because every settings row repeats the same four Field parts.
  */
 export function SettingRow({
   label,
@@ -16,18 +18,12 @@ export function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <div className="grid gap-3 border-border border-b py-5 first:pt-0 last:border-b-0 md:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] md:gap-8">
-      <div className="flex flex-col gap-1">
-        {htmlFor ? (
-          <label htmlFor={htmlFor} className="font-medium text-sm">
-            {label}
-          </label>
-        ) : (
-          <span className="font-medium text-sm">{label}</span>
-        )}
-        {description && <p className="text-muted-foreground text-sm">{description}</p>}
-      </div>
-      <div className="min-w-0">{children}</div>
-    </div>
+    <Field orientation="responsive" className="border-border border-b py-5 first:pt-0 last:border-b-0">
+      <FieldContent>
+        {htmlFor ? <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel> : <FieldTitle>{label}</FieldTitle>}
+        {description && <FieldDescription>{description}</FieldDescription>}
+      </FieldContent>
+      {children}
+    </Field>
   );
 }

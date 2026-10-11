@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from 'tailwind-variants';
 import { LinkPendingBar, LinkPendingIcon } from '@/components/link-pending';
+import { Badge } from '@/components/ui/badge';
 
 type Tab = { href: string; label: string; icon: LucideIcon; count?: number };
 
@@ -57,9 +58,9 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
               />
               {tab.label}
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="rounded-full bg-muted px-1.5 text-muted-foreground text-xs tabular-nums">
+                <Badge variant="secondary" className="tabular-nums">
                   {tab.count}
-                </span>
+                </Badge>
               )}
               <LinkPendingBar />
             </Link>

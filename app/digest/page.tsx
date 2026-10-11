@@ -197,7 +197,7 @@ export default async function Digest({
         (repoIds.length === 0 ? (
           <EmptyStack icon={BellIcon} title="No releases yet" description="Add a repo to see its releases." />
         ) : pending > 0 ? (
-          <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
+          <Empty className="animate-rise border">
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <HourglassIcon />
@@ -209,7 +209,7 @@ export default async function Digest({
             </EmptyHeader>
           </Empty>
         ) : (
-          <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
+          <Empty className="animate-rise border">
             <EmptyHeader>
               <EmptyMedia variant="icon">
                 <SearchXIcon />

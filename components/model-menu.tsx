@@ -3,9 +3,9 @@
 import { CheckIcon, ChevronDownIcon, KeyRoundIcon, LockIcon, SparklesIcon } from 'lucide-react';
 import { useActionState, useEffect, useId, useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { cn } from 'tailwind-variants';
 import { type KeyState, saveAiKey, selectAiModel } from '@/app/actions/ai';
 import { ProviderIcon } from '@/components/provider-icon';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import { ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -116,20 +117,13 @@ export function ModelMenu({
               {runnable(p.id).map((model) => (
                 <DropdownMenuItem key={model.id} onClick={() => choose(model.id)} className="items-start">
                   <ProviderIcon provider={p.id} className="mt-0.5" />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="flex flex-wrap items-center gap-1.5">
+                  <ItemContent className="min-w-0 gap-0.5">
+                    <ItemTitle>
                       {model.label}
-                      <span
-                        className={cn(
-                          'rounded-full px-1.5 py-px text-[10px] leading-4',
-                          model.tier === 'free' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                        )}
-                      >
-                        {model.tier}
-                      </span>
-                    </span>
-                    <span className="text-muted-foreground text-xs">{model.note}</span>
-                  </span>
+                      <Badge variant={model.tier === 'free' ? 'secondary' : 'outline'}>{model.tier}</Badge>
+                    </ItemTitle>
+                    <ItemDescription className="text-xs">{model.note}</ItemDescription>
+                  </ItemContent>
                   {activeModelId === model.id && <CheckIcon className="mt-0.5 ml-auto size-3.5 shrink-0" />}
                 </DropdownMenuItem>
               ))}

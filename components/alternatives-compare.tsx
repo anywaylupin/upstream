@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ScoreRing } from '@/components/score-ring';
 import { StackButton } from '@/components/stack-button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { RepoRating } from '@/lib/repo-rating';
 
@@ -18,7 +19,7 @@ export type CompareRow = {
 
 export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
   return (
-    <div className="rounded-lg ring-1 ring-foreground/10">
+    <Card className="overflow-hidden py-0">
       <Table className="table-fixed">
         <TableHeader>
           <TableRow>
@@ -83,6 +84,6 @@ export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
           })}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }

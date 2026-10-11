@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/page-header';
 import { ScoreRing } from '@/components/score-ring';
 import { SyncStackButton } from '@/components/sync-stack-button';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { upgradeVerdict } from '@/lib/digest-filters';
 import { formatRelative } from '@/lib/format';
@@ -41,9 +41,7 @@ function Section({
           <ArrowRightIcon className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>
       </div>
-      <Card className="gap-0 py-0">
-        <ul className="divide-y divide-border">{children}</ul>
-      </Card>
+      <ItemGroup className="gap-2">{children}</ItemGroup>
     </section>
   );
 }
@@ -102,22 +100,24 @@ export default async function Dashboard() {
       {attention.length > 0 && (
         <Section title="Needs attention" href="/stack" linkLabel="All repos">
           {attention.map(({ row, rating }) => (
-            <li key={row.repoId}>
-              <Link
-                href={`/repos/${row.owner}/${row.name}`}
-                className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
-              >
+            <Item
+              key={row.repoId}
+              variant="outline"
+              className="hover:bg-muted/50"
+              render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+            >
+              <ItemMedia>
                 <OwnerAvatar owner={row.owner} size={28} />
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate font-medium text-sm group-hover:underline">
-                    {row.owner}/{row.name}
-                  </span>
-                  <span className="truncate text-muted-foreground text-sm">{row.description ?? 'No description'}</span>
-                </span>
-                <Badge variant="destructive">{row.breaking30d} breaking</Badge>
-                <ScoreRing score={rating.overall} size={36} />
-              </Link>
-            </li>
+              </ItemMedia>
+              <ItemContent className="min-w-0">
+                <ItemTitle className="truncate">
+                  {row.owner}/{row.name}
+                </ItemTitle>
+                <ItemDescription className="truncate">{row.description ?? 'No description'}</ItemDescription>
+              </ItemContent>
+              <Badge variant="destructive">{row.breaking30d} breaking</Badge>
+              <ScoreRing score={rating.overall} size={36} />
+            </Item>
           ))}
         </Section>
       )}
@@ -127,26 +127,28 @@ export default async function Dashboard() {
           {latest.map((row) => {
             const parsed = ReleaseSummary.safeParse(row.data);
             return (
-              <li key={row.releaseId}>
-                <Link
-                  href={`/repos/${row.owner}/${row.name}`}
-                  className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/50"
-                >
+              <Item
+                key={row.releaseId}
+                variant="outline"
+                className="hover:bg-muted/50"
+                render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+              >
+                <ItemMedia>
                   <OwnerAvatar owner={row.owner} size={28} />
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="flex items-baseline gap-2">
-                      <span className="truncate font-medium text-sm group-hover:underline">
-                        {row.owner}/{row.name}
-                      </span>
-                      <span className="shrink-0 font-mono text-muted-foreground text-xs">{row.tag}</span>
+                </ItemMedia>
+                <ItemContent className="min-w-0">
+                  <ItemTitle>
+                    <span className="truncate">
+                      {row.owner}/{row.name}
                     </span>
-                    <span className="truncate text-muted-foreground text-sm">
-                      {parsed.success ? parsed.data.headline : 'Waiting for a summary'}
-                    </span>
-                  </span>
-                  {parsed.success && <VerdictBadge verdict={upgradeVerdict(parsed.data)} />}
-                </Link>
-              </li>
+                    <span className="shrink-0 font-mono font-normal text-muted-foreground text-xs">{row.tag}</span>
+                  </ItemTitle>
+                  <ItemDescription className="truncate">
+                    {parsed.success ? parsed.data.headline : 'Waiting for a summary'}
+                  </ItemDescription>
+                </ItemContent>
+                {parsed.success && <VerdictBadge verdict={upgradeVerdict(parsed.data)} />}
+              </Item>
             );
           })}
         </Section>

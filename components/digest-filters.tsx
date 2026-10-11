@@ -7,6 +7,7 @@ import { cn } from 'tailwind-variants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   CHANGE_TYPE_DOT,
   CHANGE_TYPES,
@@ -94,24 +95,24 @@ export function DigestFilters({ repos, selected }: { repos: string[]; selected: 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <fieldset aria-label="View" className="inline-flex rounded-md bg-muted p-0.5">
+        {/* Pressing the active view again would empty the group; that is ignored. */}
+        <ToggleGroup
+          aria-label="View"
+          variant="outline"
+          size="sm"
+          spacing={0}
+          value={view ? [view] : []}
+          onValueChange={(next) => {
+            const picked = VIEWS.find((v) => v.id === next[0]);
+            if (picked) setParams({ types: picked.types, effort: picked.effort });
+          }}
+        >
           {VIEWS.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              aria-pressed={view === v.id}
-              onClick={() => setParams({ types: v.types, effort: v.effort })}
-              className={cn(
-                'rounded-[5px] px-2.5 py-1 font-medium text-xs transition-colors',
-                view === v.id
-                  ? 'bg-background text-foreground shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
+            <ToggleGroupItem key={v.id} value={v.id}>
               {v.label}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </fieldset>
+        </ToggleGroup>
 
         <Button
           type="button"

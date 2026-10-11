@@ -2,11 +2,13 @@ import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { LayersIcon, SearchIcon, SearchXIcon, TagIcon } from 'lucide-react';
 import Link from 'next/link';
 import { GitHubReposTable } from '@/components/github-repos-table';
-import { Badge } from '@/components/ui/badge';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
+import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
+import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
 import { releases, repos, stackRepos, summaries } from '@/db/schema';
+import { upgradeVerdict } from '@/lib/digest-filters';
 import { formatDate } from '@/lib/format';
 import { type GitHubRepo, getGitHubToken, searchRepos } from '@/lib/github';
 import { requireUser } from '@/lib/session';
@@ -105,7 +107,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       </header>
 
       {nothing && (
-        <Empty className="rounded-lg ring-1 ring-foreground/10">
+        <Empty className="border">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <SearchXIcon />
@@ -122,21 +124,23 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <LayersIcon className="size-4 text-muted-foreground" />
             Following · {matchedRepos.length}
           </h2>
-          <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-lg ring-1 ring-foreground/10">
+          <ItemGroup className="gap-2">
             {matchedRepos.map((row) => (
-              <li key={row.repoId}>
-                <Link
-                  href={`/repos/${row.owner}/${row.name}`}
-                  className="flex flex-col gap-0.5 px-3 py-2.5 transition-colors hover:bg-muted"
-                >
-                  <span className="font-medium text-sm">
+              <Item
+                key={row.repoId}
+                variant="outline"
+                className="hover:bg-muted/50"
+                render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+              >
+                <ItemContent>
+                  <ItemTitle>
                     {row.owner}/{row.name}
-                  </span>
-                  <span className="text-muted-foreground text-sm">{row.description ?? '-'}</span>
-                </Link>
-              </li>
+                  </ItemTitle>
+                  <ItemDescription>{row.description ?? 'No description'}</ItemDescription>
+                </ItemContent>
+              </Item>
             ))}
-          </ul>
+          </ItemGroup>
         </section>
       )}
 
@@ -146,23 +150,26 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             <TagIcon className="size-4 text-muted-foreground" />
             Releases · {matchedReleases.length}
           </h2>
-          <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-lg ring-1 ring-foreground/10">
+          <ItemGroup className="gap-2">
             {matchedReleases.map((row) => (
-              <li key={row.releaseId} className="flex flex-col gap-1 px-3 py-2.5 transition-colors hover:bg-muted">
-                <div className="flex flex-wrap items-baseline gap-2">
-                  <Link href={`/repos/${row.owner}/${row.name}`} className="font-medium text-sm hover:underline">
+              <Item
+                key={row.releaseId}
+                variant="outline"
+                className="hover:bg-muted/50"
+                render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+              >
+                <ItemContent>
+                  <ItemTitle>
                     {row.owner}/{row.name}
-                  </Link>
-                  <span className="font-mono text-muted-foreground text-xs">{row.tag}</span>
-                  {row.summary.changes.some((c) => c.type === 'breaking') && (
-                    <Badge variant="destructive">breaking</Badge>
-                  )}
-                  <span className="ml-auto text-muted-foreground text-xs">{formatDate(row.publishedAt)}</span>
-                </div>
-                <span className="text-muted-foreground text-sm">{row.summary.headline}</span>
-              </li>
+                    <span className="font-mono font-normal text-muted-foreground text-xs">{row.tag}</span>
+                  </ItemTitle>
+                  <ItemDescription>{row.summary.headline}</ItemDescription>
+                </ItemContent>
+                <VerdictBadge verdict={upgradeVerdict(row.summary)} />
+                <span className="text-muted-foreground text-sm">{formatDate(row.publishedAt)}</span>
+              </Item>
             ))}
-          </ul>
+          </ItemGroup>
         </section>
       )}
 

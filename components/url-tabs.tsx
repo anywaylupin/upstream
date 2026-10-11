@@ -39,7 +39,10 @@ export function UrlTabs({
       }}
       className="gap-6"
     >
-      <TabsList variant="line" className="w-full justify-start overflow-x-auto border-border border-b">
+      <TabsList
+        variant="line"
+        className="w-full justify-start overflow-x-auto overflow-y-hidden border-border border-b"
+      >
         {tabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id} className={cn('flex-none', tab.danger && 'text-destructive/80')}>
             {tab.label}

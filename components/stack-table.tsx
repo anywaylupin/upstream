@@ -6,6 +6,7 @@ import { RefreshRepoButton } from '@/components/refresh-repo-button';
 import { ScoreRing } from '@/components/score-ring';
 import { StackButton } from '@/components/stack-button';
 import { Badge } from '@/components/ui/badge';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { formatRelative } from '@/lib/format';
 import type { RepoGuide } from '@/lib/repo-guide';
 import type { Weights } from '@/lib/repo-rating';
@@ -54,56 +55,48 @@ export function StackTable({
   }
 
   return (
-    <ul className="animate-rise divide-y divide-border overflow-hidden rounded-xl ring-1 ring-foreground/10">
+    <ItemGroup className="animate-rise gap-2">
       {rows.map((row) => {
         const rating = rateRepo(row, weights);
         return (
-          <li
-            key={row.repoId}
-            className="group relative flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50"
-          >
-            <OwnerAvatar owner={row.owner} size={32} />
-
-            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <Item key={row.repoId} variant="outline" className="relative hover:bg-muted/50">
+            <ItemMedia>
+              <OwnerAvatar owner={row.owner} size={32} />
+            </ItemMedia>
+            <ItemContent className="min-w-0">
               {/* Stretched link: the whole row navigates, the buttons stay buttons. */}
-              <Link
-                href={`/repos/${row.owner}/${row.name}`}
-                className="truncate font-medium text-sm after:absolute after:inset-0 group-hover:underline"
-              >
-                {row.owner}/{row.name}
-              </Link>
-              <span className="truncate text-muted-foreground text-sm">{row.description ?? 'No description'}</span>
-            </div>
-
-            {/* One tag, truncated: two could wrap and break the one-line rhythm. */}
-            <div className="hidden w-40 xl:flex">
-              {row.guide?.bestFor[0] && (
-                <Badge variant="outline" className="max-w-full truncate">
-                  {row.guide.bestFor[0]}
-                </Badge>
-              )}
-            </div>
-
-            <div className="hidden w-36 flex-col items-end text-sm sm:flex">
-              <span className="tabular-nums">
+              <ItemTitle>
+                <Link
+                  href={`/repos/${row.owner}/${row.name}`}
+                  className="truncate after:absolute after:inset-0 hover:underline"
+                >
+                  {row.owner}/{row.name}
+                </Link>
+              </ItemTitle>
+              <ItemDescription className="truncate">{row.description ?? 'No description'}</ItemDescription>
+            </ItemContent>
+            {row.guide?.bestFor[0] && (
+              <Badge variant="outline" className="hidden max-w-40 truncate xl:inline-flex">
+                {row.guide.bestFor[0]}
+              </Badge>
+            )}
+            <ItemContent className="hidden flex-none items-end sm:flex">
+              <ItemTitle className="tabular-nums">
                 {row.releases30d} release{row.releases30d === 1 ? '' : 's'} this month
-              </span>
-              <span className="text-muted-foreground">
+              </ItemTitle>
+              <ItemDescription>
                 {row.lastRelease ? `last ${formatRelative(row.lastRelease)}` : 'no releases yet'}
-              </span>
-            </div>
-
+              </ItemDescription>
+            </ItemContent>
             {row.breaking30d > 0 && <Badge variant="destructive">{row.breaking30d} breaking</Badge>}
-
             <ScoreRing score={rating.overall} size={40} />
-
-            <div className="relative z-10 flex items-center gap-1">
+            <ItemActions className="relative z-10">
               <RefreshRepoButton repoId={row.repoId} />
               {showStackToggle && <StackButton owner={row.owner} name={row.name} repoId={row.repoId} />}
-            </div>
-          </li>
+            </ItemActions>
+          </Item>
         );
       })}
-    </ul>
+    </ItemGroup>
   );
 }

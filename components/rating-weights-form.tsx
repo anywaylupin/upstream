@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 import { cn } from 'tailwind-variants';
 import { saveRatingWeights } from '@/app/actions/settings';
 import { Button } from '@/components/ui/button';
+import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -27,33 +29,34 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <fieldset className="grid gap-2 sm:grid-cols-2">
-        <legend className="sr-only">Preset</legend>
-        {PRESETS.map((p) => {
-          const on = preset?.id === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              aria-pressed={on}
-              onClick={() => setWeights(p.weights)}
-              className={cn(
-                'flex flex-col gap-0.5 rounded-lg p-3 text-left ring-1 transition-colors',
-                on ? 'bg-primary/5 ring-2 ring-primary' : 'ring-foreground/10 hover:bg-muted/50'
-              )}
-            >
-              <span className="font-medium text-sm">{p.label}</span>
-              <span className="text-muted-foreground text-sm">{p.description}</span>
-              <span className="mt-1 text-muted-foreground text-xs">
-                Most weight:{' '}
-                {CRITERIA.filter((c) => p.weights[c.id] === Math.max(...Object.values(p.weights)))
-                  .map((c) => c.label)
-                  .join(', ')}
-              </span>
-            </button>
-          );
-        })}
-      </fieldset>
+      {/* shadcn's choice-card pattern: real radios, and FieldLabel styles the checked card. */}
+      <RadioGroup
+        aria-label="Preset"
+        className="grid gap-2 sm:grid-cols-2"
+        value={preset?.id ?? ''}
+        onValueChange={(id) => {
+          const picked = PRESETS.find((p) => p.id === id);
+          if (picked) setWeights(picked.weights);
+        }}
+      >
+        {PRESETS.map((p) => (
+          <FieldLabel key={p.id} htmlFor={`preset-${p.id}`}>
+            <Field orientation="horizontal">
+              <FieldContent>
+                <FieldTitle>{p.label}</FieldTitle>
+                <FieldDescription>
+                  {p.description} Most weight:{' '}
+                  {CRITERIA.filter((c) => p.weights[c.id] === Math.max(...Object.values(p.weights)))
+                    .map((c) => c.label)
+                    .join(', ')}
+                  .
+                </FieldDescription>
+              </FieldContent>
+              <RadioGroupItem value={p.id} id={`preset-${p.id}`} />
+            </Field>
+          </FieldLabel>
+        ))}
+      </RadioGroup>
       {!preset && <p className="-mt-2 text-muted-foreground text-sm">Custom weights</p>}
 
       <ul className="flex flex-col gap-2.5">

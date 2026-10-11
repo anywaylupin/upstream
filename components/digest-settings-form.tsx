@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DIGEST_FREQUENCIES,
@@ -53,35 +54,35 @@ function Chips({
   disabled: boolean;
 }) {
   return (
-    <fieldset className="min-w-0">
-      <legend className="mb-1.5 font-medium text-sm">{legend}</legend>
-      <div className="flex flex-wrap gap-1">
-        {options.map((option) => {
-          const active = option.value === value;
-          return (
-            <Tooltip key={option.value}>
-              <TooltipTrigger
-                render={
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant={active ? 'default' : 'outline'}
-                    aria-label={option.title}
-                    aria-pressed={active}
-                    disabled={disabled}
-                    onClick={() => onChange(option.value)}
-                    className="rounded-full tabular-nums"
-                  />
-                }
-              >
-                {option.chip}
-              </TooltipTrigger>
-              <TooltipContent>{option.title}</TooltipContent>
-            </Tooltip>
-          );
-        })}
-      </div>
-    </fieldset>
+    <ToggleGroup
+      aria-label={legend}
+      variant="outline"
+      size="sm"
+      spacing={1}
+      className="flex-wrap"
+      disabled={disabled}
+      value={[String(value)]}
+      onValueChange={(next) => {
+        if (next[0]) onChange(Number(next[0]));
+      }}
+    >
+      {options.map((option) => (
+        <Tooltip key={option.value}>
+          <TooltipTrigger
+            render={
+              <ToggleGroupItem
+                value={String(option.value)}
+                aria-label={option.title}
+                className="size-8 rounded-full p-0 tabular-nums"
+              />
+            }
+          >
+            {option.chip}
+          </TooltipTrigger>
+          <TooltipContent>{option.title}</TooltipContent>
+        </Tooltip>
+      ))}
+    </ToggleGroup>
   );
 }
 

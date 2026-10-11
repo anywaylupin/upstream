@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { upgradeVerdict } from '@/lib/digest-filters';
@@ -25,7 +26,7 @@ export function ReleasesTable({
   return releaseRows.length === 0 ? (
     <p className="text-muted-foreground text-sm">No releases yet. Check for new releases from the menu.</p>
   ) : (
-    <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+    <Card className="overflow-hidden py-0">
       <Table className="table-fixed">
         <TableHeader>
           <TableRow>
@@ -65,6 +66,6 @@ export function ReleasesTable({
           })}
         </TableBody>
       </Table>
-    </div>
+    </Card>
   );
 }
