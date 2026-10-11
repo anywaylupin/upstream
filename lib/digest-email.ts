@@ -178,7 +178,7 @@ ${items}
 <tr><td style="padding-top:20px">
   ${more}
   <a href="${appUrl()}/digest" style="font:600 14px/1 ${font};color:#00786f;text-decoration:none">Open the full digest &rarr;</a>
-  <p style="font:400 12px/1.5 ${font};color:#a8a29e;margin-top:16px"><a href="${appUrl()}/settings?section=digest" style="color:#a8a29e">Change frequency or turn this off</a></p>
+  <p style="font:400 12px/1.5 ${font};color:#a8a29e;margin-top:16px"><a href="${appUrl()}/settings?section=email" style="color:#a8a29e">Change frequency or turn this off</a></p>
 </td></tr>
 </table>
 </body></html>`;

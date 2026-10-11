@@ -25,14 +25,14 @@ const NEXT_STEPS = [
     icon: MessageSquareTextIcon,
     title: 'Set instructions',
     body: 'Shape every summary.',
-    href: '/settings?section=instructions',
+    href: '/settings?section=ai',
     cta: 'Set up'
   },
   {
     icon: KeyRoundIcon,
     title: 'Add an AI key',
     body: 'Use your own quota.',
-    href: '/settings?section=keys',
+    href: '/settings?section=ai',
     cta: 'Add key'
   }
 ];

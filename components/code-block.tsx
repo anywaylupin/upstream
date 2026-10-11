@@ -12,7 +12,7 @@ export function CodeBlock({ code, label }: { code: string; label?: string }) {
     <figure className="flex flex-col gap-1.5">
       {label && <figcaption className="text-muted-foreground text-sm">{label}</figcaption>}
       <div className="group relative">
-        <pre className="overflow-x-auto rounded-lg bg-muted px-4 py-3 pr-12 font-mono text-[13px] leading-relaxed">
+        <pre className="wrap-break-word whitespace-pre-wrap rounded-lg bg-muted px-4 py-3 pr-12 font-mono text-[13px] leading-relaxed">
           <code>{code}</code>
         </pre>
         <Button

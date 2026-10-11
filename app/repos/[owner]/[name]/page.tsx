@@ -4,15 +4,16 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { AlternativesCompare, type CompareRow } from '@/components/alternatives-compare';
 import { CodeBlock } from '@/components/code-block';
+import { FactGrid } from '@/components/fact-grid';
 import { GenerateGuideButton } from '@/components/generate-guide-button';
 import { OwnerAvatar } from '@/components/owner-avatar';
 import { RatingBars } from '@/components/rating-badge';
 import { RepoActions } from '@/components/repo-actions';
-import { type RepoTab, RepoTabs } from '@/components/repo-tabs';
 import { ScoreRing } from '@/components/score-ring';
 import { Badge } from '@/components/ui/badge';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { UrlTabs } from '@/components/url-tabs';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
 import { releases, repos, stackRepos, summaries } from '@/db/schema';
@@ -46,8 +47,7 @@ export default async function RepoReport({
   const user = await requireUser();
   const { owner, name } = await params;
   const requestedTab = (await searchParams).tab;
-  const initialTab: RepoTab =
-    requestedTab === 'releases' || requestedTab === 'alternatives' ? requestedTab : 'overview';
+  const initialTab = requestedTab === 'releases' || requestedTab === 'alternatives' ? requestedTab : 'overview';
 
   const ai = await getAiContext(user.id);
 
@@ -361,20 +361,17 @@ export default async function RepoReport({
           />
         </div>
 
-        {/* Facts as labelled cells rather than a run of icons and numbers. */}
-        <dl className="grid grid-cols-2 overflow-hidden rounded-xl ring-1 ring-foreground/10 sm:grid-cols-3 lg:grid-cols-6 lg:divide-x lg:divide-border">
-          {facts.map((fact) => (
-            <div key={fact.label} className="flex flex-col gap-1 px-4 py-3">
-              <dt className="text-muted-foreground text-xs">{fact.label}</dt>
-              <dd className="flex min-h-7 items-center font-medium text-sm tabular-nums">{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <FactGrid facts={facts} />
       </header>
 
-      <RepoTabs
+      <UrlTabs
+        param="tab"
         initial={initialTab}
-        counts={{ releases: totalRows[0]?.total ?? 0, alternatives: Math.max(0, compareRows.length - 1) }}
+        tabs={[
+          { id: 'overview', label: 'Overview' },
+          { id: 'releases', label: 'Releases', count: totalRows[0]?.total ?? 0 },
+          { id: 'alternatives', label: 'Alternatives', count: Math.max(0, compareRows.length - 1) }
+        ]}
         panels={{ overview, releases: releasesPanel, alternatives: alternativesPanel }}
       />
     </div>

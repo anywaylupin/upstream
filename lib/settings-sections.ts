@@ -1,15 +1,21 @@
 /**
  * Plain module on purpose: a server component importing a value from a
- * "use client" file gets a client-reference proxy, not the array. Icons stay in
- * the client nav, keyed by these ids.
+ * "use client" file gets a client-reference proxy, not the array.
  */
 export const SETTINGS_SECTIONS = [
   { id: 'account', label: 'Account' },
-  { id: 'digest', label: 'Email' },
-  { id: 'keys', label: 'AI keys' },
+  { id: 'email', label: 'Email' },
+  { id: 'ai', label: 'AI' },
   { id: 'rating', label: 'Rating' },
-  { id: 'instructions', label: 'Instructions' },
   { id: 'danger', label: 'Danger zone' }
 ] as const;
 
 export type SettingsSectionId = (typeof SETTINGS_SECTIONS)[number]['id'];
+
+/** Old ids still arrive from sent emails and bookmarks. */
+const ALIASES: Record<string, SettingsSectionId> = { digest: 'email', keys: 'ai', instructions: 'ai' };
+
+export function toSettingsSection(value: string | undefined): SettingsSectionId {
+  const id = value && (ALIASES[value] ?? value);
+  return SETTINGS_SECTIONS.find((s) => s.id === id)?.id ?? 'account';
+}

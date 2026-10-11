@@ -1,13 +1,11 @@
 import { eq } from 'drizzle-orm';
 import {
   ExternalLinkIcon,
-  HistoryIcon,
   KeyRoundIcon,
   type LucideIcon,
   MailIcon,
   ScaleIcon,
   SparklesIcon,
-  TimerIcon,
   TriangleAlertIcon,
   UserRoundIcon
 } from 'lucide-react';
@@ -18,8 +16,7 @@ import { DigestSettingsForm } from '@/components/digest-settings-form';
 import { InstructionTabs } from '@/components/instruction-tabs';
 import { PageHeader } from '@/components/page-header';
 import { RatingWeightsForm } from '@/components/rating-weights-form';
-import { SettingsShell } from '@/components/settings-shell';
-import { Badge } from '@/components/ui/badge';
+import { UrlTabs } from '@/components/url-tabs';
 import { db } from '@/db';
 import { userInstructions, userPreferences } from '@/db/schema';
 import { FEATURES } from '@/lib/ai';
@@ -32,7 +29,7 @@ import { getGitHubToken } from '@/lib/github';
 import { cachedGitHubUser, cachedPrimaryEmail } from '@/lib/github-cache';
 import { getRatingWeights } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
-import { SETTINGS_SECTIONS, type SettingsSectionId } from '@/lib/settings-sections';
+import { SETTINGS_SECTIONS, toSettingsSection } from '@/lib/settings-sections';
 import { getRecentRuns } from '@/lib/sync';
 
 /**
@@ -88,7 +85,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 export default async function Settings({ searchParams }: { searchParams: Promise<{ section?: string }> }) {
   const user = await requireUser();
   const requested = (await searchParams).section;
-  const section: SettingsSectionId = SETTINGS_SECTIONS.find((s) => s.id === requested)?.id ?? 'account';
+  const section = toSettingsSection(requested);
 
   const token = await getGitHubToken(user.id);
   const [profile, githubEmail] = token
@@ -121,7 +118,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
       .from(userInstructions)
       .where(eq(userInstructions.userId, user.id)),
     getUserAiSummary(user.id),
-    getRecentRuns(5),
+    getRecentRuns(1),
     previewErase(user.id),
     getRatingWeights(user.id)
   ]);
@@ -143,8 +140,10 @@ export default async function Settings({ searchParams }: { searchParams: Promise
   return (
     <div className="flex w-full flex-col gap-6">
       <PageHeader title="Settings" description="Account, email, AI and how repos are rated." />
-      <SettingsShell
+      <UrlTabs
+        param="section"
         initial={section}
+        tabs={SETTINGS_SECTIONS.map((s) => ({ id: s.id, label: s.label, danger: s.id === 'danger' }))}
         panels={{
           account: (
             <Panel title="GitHub account" description="Read from GitHub." icon={UserRoundIcon}>
@@ -190,7 +189,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               )}
             </Panel>
           ),
-          digest: (
+          email: (
             <>
               <Panel title="Updates email" description="Where and how often." icon={MailIcon}>
                 <DigestSettingsForm
@@ -204,59 +203,38 @@ export default async function Settings({ searchParams }: { searchParams: Promise
                   dayOfMonth={schedule.dayOfMonth}
                   intervalDays={schedule.intervalDays}
                   lastDigestAt={schedule.lastDigestAt?.toISOString() ?? null}
+                  lastChecked={recentRuns[0] ? formatRelative(recentRuns[0].startedAt) : undefined}
                   mailConfigured={mailProviderConfigured()}
                 />
               </Panel>
-
-              <Panel icon={HistoryIcon} title="Recent syncs" description="Hourly, for every repo you follow.">
-                {recentRuns.length === 0 ? (
-                  <p className="flex items-center gap-2 text-muted-foreground text-sm">
-                    <TimerIcon className="size-4" />
-                    No runs yet.
-                  </p>
-                ) : (
-                  <ul className="flex flex-col divide-y divide-border">
-                    {recentRuns.map((run) => (
-                      <li key={run.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                        <Badge variant={run.trigger === 'cron' ? 'secondary' : 'outline'}>{run.trigger}</Badge>
-                        <span className="text-muted-foreground">{formatRelative(run.startedAt)}</span>
-                        <span className="ml-auto text-muted-foreground text-xs tabular-nums">
-                          {run.repos} repos · {run.releasesNew} new · {run.summarized} summarized
-                        </span>
-                        {run.errors > 0 && <Badge variant="destructive">{run.errors} failed</Badge>}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Panel>
             </>
-          ),
-          keys: (
-            <Panel
-              icon={KeyRoundIcon}
-              title="AI keys"
-              description={`Running ${findModel(ai.modelId)?.label ?? ai.modelId}. Encrypted, yours only.`}
-            >
-              <AiKeyList keys={ai.keys} />
-            </Panel>
           ),
           rating: (
             <Panel title="Rating" description="Weight what matters to you." icon={ScaleIcon}>
               <RatingWeightsForm initial={weights} />
             </Panel>
           ),
-          instructions: (
-            <Panel title="Instructions" description="Blank uses Global." icon={SparklesIcon}>
-              <InstructionTabs
-                tabs={FEATURES.map((feature) => ({
-                  id: feature.id,
-                  label: feature.label,
-                  hint: feature.hint,
-                  placeholder: feature.placeholder,
-                  value: byFeature.get(feature.id) ?? ''
-                }))}
-              />
-            </Panel>
+          ai: (
+            <div className="flex flex-col gap-6">
+              <Panel
+                icon={KeyRoundIcon}
+                title="AI keys"
+                description={`Running ${findModel(ai.modelId)?.label ?? ai.modelId}. Encrypted, yours only.`}
+              >
+                <AiKeyList keys={ai.keys} />
+              </Panel>
+              <Panel title="Instructions" description="Blank uses Global." icon={SparklesIcon}>
+                <InstructionTabs
+                  tabs={FEATURES.map((feature) => ({
+                    id: feature.id,
+                    label: feature.label,
+                    hint: feature.hint,
+                    placeholder: feature.placeholder,
+                    value: byFeature.get(feature.id) ?? ''
+                  }))}
+                />
+              </Panel>
+            </div>
           ),
           danger: (
             <Panel
