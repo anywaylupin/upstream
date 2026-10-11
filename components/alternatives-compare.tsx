@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { RatingBadge } from '@/components/rating-badge';
+import { ScoreRing } from '@/components/score-ring';
 import { StackButton } from '@/components/stack-button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -60,7 +60,7 @@ export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
                 </TableCell>
                 <TableCell>
                   {row.rating ? (
-                    <RatingBadge rating={row.rating} />
+                    <ScoreRing score={row.rating.overall} size={32} />
                   ) : (
                     <span className="text-muted-foreground text-xs">not followed</span>
                   )}

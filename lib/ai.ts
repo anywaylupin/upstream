@@ -10,7 +10,7 @@ import type { LanguageModel } from 'ai';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { aiKeys, userInstructions, userPreferences } from '@/db/schema';
-import { DEFAULT_MODEL_ID, findModel, MODELS, PROVIDERS, type ProviderId } from '@/lib/ai-models';
+import { canRun, DEFAULT_MODEL_ID, findModel, MODELS, PROVIDERS, type ProviderId } from '@/lib/ai-models';
 import { decryptSecret } from '@/lib/crypto';
 
 /** Keeps instruction-free output on the shared cache key. */
@@ -146,7 +146,11 @@ export async function getAiContext(userId: string, feature: Feature = 'global'):
   const byFeature = new Map(instructionRows.map((row) => [row.feature, row.text]));
   const instructions = byFeature.get(feature)?.trim() || byFeature.get('global')?.trim() || null;
 
-  const wanted = findModel(prefs?.aiModel) ?? findModel(DEFAULT_MODEL_ID);
+  const own = keys.map((key) => key.provider);
+  const chosen = findModel(prefs?.aiModel);
+  // A saved choice can stop being runnable (key removed, paid model on the
+  // shared key); fall back to the default rather than fail every summary.
+  const wanted = chosen && canRun(chosen, { own, server: serverProviders() }) ? chosen : findModel(DEFAULT_MODEL_ID);
   if (!wanted) throw new Error('No AI model configured.');
 
   const stored = keys.find((key) => key.provider === wanted.provider);

@@ -28,7 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { findModel, PROVIDERS, type ProviderId, providerOf, sortedModelsByProvider } from '@/lib/ai-models';
+import { canRun, findModel, PROVIDERS, type ProviderId, providerOf, sortedModelsByProvider } from '@/lib/ai-models';
 
 const initialState: KeyState = {};
 
@@ -68,14 +68,11 @@ export function ModelMenu({
     });
   }
 
-  // Usable means there is a key to run it with: the user's own, or one in the
-  // server's env. A provider with neither is not offered at all - listing a
-  // model that cannot run is worse than not listing it.
-  function usable(p: ProviderId) {
-    return serverProviders.includes(p) || keyedProviders.includes(p);
-  }
-
-  const offered = PROVIDERS.filter((p) => usable(p.id));
+  // Only models that will actually run: own key unlocks a provider, the shared
+  // key covers its free tier. Listing a model that fails on use is worse than hiding it.
+  const keys = { own: keyedProviders, server: serverProviders };
+  const runnable = (p: ProviderId) => sortedModelsByProvider(p).filter((m) => canRun(m, keys));
+  const offered = PROVIDERS.filter((p) => runnable(p.id).length > 0);
 
   return (
     <>
@@ -116,7 +113,7 @@ export function ModelMenu({
                 {p.label}
                 {keyedProviders.includes(p.id) && <span className="text-muted-foreground">· your key</span>}
               </DropdownMenuLabel>
-              {sortedModelsByProvider(p.id).map((model) => (
+              {runnable(p.id).map((model) => (
                 <DropdownMenuItem key={model.id} onClick={() => choose(model.id)} className="items-start">
                   <ProviderIcon provider={p.id} className="mt-0.5" />
                   <span className="flex min-w-0 flex-col">
@@ -143,7 +140,10 @@ export function ModelMenu({
           <DropdownMenuGroup>
             <DropdownMenuItem onClick={() => setDialogOpen(true)}>
               <KeyRoundIcon />
-              Add an API key
+              <span className="flex flex-col">
+                Add an API key
+                <span className="text-muted-foreground text-xs">Unlocks paid models</span>
+              </span>
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>

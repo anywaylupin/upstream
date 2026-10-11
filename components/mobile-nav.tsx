@@ -1,6 +1,14 @@
 'use client';
 
-import { BookMarkedIcon, GaugeIcon, LayersIcon, MenuIcon, NewspaperIcon, SearchIcon, SettingsIcon } from 'lucide-react';
+import {
+  BellIcon,
+  BookmarkIcon,
+  FolderGit2Icon,
+  LayoutDashboardIcon,
+  MenuIcon,
+  SearchIcon,
+  SettingsIcon
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -10,10 +18,10 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const LINKS = [
-  { href: '/', label: 'Dashboard', icon: GaugeIcon },
-  { href: '/digest', label: 'Updates', icon: NewspaperIcon },
-  { href: '/stack', label: 'Following', icon: LayersIcon },
-  { href: '/repositories', label: 'Repositories', icon: BookMarkedIcon },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboardIcon },
+  { href: '/digest', label: 'Updates', icon: BellIcon },
+  { href: '/stack', label: 'Following', icon: BookmarkIcon },
+  { href: '/repositories', label: 'Repositories', icon: FolderGit2Icon },
   { href: '/search', label: 'Search', icon: SearchIcon },
   { href: '/settings', label: 'Settings', icon: SettingsIcon }
 ];
@@ -63,7 +71,7 @@ export function MobileNav({ stackCount, digestCount }: { stackCount: number; dig
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 )}
               >
-                <LinkPendingIcon icon={link.icon} className="size-4" />
+                <LinkPendingIcon icon={link.icon} className={cn('size-4', active && 'text-primary')} />
                 {link.label}
                 {count !== undefined && count > 0 && (
                   <span className="ml-auto rounded-full bg-muted px-1.5 text-muted-foreground text-xs tabular-nums">

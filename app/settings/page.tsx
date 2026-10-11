@@ -16,6 +16,7 @@ import { AiKeyList } from '@/components/ai-key-list';
 import { DeleteAccountDialog } from '@/components/delete-account-dialog';
 import { DigestSettingsForm } from '@/components/digest-settings-form';
 import { InstructionTabs } from '@/components/instruction-tabs';
+import { PageHeader } from '@/components/page-header';
 import { RatingWeightsForm } from '@/components/rating-weights-form';
 import { SettingsShell } from '@/components/settings-shell';
 import { Badge } from '@/components/ui/badge';
@@ -140,127 +141,135 @@ export default async function Settings({ searchParams }: { searchParams: Promise
   };
 
   return (
-    <SettingsShell
-      initial={section}
-      panels={{
-        account: (
-          <Panel title="GitHub account" description="Read from GitHub." icon={UserRoundIcon}>
-            {profile ? (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  {/* biome-ignore lint/performance/noImgElement: remote avatar */}
-                  <img
-                    src={profile.avatar_url}
-                    alt=""
-                    width={44}
-                    height={44}
-                    className="rounded-full ring-1 ring-foreground/10"
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-medium text-sm">{profile.name ?? profile.login}</span>
-                    <a
-                      href={profile.html_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
-                    >
-                      @{profile.login}
-                      <ExternalLinkIcon className="size-3" />
-                    </a>
+    <div className="flex w-full flex-col gap-6">
+      <PageHeader title="Settings" description="Account, email, AI and how repos are rated." />
+      <SettingsShell
+        initial={section}
+        panels={{
+          account: (
+            <Panel title="GitHub account" description="Read from GitHub." icon={UserRoundIcon}>
+              {profile ? (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    {/* biome-ignore lint/performance/noImgElement: remote avatar */}
+                    <img
+                      src={profile.avatar_url}
+                      alt=""
+                      width={44}
+                      height={44}
+                      className="rounded-full ring-1 ring-foreground/10"
+                    />
+                    <div className="flex flex-col">
+                      <span className="font-medium text-sm">{profile.name ?? profile.login}</span>
+                      <a
+                        href={profile.html_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-muted-foreground text-xs transition-colors hover:text-foreground"
+                      >
+                        @{profile.login}
+                        <ExternalLinkIcon className="size-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-border">
+                    <Field label="Email">{fallbackEmail ?? 'not public'}</Field>
+                    <Field label="Public repos">{profile.public_repos}</Field>
+                    <Field label="Followers">{profile.followers}</Field>
+                    {profile.company && <Field label="Company">{profile.company}</Field>}
+                    {profile.location && <Field label="Location">{profile.location}</Field>}
+                    <Field label="Joined">{formatDate(new Date(profile.created_at))}</Field>
                   </div>
                 </div>
-
-                <div className="divide-y divide-border">
-                  <Field label="Email">{fallbackEmail ?? 'not public'}</Field>
-                  <Field label="Public repos">{profile.public_repos}</Field>
-                  <Field label="Followers">{profile.followers}</Field>
-                  {profile.company && <Field label="Company">{profile.company}</Field>}
-                  {profile.location && <Field label="Location">{profile.location}</Field>}
-                  <Field label="Joined">{formatDate(new Date(profile.created_at))}</Field>
-                </div>
-              </div>
-            ) : (
-              <p className="flex items-center gap-2 text-destructive text-sm">
-                <TriangleAlertIcon className="size-4 shrink-0" />
-                GitHub sign-in expired. Sign out and back in.
-              </p>
-            )}
-          </Panel>
-        ),
-        digest: (
-          <>
-            <Panel title="Updates email" description="Where and how often." icon={MailIcon}>
-              <DigestSettingsForm
-                email={prefs?.digestEmail ?? ''}
-                fallbackEmail={fallbackEmail}
-                enabled={schedule.enabled}
-                frequency={schedule.frequency}
-                hour={schedule.hour}
-                weekday={schedule.weekday}
-                timezone={schedule.timezone}
-                dayOfMonth={schedule.dayOfMonth}
-                intervalDays={schedule.intervalDays}
-                lastDigestAt={schedule.lastDigestAt?.toISOString() ?? null}
-                mailConfigured={mailProviderConfigured()}
-              />
-            </Panel>
-
-            <Panel icon={HistoryIcon} title="Recent syncs" description="Hourly, for every repo you follow.">
-              {recentRuns.length === 0 ? (
-                <p className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <TimerIcon className="size-4" />
-                  No runs yet.
-                </p>
               ) : (
-                <ul className="flex flex-col divide-y divide-border">
-                  {recentRuns.map((run) => (
-                    <li key={run.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
-                      <Badge variant={run.trigger === 'cron' ? 'secondary' : 'outline'}>{run.trigger}</Badge>
-                      <span className="text-muted-foreground">{formatRelative(run.startedAt)}</span>
-                      <span className="ml-auto text-muted-foreground text-xs tabular-nums">
-                        {run.repos} repos · {run.releasesNew} new · {run.summarized} summarized
-                      </span>
-                      {run.errors > 0 && <Badge variant="destructive">{run.errors} failed</Badge>}
-                    </li>
-                  ))}
-                </ul>
+                <p className="flex items-center gap-2 text-destructive text-sm">
+                  <TriangleAlertIcon className="size-4 shrink-0" />
+                  GitHub sign-in expired. Sign out and back in.
+                </p>
               )}
             </Panel>
-          </>
-        ),
-        keys: (
-          <Panel
-            icon={KeyRoundIcon}
-            title="AI keys"
-            description={`Running ${findModel(ai.modelId)?.label ?? ai.modelId}. Encrypted, yours only.`}
-          >
-            <AiKeyList keys={ai.keys} />
-          </Panel>
-        ),
-        rating: (
-          <Panel title="Rating" description="Weight what matters to you." icon={ScaleIcon}>
-            <RatingWeightsForm initial={weights} />
-          </Panel>
-        ),
-        instructions: (
-          <Panel title="Instructions" description="Blank uses Global." icon={SparklesIcon}>
-            <InstructionTabs
-              tabs={FEATURES.map((feature) => ({
-                id: feature.id,
-                label: feature.label,
-                hint: feature.hint,
-                placeholder: feature.placeholder,
-                value: byFeature.get(feature.id) ?? ''
-              }))}
-            />
-          </Panel>
-        ),
-        danger: (
-          <Panel title="Delete account" description="Permanent. Erases all your data." icon={TriangleAlertIcon} danger>
-            <DeleteAccountDialog preview={erasePreview} />
-          </Panel>
-        )
-      }}
-    />
+          ),
+          digest: (
+            <>
+              <Panel title="Updates email" description="Where and how often." icon={MailIcon}>
+                <DigestSettingsForm
+                  email={prefs?.digestEmail ?? ''}
+                  fallbackEmail={fallbackEmail}
+                  enabled={schedule.enabled}
+                  frequency={schedule.frequency}
+                  hour={schedule.hour}
+                  weekday={schedule.weekday}
+                  timezone={schedule.timezone}
+                  dayOfMonth={schedule.dayOfMonth}
+                  intervalDays={schedule.intervalDays}
+                  lastDigestAt={schedule.lastDigestAt?.toISOString() ?? null}
+                  mailConfigured={mailProviderConfigured()}
+                />
+              </Panel>
+
+              <Panel icon={HistoryIcon} title="Recent syncs" description="Hourly, for every repo you follow.">
+                {recentRuns.length === 0 ? (
+                  <p className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <TimerIcon className="size-4" />
+                    No runs yet.
+                  </p>
+                ) : (
+                  <ul className="flex flex-col divide-y divide-border">
+                    {recentRuns.map((run) => (
+                      <li key={run.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
+                        <Badge variant={run.trigger === 'cron' ? 'secondary' : 'outline'}>{run.trigger}</Badge>
+                        <span className="text-muted-foreground">{formatRelative(run.startedAt)}</span>
+                        <span className="ml-auto text-muted-foreground text-xs tabular-nums">
+                          {run.repos} repos · {run.releasesNew} new · {run.summarized} summarized
+                        </span>
+                        {run.errors > 0 && <Badge variant="destructive">{run.errors} failed</Badge>}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Panel>
+            </>
+          ),
+          keys: (
+            <Panel
+              icon={KeyRoundIcon}
+              title="AI keys"
+              description={`Running ${findModel(ai.modelId)?.label ?? ai.modelId}. Encrypted, yours only.`}
+            >
+              <AiKeyList keys={ai.keys} />
+            </Panel>
+          ),
+          rating: (
+            <Panel title="Rating" description="Weight what matters to you." icon={ScaleIcon}>
+              <RatingWeightsForm initial={weights} />
+            </Panel>
+          ),
+          instructions: (
+            <Panel title="Instructions" description="Blank uses Global." icon={SparklesIcon}>
+              <InstructionTabs
+                tabs={FEATURES.map((feature) => ({
+                  id: feature.id,
+                  label: feature.label,
+                  hint: feature.hint,
+                  placeholder: feature.placeholder,
+                  value: byFeature.get(feature.id) ?? ''
+                }))}
+              />
+            </Panel>
+          ),
+          danger: (
+            <Panel
+              title="Delete account"
+              description="Permanent. Erases all your data."
+              icon={TriangleAlertIcon}
+              danger
+            >
+              <DeleteAccountDialog preview={erasePreview} />
+            </Panel>
+          )
+        }}
+      />
+    </div>
   );
 }

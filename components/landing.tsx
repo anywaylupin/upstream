@@ -8,7 +8,6 @@ import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/comp
 
 const SAMPLE_RATING = {
   overall: 8.2,
-  grade: 'A' as const,
   parts: [
     { label: 'Activity', score: 9.4, hint: '18 releases in 90d', weight: 3 },
     { label: 'Stability', score: 7.8, hint: '2 breaking in 90d', weight: 3 },

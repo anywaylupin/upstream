@@ -9,8 +9,8 @@ import { after } from 'next/server';
 import { auth, signIn, signOut } from '@/auth';
 import { db } from '@/db';
 import { aiKeys, repoGuides, repos, stackRepos, userInstructions, userPreferences } from '@/db/schema';
-import { aiErrorMessage, FEATURES, type Feature, getAiContext, modelFor } from '@/lib/ai';
-import { findModel, PROVIDERS, type ProviderId } from '@/lib/ai-models';
+import { aiErrorMessage, FEATURES, type Feature, getAiContext, modelFor, serverProviders } from '@/lib/ai';
+import { canRun, findModel, PROVIDERS, type ProviderId, providerOf } from '@/lib/ai-models';
 import { encryptSecret } from '@/lib/crypto';
 import { DigestDeliveryError, sendDigestToUser } from '@/lib/digest-email';
 import {
@@ -383,14 +383,9 @@ export async function selectAiModel(modelId: string): Promise<ActionResult> {
   const model = findModel(modelId);
   if (!model) return { error: 'Unknown model.' };
 
-  if (model.provider !== 'google') {
-    const [key] = await db
-      .select({ id: aiKeys.id })
-      .from(aiKeys)
-      .where(and(eq(aiKeys.userId, session.user.id), eq(aiKeys.provider, model.provider)));
-    if (!key) {
-      return { error: `Add a ${model.provider} key before selecting this.` };
-    }
+  const own = await db.select({ provider: aiKeys.provider }).from(aiKeys).where(eq(aiKeys.userId, session.user.id));
+  if (!canRun(model, { own: own.map((k) => k.provider), server: serverProviders() })) {
+    return { error: `Add a ${providerOf(model.provider)?.label ?? model.provider} key to use this model.` };
   }
 
   await db

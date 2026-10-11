@@ -1,5 +1,6 @@
 /** Asserts the rating weights maths. Run with `pnpm check:rating`; needs no env. */
 import assert from 'node:assert/strict';
+import { canRun, findModel } from '@/lib/ai-models';
 import { upgradeVerdict } from '@/lib/digest-filters';
 import { DEFAULT_WEIGHTS, PRESETS, parseWeights, presetFor, rateRepo } from '@/lib/repo-rating';
 
@@ -70,5 +71,14 @@ assert.equal(upgradeVerdict(release('breaking', 'none')), 'breaking');
 assert.equal(upgradeVerdict(release('feature', 'high')), 'review');
 assert.equal(upgradeVerdict(release('deprecation', 'low')), 'review');
 assert.equal(upgradeVerdict(release('feature', 'low')), 'safe');
+
+// Model availability: the shared key never runs a paid model.
+const free = findModel('gemini-3.6-flash');
+const paid = findModel('gemini-3.6-pro');
+assert.ok(free && paid);
+assert.ok(canRun(free, { own: [], server: ['google'] }));
+assert.ok(!canRun(paid, { own: [], server: ['google'] }));
+assert.ok(canRun(paid, { own: ['google'], server: [] }));
+assert.ok(!canRun(free, { own: [], server: [] }));
 
 console.log('ALL PASS');

@@ -49,24 +49,28 @@ export const PRESETS = [
   {
     id: 'balanced',
     label: 'Balanced',
+    description: 'An even read of health and popularity.',
     weights: { activity: 3, stability: 3, reach: 2, community: 2, upkeep: 2, docs: 1, ease: 1 }
   },
   {
     id: 'production',
     label: 'Production-safe',
+    description: 'Favours stable, well-maintained projects.',
     weights: { activity: 1, stability: 5, reach: 1, community: 1, upkeep: 4, docs: 2, ease: 1 }
   },
   {
     id: 'bleeding',
     label: 'Bleeding edge',
+    description: 'Favours projects that ship often.',
     weights: { activity: 5, stability: 1, reach: 1, community: 1, upkeep: 3, docs: 1, ease: 1 }
   },
   {
     id: 'popular',
     label: 'Popular',
+    description: 'Favours what most people already use.',
     weights: { activity: 1, stability: 1, reach: 5, community: 4, upkeep: 1, docs: 1, ease: 1 }
   }
-] as const satisfies readonly { id: string; label: string; weights: Weights }[];
+] as const satisfies readonly { id: string; label: string; description: string; weights: Weights }[];
 
 export const DEFAULT_WEIGHTS: Weights = PRESETS[0].weights;
 
@@ -82,7 +86,6 @@ export function presetFor(weights: Weights) {
 
 export type RepoRating = {
   overall: number;
-  grade: 'A' | 'B' | 'C' | 'D';
   parts: { label: string; score: number; hint: string; weight: number }[];
 };
 
@@ -195,7 +198,6 @@ export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS)
 
   return {
     overall,
-    grade: overall >= 8 ? 'A' : overall >= 6.5 ? 'B' : overall >= 5 ? 'C' : 'D',
     parts: parts
       .filter((part) => active[part.id] > 0)
       .map((part) => ({

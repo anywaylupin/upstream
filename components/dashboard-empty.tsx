@@ -1,8 +1,8 @@
 import {
+  BookmarkIcon,
   BoxesIcon,
   FolderGit2Icon,
   KeyRoundIcon,
-  LayersIcon,
   ListChecksIcon,
   MessageSquareTextIcon
 } from 'lucide-react';
@@ -41,11 +41,11 @@ const NEXT_STEPS = [
 export function DashboardEmpty() {
   return (
     <div className="flex w-full flex-col gap-6">
-      <EmptyStack icon={LayersIcon} title="Not following anything yet" description="Add a repo to start." />
+      <EmptyStack icon={BookmarkIcon} title="Not following anything yet" description="Add a repo to start." />
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          <BoxesIcon className="size-3.5" />
+        <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+          <BoxesIcon className="size-4 text-muted-foreground" />
           What Upstream runs on
         </h2>
 
@@ -78,8 +78,8 @@ export function DashboardEmpty() {
       </section>
 
       <section className="flex flex-col gap-2.5">
-        <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          <ListChecksIcon className="size-3.5" />
+        <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+          <ListChecksIcon className="size-4 text-muted-foreground" />
           Next steps
         </h2>
 

@@ -17,7 +17,7 @@ export function GenerateGuideButton({ repoId, hasGuide }: { repoId: number; hasG
         disabled={pending}
         aria-busy={pending}
         onClick={() => {
-          const id = toast.loading('Reading the README…');
+          const id = toast.loading('Reading the README...');
           startTransition(async () => {
             const res = await buildRepoGuide(repoId);
             if (res.error)
@@ -30,7 +30,7 @@ export function GenerateGuideButton({ repoId, hasGuide }: { repoId: number; hasG
         }}
       >
         <SparklesIcon data-icon="inline-start" />
-        {pending ? 'Reading the README…' : hasGuide ? 'Regenerate' : 'Explain this repo'}
+        {pending ? 'Reading the README...' : hasGuide ? 'Refresh guide' : 'Explain this repo'}
       </Button>
     </span>
   );

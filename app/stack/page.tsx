@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/page-header';
 import { StackTable } from '@/components/stack-table';
 import { SyncStackButton } from '@/components/sync-stack-button';
 import { getRatingWeights, getStackStats } from '@/lib/repo-stats';
@@ -9,9 +10,11 @@ export default async function StackPage() {
 
   return (
     <div className="flex w-full flex-col gap-5">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        {rows.length > 0 && <SyncStackButton />}
-      </header>
+      <PageHeader
+        title="Following"
+        description={`${rows.length} repo${rows.length === 1 ? '' : 's'}, rated by your weights`}
+        action={rows.length > 0 && <SyncStackButton />}
+      />
 
       <StackTable
         rows={rows}

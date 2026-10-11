@@ -27,25 +27,28 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap gap-1.5">
-        {PRESETS.map((p) => (
-          <Button
-            key={p.id}
-            type="button"
-            size="sm"
-            variant={preset?.id === p.id ? 'default' : 'outline'}
-            aria-pressed={preset?.id === p.id}
-            onClick={() => setWeights(p.weights)}
-          >
-            {p.label}
-          </Button>
-        ))}
-        {!preset && (
-          <Button type="button" size="sm" variant="default" aria-pressed disabled>
-            Custom
-          </Button>
-        )}
-      </div>
+      <fieldset className="grid gap-2 sm:grid-cols-2">
+        <legend className="sr-only">Preset</legend>
+        {PRESETS.map((p) => {
+          const on = preset?.id === p.id;
+          return (
+            <button
+              key={p.id}
+              type="button"
+              aria-pressed={on}
+              onClick={() => setWeights(p.weights)}
+              className={cn(
+                'flex flex-col gap-0.5 rounded-lg p-3 text-left ring-1 transition-colors',
+                on ? 'bg-primary/5 ring-2 ring-primary' : 'ring-foreground/10 hover:bg-muted/50'
+              )}
+            >
+              <span className="font-medium text-sm">{p.label}</span>
+              <span className="text-muted-foreground text-sm">{p.description}</span>
+            </button>
+          );
+        })}
+      </fieldset>
+      {!preset && <p className="-mt-2 text-muted-foreground text-sm">Custom weights</p>}
 
       <ul className="flex flex-col gap-2.5">
         {CRITERIA.map((c) => {

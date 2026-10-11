@@ -1,8 +1,9 @@
 import { and, desc, eq, gte, inArray, isNotNull } from 'drizzle-orm';
-import { CalendarDaysIcon, HourglassIcon, NewspaperIcon, SearchXIcon } from 'lucide-react';
+import { BellIcon, CalendarDaysIcon, HourglassIcon, SearchXIcon } from 'lucide-react';
 import Link from 'next/link';
 import { DigestFilters } from '@/components/digest-filters';
 import { EmptyStack } from '@/components/empty-stack';
+import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
@@ -197,14 +198,17 @@ export default async function Digest({
   ).length;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-      <header className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="flex items-center gap-2 text-muted-foreground text-sm tabular-nums">
-          <span>{entries.length} releases</span>
-          {breakingCount > 0 && <Badge variant="destructive">{breakingCount} breaking</Badge>}
-          <span>{days}d</span>
-        </p>
-      </header>
+    <div className="flex w-full flex-col gap-5">
+      <PageHeader
+        title="Updates"
+        description={
+          <span className="flex items-center gap-2">
+            {entries.length + pending} release{entries.length + pending === 1 ? '' : 's'} in the last {days} days
+            {pending > 0 && entries.length > 0 && `, ${pending} waiting for a summary`}
+            {breakingCount > 0 && <Badge variant="destructive">{breakingCount} breaking</Badge>}
+          </span>
+        }
+      />
 
       <DigestFilters
         repos={repoList.map((r) => `${r.owner}/${r.name}`)}
@@ -215,7 +219,7 @@ export default async function Digest({
         // An empty stack and an over-tight filter are different problems, so
         // only the first one offers the add-a-repo actions.
         (repoIds.length === 0 ? (
-          <EmptyStack icon={NewspaperIcon} title="No releases yet" description="Add a repo to see its releases." />
+          <EmptyStack icon={BellIcon} title="No releases yet" description="Add a repo to see its releases." />
         ) : pending > 0 ? (
           <Empty className="animate-rise rounded-lg ring-1 ring-foreground/10">
             <EmptyHeader>
@@ -243,8 +247,8 @@ export default async function Digest({
       <div className="flex flex-col gap-8">
         {sortedWeeks.map(([key, week]) => (
           <section key={key} className="flex flex-col gap-3">
-            <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-              <CalendarDaysIcon className="size-3.5" />
+            <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+              <CalendarDaysIcon className="size-4 text-muted-foreground" />
               {week.label} · {week.entries.length}
             </h2>
 

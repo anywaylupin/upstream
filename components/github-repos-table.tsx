@@ -1,10 +1,8 @@
 import { SearchIcon, StarIcon } from 'lucide-react';
 import Link from 'next/link';
-import { ClickableRow } from '@/components/clickable-row';
 import { OwnerAvatar } from '@/components/owner-avatar';
 import { StackButton } from '@/components/stack-button';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { GitHubRepo } from '@/lib/github';
 
 export function GitHubReposTable({
@@ -31,56 +29,36 @@ export function GitHubReposTable({
     );
   }
 
+  // Same one-line row as the Following list, so the two tabs read as one app.
   return (
-    // table-fixed plus explicit widths: the repo name wraps inside its column
-    // instead of widening the table and forcing a horizontal scrollbar.
-    <div className="animate-rise overflow-hidden rounded-lg ring-1 ring-foreground/10">
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[38%] sm:w-[26%]">Repo</TableHead>
-            <TableHead className="hidden lg:table-cell">About</TableHead>
-            <TableHead className="hidden w-24 sm:table-cell">Lang</TableHead>
-            <TableHead className="w-20 text-right">Stars</TableHead>
-            <TableHead className="w-28 text-right">Follow</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {repos.map((repo) => (
-            <ClickableRow key={repo.id} href={`/repos/${repo.owner.login}/${repo.name}`}>
-              <TableCell className="font-medium">
-                <span className="flex items-start gap-2">
-                  <span className="mt-0.5">
-                    <OwnerAvatar owner={repo.owner.login} />
-                  </span>
-                  {/* Repo names always lead to the Upstream page, never off-site. */}
-                  <Link
-                    href={`/repos/${repo.owner.login}/${repo.name}`}
-                    className="min-w-0 whitespace-normal break-words transition-colors hover:underline group-hover/row:underline"
-                  >
-                    {repo.full_name}
-                  </Link>
-                </span>
-              </TableCell>
-              <TableCell className="hidden truncate text-muted-foreground lg:table-cell">
-                {repo.description ?? '-'}
-              </TableCell>
-              <TableCell className="hidden truncate text-muted-foreground sm:table-cell">
-                {repo.language ?? '-'}
-              </TableCell>
-              <TableCell className="text-right text-muted-foreground tabular-nums">
-                <span className="inline-flex items-center gap-1">
-                  <StarIcon className="size-3" />
-                  {repo.stargazers_count.toLocaleString()}
-                </span>
-              </TableCell>
-              <TableCell className="text-right">
-                <StackButton owner={repo.owner.login} name={repo.name} repoId={repoIdByFullName.get(repo.full_name)} />
-              </TableCell>
-            </ClickableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <ul className="animate-rise divide-y divide-border overflow-hidden rounded-xl ring-1 ring-foreground/10">
+      {repos.map((repo) => (
+        <li
+          key={repo.id}
+          className="group relative flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/50"
+        >
+          <OwnerAvatar owner={repo.owner.login} size={32} />
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <Link
+              href={`/repos/${repo.full_name}`}
+              className="truncate font-medium text-sm after:absolute after:inset-0 group-hover:underline"
+            >
+              {repo.full_name}
+            </Link>
+            <span className="truncate text-muted-foreground text-sm">{repo.description ?? 'No description'}</span>
+          </div>
+          {repo.language && (
+            <span className="hidden w-24 truncate text-muted-foreground text-sm sm:block">{repo.language}</span>
+          )}
+          <span className="inline-flex w-16 items-center justify-end gap-1 text-muted-foreground text-sm tabular-nums">
+            <StarIcon className="size-3.5" />
+            {repo.stargazers_count.toLocaleString()}
+          </span>
+          <div className="relative z-10">
+            <StackButton owner={repo.owner.login} name={repo.name} repoId={repoIdByFullName.get(repo.full_name)} />
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }

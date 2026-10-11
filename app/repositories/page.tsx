@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { SearchIcon, TriangleAlertIcon } from 'lucide-react';
 import { GitHubReposTable } from '@/components/github-repos-table';
+import { PageHeader } from '@/components/page-header';
 import { RepoSourceTabs } from '@/components/repo-source-tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,7 @@ export default async function RepositoriesPage({
 
   return (
     <div className="flex w-full flex-col gap-5">
+      <PageHeader title="Repositories" description="From your GitHub account. Follow any of them." />
       <RepoSourceTabs active={source} />
 
       {source === 'search' && (

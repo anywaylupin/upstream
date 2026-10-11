@@ -1,28 +1,12 @@
-import { Badge } from '@/components/ui/badge';
 import type { RepoRating } from '@/lib/repo-rating';
-
-const GRADE_VARIANT: Record<RepoRating['grade'], 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  A: 'default',
-  B: 'secondary',
-  C: 'outline',
-  D: 'destructive'
-};
-
-export function RatingBadge({ rating }: { rating: RepoRating }) {
-  return (
-    <Badge variant={GRADE_VARIANT[rating.grade]} className="tabular-nums">
-      {rating.overall.toFixed(1)}
-    </Badge>
-  );
-}
 
 export function RatingBars({ rating }: { rating: RepoRating }) {
   return (
-    <ul className="flex flex-col gap-1.5">
+    <ul className="flex flex-col gap-2.5">
       {rating.parts.map((part, i) => (
-        <li key={part.label} className="flex items-center gap-2 text-xs">
-          <span className="w-20 shrink-0 text-muted-foreground">{part.label}</span>
-          <span className="h-1.5 w-full max-w-40 overflow-hidden rounded-full bg-muted">
+        <li key={part.label} className="flex items-center gap-3 text-sm">
+          <span className="w-24 shrink-0">{part.label}</span>
+          <span className="h-2 min-w-16 flex-1 overflow-hidden rounded-full bg-muted">
             <span
               className="block h-full animate-grow rounded-full bg-primary"
               style={{
@@ -31,9 +15,9 @@ export function RatingBars({ rating }: { rating: RepoRating }) {
               }}
             />
           </span>
-          <span className="w-7 shrink-0 text-right text-muted-foreground tabular-nums">{part.score.toFixed(1)}</span>
-          <span className="w-6 shrink-0 text-muted-foreground/70 tabular-nums">×{part.weight}</span>
-          <span className="hidden truncate text-muted-foreground/70 sm:block">{part.hint}</span>
+          <span className="w-8 shrink-0 text-right font-medium tabular-nums">{part.score.toFixed(1)}</span>
+          <span className="w-7 shrink-0 text-muted-foreground tabular-nums">×{part.weight}</span>
+          <span className="hidden w-44 shrink-0 truncate text-muted-foreground md:block">{part.hint}</span>
         </li>
       ))}
     </ul>

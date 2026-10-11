@@ -5,7 +5,7 @@
  */
 export const SETTINGS_SECTIONS = [
   { id: 'account', label: 'Account' },
-  { id: 'digest', label: 'Digest' },
+  { id: 'digest', label: 'Email' },
   { id: 'keys', label: 'AI keys' },
   { id: 'rating', label: 'Rating' },
   { id: 'instructions', label: 'Instructions' },

@@ -172,6 +172,16 @@ Mode and palette are applied by an inline script from the server layout before
 first paint - see `lib/theme.ts`. Keeping it out of a client component is what
 avoids React 19's "script tag while rendering" error.
 
+## Page anatomy
+
+Every tab is the same shape: `PageHeader` (title, one line, primary action on
+the right), then an optional toolbar, then content. Lists of repos are one-line
+rows (avatar, name + description, facts, `ScoreRing`, actions) with a stretched
+link, never multi-column tables. Headings use shadcn's scale: page `text-2xl`,
+section `text-lg`, body and meta `text-sm`. Colour carries meaning only: red for
+breaking, amber for review, green for safe, teal for score, the active tab and
+primary actions. A low score is grey, never red.
+
 ## shadcn/ui
 
 Prefer an existing shadcn component over hand-rolling: `Empty` for empty states,
@@ -247,6 +257,11 @@ Not worth it for five calls.
   from the picker but stay reachable in the "Add an API key" dialog, which is
   how BYOK unlocks them. Listing a model that cannot run is worse than omitting
   it.
+- `canRun()` in `lib/ai-models.ts` is the single availability rule: a user's
+  own key runs any model of that provider, the shared server key runs free
+  tier only (a paid call would bill the host). The picker, `selectAiModel` and
+  `getAiContext` all go through it; a saved choice that stops being runnable
+  falls back to the default model.
 - `serverKeyFor()` writes the env vars out statically. Bundlers inline
   `process.env.X` by literal name, so `process.env[provider.envVar]` quietly
   resolves to undefined in some builds.

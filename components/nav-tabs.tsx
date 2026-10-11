@@ -1,6 +1,6 @@
 'use client';
 
-import { BookMarkedIcon, GaugeIcon, LayersIcon, type LucideIcon, NewspaperIcon } from 'lucide-react';
+import { BellIcon, BookmarkIcon, FolderGit2Icon, LayoutDashboardIcon, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from 'tailwind-variants';
@@ -13,15 +13,15 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
   const pathname = usePathname();
 
   const tabs: Tab[] = [
-    { href: '/', label: 'Dashboard', icon: GaugeIcon },
+    { href: '/', label: 'Dashboard', icon: LayoutDashboardIcon },
     {
       href: '/digest',
       label: 'Updates',
-      icon: NewspaperIcon,
+      icon: BellIcon,
       count: digestCount
     },
-    { href: '/stack', label: 'Following', icon: LayersIcon, count: stackCount },
-    { href: '/repositories', label: 'Repositories', icon: BookMarkedIcon }
+    { href: '/stack', label: 'Following', icon: BookmarkIcon, count: stackCount },
+    { href: '/repositories', label: 'Repositories', icon: FolderGit2Icon }
   ];
 
   return (
@@ -50,7 +50,10 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
             >
               <LinkPendingIcon
                 icon={tab.icon}
-                className={cn('size-4 transition-transform duration-200 group-hover:scale-110')}
+                className={cn(
+                  'size-4 transition-transform duration-200 group-hover:scale-110',
+                  active && 'text-primary'
+                )}
               />
               {tab.label}
               {tab.count !== undefined && tab.count > 0 && (

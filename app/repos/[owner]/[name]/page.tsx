@@ -2,21 +2,20 @@ import { and, count, desc, eq, gte, inArray, isNotNull, or } from 'drizzle-orm';
 import {
   BookOpenIcon,
   ExternalLinkIcon,
-  GaugeIcon,
   GitCompareIcon,
   PackageIcon,
-  ShieldAlertIcon,
+  RefreshCwIcon,
   StarIcon,
-  TagIcon,
-  TimerIcon
+  TagIcon
 } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { AlternativesCompare, type CompareRow } from '@/components/alternatives-compare';
 import { GenerateGuideButton } from '@/components/generate-guide-button';
-import { RatingBadge, RatingBars } from '@/components/rating-badge';
+import { OwnerAvatar } from '@/components/owner-avatar';
+import { RatingBars } from '@/components/rating-badge';
 import { RefreshRepoButton } from '@/components/refresh-repo-button';
+import { ScoreRing } from '@/components/score-ring';
 import { StackButton } from '@/components/stack-button';
-import { StatTile } from '@/components/stat-tile';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { VerdictBadge } from '@/components/verdict-badge';
@@ -27,7 +26,7 @@ import { upgradeVerdict } from '@/lib/digest-filters';
 import { formatDate, formatRelative } from '@/lib/format';
 import { getGitHubToken, getRepoMeta } from '@/lib/github';
 import { rateRepo } from '@/lib/repo-rating';
-import { getRatingInputs, getRatingWeights, WINDOW_DAYS, windowStart } from '@/lib/repo-stats';
+import { getRatingInputs, getRatingWeights, windowStart } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { type ReleaseSummary, ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
 
@@ -175,89 +174,78 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
   return (
     <div className="flex w-full flex-col gap-5">
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-col gap-2">
+        <div className="flex min-w-0 flex-col gap-2">
           <h1 className="flex flex-wrap items-center gap-2 font-heading font-semibold text-2xl tracking-tight">
+            <OwnerAvatar owner={repo.owner} size={28} />
             {repo.owner}/{repo.name}
-            {rating && <RatingBadge rating={rating} />}
             <a
               href={`https://github.com/${repo.owner}/${repo.name}`}
               target="_blank"
               rel="noreferrer"
-              className="text-muted-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-foreground"
+              className="text-muted-foreground transition-colors hover:text-foreground"
               aria-label="Open on GitHub"
             >
               <ExternalLinkIcon className="size-4" />
             </a>
           </h1>
 
+          {/* The one-line verdict is the most useful sentence on the page, so it leads. */}
+          {guide?.verdict && <p className="max-w-2xl text-base">{guide.verdict}</p>}
           <p className="max-w-2xl text-muted-foreground text-sm">
             {guide?.whatItIs ?? repo.description ?? 'No description yet.'}
           </p>
 
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {breaking30d > 0 && <Badge variant="destructive">{breaking30d} breaking this month</Badge>}
             {guide?.bestFor.map((tag) => (
               <Badge key={tag} variant="outline">
                 {tag}
               </Badge>
             ))}
+          </div>
+
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-sm">
             {repo.stars !== null && (
-              <span className="ml-1 inline-flex items-center gap-1 text-muted-foreground text-xs">
-                <StarIcon className="size-3" />
+              <span className="inline-flex items-center gap-1">
+                <StarIcon className="size-3.5" />
                 {repo.stars.toLocaleString()}
               </span>
             )}
-          </div>
+            <span className="inline-flex items-center gap-1">
+              <TagIcon className="size-3.5" />
+              {totalRows[0]?.total ?? 0} releases, {windowRows[0]?.total ?? 0} this month
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <RefreshCwIcon className="size-3.5" />
+              synced {formatRelative(repo.lastIngestedAt)}
+            </span>
+          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2">
+          <RefreshRepoButton repoId={repo.id} />
           <GenerateGuideButton repoId={repo.id} hasGuide={Boolean(guide)} />
-          <RefreshRepoButton repoId={repo.id} label="Sync" />
           <StackButton owner={repo.owner} name={repo.name} repoId={stackIdByRepo.has(repo.id) ? repo.id : undefined} />
         </div>
       </header>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile
-          icon={GaugeIcon}
-          label="Rating"
-          value={rating ? `${rating.overall.toFixed(1)} / 10` : '-'}
-          hint={guide ? 'measured + README' : 'measured only'}
-        />
-        <StatTile icon={TagIcon} label="Releases" value={totalRows[0]?.total ?? 0} delay={60} />
-        <StatTile
-          icon={ShieldAlertIcon}
-          tone={breaking30d > 0 ? 'danger' : 'default'}
-          delay={120}
-          label={`Breaking ${WINDOW_DAYS}d`}
-          value={breaking30d}
-          hint={`${windowRows[0]?.total ?? 0} releases ${WINDOW_DAYS}d`}
-        />
-        <StatTile
-          icon={TimerIcon}
-          delay={180}
-          label="Synced"
-          value={formatRelative(repo.lastIngestedAt)}
-          hint={`latest ${formatDate(self?.lastRelease ?? null)}`}
-        />
-      </div>
-
       {rating && (
-        <section className="flex flex-col gap-2">
-          <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <GaugeIcon className="size-3.5" />
-            Score breakdown
-          </h2>
-          <div className="animate-rise rounded-lg p-3 ring-1 ring-foreground/10">
+        <section className="flex flex-col gap-3">
+          <h2 className="font-semibold text-lg tracking-tight">Rating</h2>
+          <div className="grid animate-rise items-center gap-6 rounded-xl p-5 ring-1 ring-foreground/10 sm:grid-cols-[auto_minmax(0,1fr)]">
+            <div className="flex flex-col items-center gap-1">
+              <ScoreRing score={rating.overall} size={96} />
+              <span className="text-muted-foreground text-sm">out of 10</span>
+            </div>
             <RatingBars rating={rating} />
-            {guide?.verdict && <p className="mt-3 text-muted-foreground text-sm">{guide.verdict}</p>}
           </div>
         </section>
       )}
 
       {guide ? (
         <section className="flex flex-col gap-2">
-          <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <BookOpenIcon className="size-3.5" />
+          <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+            <BookOpenIcon className="size-4 text-muted-foreground" />
             How to use
           </h2>
 
@@ -313,8 +301,8 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
 
       {compareRows.length > 1 && (
         <section className="flex flex-col gap-2">
-          <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <GitCompareIcon className="size-3.5" />
+          <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+            <GitCompareIcon className="size-4 text-muted-foreground" />
             Alternatives
           </h2>
           <AlternativesCompare rows={compareRows} />
@@ -323,8 +311,8 @@ export default async function RepoReport({ params }: { params: Promise<{ owner: 
       )}
 
       <section className="flex flex-col gap-2">
-        <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-          <PackageIcon className="size-3.5" />
+        <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+          <PackageIcon className="size-4 text-muted-foreground" />
           Releases
         </h2>
         {releaseRows.length === 0 ? (

@@ -118,8 +118,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
       {matchedRepos.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <LayersIcon className="size-3.5" />
+          <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+            <LayersIcon className="size-4 text-muted-foreground" />
             Following · {matchedRepos.length}
           </h2>
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-lg ring-1 ring-foreground/10">
@@ -142,8 +142,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
       {matchedReleases.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <TagIcon className="size-3.5" />
+          <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+            <TagIcon className="size-4 text-muted-foreground" />
             Releases · {matchedReleases.length}
           </h2>
           <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-lg ring-1 ring-foreground/10">
@@ -168,8 +168,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
       {githubResults.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h2 className="flex items-center gap-1.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-            <SearchIcon className="size-3.5" />
+          <h2 className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+            <SearchIcon className="size-4 text-muted-foreground" />
             On GitHub · {githubResults.length}
           </h2>
           <GitHubReposTable repos={githubResults} repoIdByFullName={repoIdByFullName} emptyMessage="No matches." />

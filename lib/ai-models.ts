@@ -418,6 +418,16 @@ export function modelsByProvider(provider: ProviderId) {
   return MODELS.filter((model) => model.provider === provider);
 }
 
+/**
+ * Whether a model can actually run for this user. Their own key runs anything
+ * from that provider; the shared server key runs free-tier models only, since
+ * a paid call on it would bill whoever hosts the app.
+ */
+export function canRun(model: ModelOption, keys: { own: readonly string[]; server: readonly string[] }) {
+  if (keys.own.includes(model.provider)) return true;
+  return model.tier === 'free' && keys.server.includes(model.provider);
+}
+
 /** Free first, so the zero-cost options are the ones you see without scrolling. */
 export function sortedModelsByProvider(provider: ProviderId) {
   return modelsByProvider(provider).sort((a, b) => {
