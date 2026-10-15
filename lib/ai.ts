@@ -53,7 +53,52 @@ export type AiContext = {
   instructionsHash: string;
   /** True when the user supplied the key, so quota is on their account. */
   ownKey: boolean;
+  /** Free server-key models to try, in order, when `model` fails. */
+  fallbacks: { id: string; model: LanguageModel }[];
 };
+
+/** Most attempts one call makes before giving up; each also retries once in the SDK. */
+const MAX_FALLBACKS = 3;
+
+/**
+ * Free models the shared key can run, other providers first: quotas are per
+ * provider, so a different provider is the likeliest to have room. Never a
+ * paid model, which would bill the host.
+ */
+function fallbackChain(skipId: string): AiContext['fallbacks'] {
+  const free = MODELS.filter((m) => m.tier === 'free' && m.id !== skipId && serverKeyFor(m.provider));
+  const skip = findModel(skipId)?.provider;
+  const seen = new Set<string>();
+  const firstPerProvider = free.filter((m) => m.provider !== skip && !seen.has(m.provider) && seen.add(m.provider));
+  const ordered = [...firstPerProvider, ...free.filter((m) => !firstPerProvider.includes(m))];
+  return ordered.slice(0, MAX_FALLBACKS).flatMap((m) => {
+    const key = serverKeyFor(m.provider);
+    return key ? [{ id: m.id, model: buildModel(m.provider, key, m.id) }] : [];
+  });
+}
+
+/**
+ * Runs one AI call on the chosen model, then on each fallback until one
+ * succeeds. Any failure moves on - quota, "high demand", or output that did
+ * not fit the schema - because the next model may well manage. Returns which
+ * model answered, so stored rows name the model that actually wrote them.
+ */
+export async function withFallback<T>(
+  ai: AiContext,
+  call: (model: LanguageModel) => Promise<T>
+): Promise<{ result: T; modelId: string }> {
+  const chain = [{ id: ai.modelId, model: ai.model }, ...ai.fallbacks];
+  let lastError: unknown;
+  for (const { id, model } of chain) {
+    try {
+      return { result: await call(model), modelId: id };
+    } catch (err) {
+      lastError = err;
+      console.warn(`${id} failed, trying the next model:`, err instanceof Error ? err.message.slice(0, 160) : err);
+    }
+  }
+  throw lastError;
+}
 
 /**
  * Server-side keys, one per provider. Written out statically rather than looked
@@ -169,7 +214,8 @@ export async function getAiContext(userId: string, feature: Feature = 'global'):
     modelId: wanted.id,
     instructions,
     instructionsHash: instructionsHash(instructions),
-    ownKey: Boolean(ownKey)
+    ownKey: Boolean(ownKey),
+    fallbacks: fallbackChain(wanted.id)
   };
 }
 
@@ -191,7 +237,8 @@ export function serverAiContext(): AiContext {
     modelId: model.id,
     instructions: null,
     instructionsHash: DEFAULT_INSTRUCTIONS_HASH,
-    ownKey: false
+    ownKey: false,
+    fallbacks: fallbackChain(model.id)
   };
 }
 

@@ -91,7 +91,7 @@ async function main() {
   for (const [i, c] of cases.entries()) {
     if (i > 0) await new Promise((r) => setTimeout(r, SPACING_MS));
     try {
-      const { output } = await summarizeRelease({ repo: c.repo, tag: c.tag, body: c.body }, ai);
+      const { output, modelId } = await summarizeRelease({ repo: c.repo, tag: c.tag, body: c.body }, ai);
       const breaking = output.changes.filter((change) => change.type === 'breaking');
       const predicted = breaking.length > 0;
       results.push({
@@ -101,7 +101,7 @@ async function main() {
         note: c.note,
         reason: breaking[0]?.description ?? output.headline
       });
-      console.log(`${predicted === c.breaking ? 'ok  ' : 'MISS'} ${c.id}`);
+      console.log(`${predicted === c.breaking ? 'ok  ' : 'MISS'} ${c.id}  (${modelId})`);
     } catch (err) {
       // A failed call is not a prediction; leave it out of the score but say so.
       console.log(`ERR  ${c.id}: ${err instanceof Error ? err.message : String(err)}`);

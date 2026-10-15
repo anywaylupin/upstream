@@ -14,7 +14,6 @@ import { getGitHubToken, getReadme, getRepoMeta } from '@/lib/github';
 import { ingestRepo } from '@/lib/ingest';
 import { GUIDE_PROMPT_VERSION, generateRepoGuide } from '@/lib/repo-guide';
 import { RepoUrlInput } from '@/lib/repo-url';
-import { MODEL } from '@/lib/summarize';
 import { summarizePending } from '@/lib/summarize-batch';
 
 /**
@@ -181,7 +180,7 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
       return { success: true, message: 'Guide is already up to date' };
     }
 
-    const { output, usage } = await generateRepoGuide(
+    const { output, usage, modelId } = await generateRepoGuide(
       {
         repo: `${repo.owner}/${repo.name}`,
         description: repo.description,
@@ -211,7 +210,7 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
         repoId,
         instructionsHash: ai.instructionsHash,
         readmeHash,
-        model: MODEL,
+        model: modelId,
         promptVersion: GUIDE_PROMPT_VERSION,
         data: output
       })
@@ -219,7 +218,7 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
         target: [repoGuides.repoId, repoGuides.instructionsHash],
         set: {
           readmeHash,
-          model: MODEL,
+          model: modelId,
           promptVersion: GUIDE_PROMPT_VERSION,
           data: output,
           createdAt: new Date()

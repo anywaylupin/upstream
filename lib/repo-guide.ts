@@ -1,6 +1,6 @@
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
-import type { AiContext } from '@/lib/ai';
+import { type AiContext, withFallback } from '@/lib/ai';
 
 /** Bumped when the schema or prompt changes, so stored guides can be spotted as stale. */
 /** v3: alternatives are verified against GitHub, so v2 guides may hold dead links. */
@@ -46,30 +46,33 @@ export async function generateRepoGuide(
   input: { repo: string; description: string | null; readme: string },
   ai: AiContext
 ) {
-  const result = await generateText({
-    model: ai.model,
-    output: Output.object({ schema: RepoGuide }),
-    system:
-      'You explain and rate open source projects for working developers. ' +
-      'Be terse and concrete - prefer keywords over sentences. ' +
-      'Only state what the README supports: never invent APIs, options, or commands. ' +
-      'For alternatives, only name repos you are confident actually exist.' +
-      (ai.instructions
-        ? `
+  const { result, modelId } = await withFallback(ai, (model) =>
+    generateText({
+      model,
+      maxRetries: 1,
+      output: Output.object({ schema: RepoGuide }),
+      system:
+        'You explain and rate open source projects for working developers. ' +
+        'Be terse and concrete - prefer keywords over sentences. ' +
+        'Only state what the README supports: never invent APIs, options, or commands. ' +
+        'For alternatives, only name repos you are confident actually exist.' +
+        (ai.instructions
+          ? `
 
 The reader has described their context. Bias the verdict, tags and alternatives towards it:
 ${ai.instructions}`
-        : ''),
-    prompt: [
-      `Repo: ${input.repo}`,
-      input.description ? `Description: ${input.description}` : '',
-      '',
-      'README:',
-      input.readme.slice(0, README_LIMIT)
-    ]
-      .filter(Boolean)
-      .join('\n')
-  });
+          : ''),
+      prompt: [
+        `Repo: ${input.repo}`,
+        input.description ? `Description: ${input.description}` : '',
+        '',
+        'README:',
+        input.readme.slice(0, README_LIMIT)
+      ]
+        .filter(Boolean)
+        .join('\n')
+    })
+  );
 
-  return { output: result.output, usage: result.usage };
+  return { output: result.output, usage: result.usage, modelId };
 }

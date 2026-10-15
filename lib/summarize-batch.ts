@@ -40,20 +40,20 @@ export async function summarizePending(
     if (!bodyHash || !bodyRaw) continue;
 
     try {
-      const { output, usage } = await summarizeRelease({ repo: `${owner}/${name}`, tag, body: bodyRaw }, ai);
+      const { output, usage, modelId } = await summarizeRelease({ repo: `${owner}/${name}`, tag, body: bodyRaw }, ai);
 
       await db
         .insert(summaries)
         .values({
           bodyHash,
           instructionsHash: ai.instructionsHash,
-          model: ai.modelId,
+          model: modelId,
           promptVersion: PROMPT_VERSION,
           data: output
         })
         .onConflictDoNothing();
 
-      console.log(`${owner}/${name} ${tag} - ${usage.totalTokens} tokens`);
+      console.log(`${owner}/${name} ${tag} - ${usage.totalTokens} tokens on ${modelId}`);
       summarized++;
     } catch (err) {
       console.error(`${owner}/${name} ${tag} failed:`, err);

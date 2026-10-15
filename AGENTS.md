@@ -253,6 +253,10 @@ Not worth it for five calls.
 
 - Structured output via `generateText` with the `output` setting (not
   `generateObject`). Zod `.describe()` materially improves output - keep it.
+- Summaries and guides go through `withFallback()` in `lib/ai.ts`: the chosen model,
+  then up to three free server-key models, other providers first (quotas are
+  per provider). Rows store the model that actually answered. Never falls back
+  to a paid model on the shared key.
 - Free tiers are **rate limited per minute and per day**, not unlimited. Calls are
   spaced 1.5s apart, and BYOK exists so users can run on their own quota.
 - Model ids go stale. `gemini-2.5-flash` was retired mid-project and broke every
