@@ -1,6 +1,9 @@
+import { SlidersHorizontalIcon } from 'lucide-react';
+import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { StackTable } from '@/components/stack-table';
 import { SyncStackButton } from '@/components/sync-stack-button';
+import { Button } from '@/components/ui/button';
 import { getRatingWeights, getStackStats } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 
@@ -13,7 +16,22 @@ export default async function StackPage() {
       <PageHeader
         title="Following"
         description={`${rows.length} repo${rows.length === 1 ? '' : 's'}, rated by your weights`}
-        action={rows.length > 0 && <SyncStackButton />}
+        action={
+          rows.length > 0 && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href="/settings?section=rating" />}
+                nativeButton={false}
+              >
+                <SlidersHorizontalIcon data-icon="inline-start" />
+                Edit rating
+              </Button>
+              <SyncStackButton />
+            </>
+          )
+        }
       />
 
       <StackTable

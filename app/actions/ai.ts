@@ -7,7 +7,7 @@ import { auth } from '@/auth';
 import { db } from '@/db';
 import { aiKeys, userInstructions, userPreferences } from '@/db/schema';
 import type { ActionResult } from '@/lib/action-result';
-import { aiErrorMessage, FEATURES, type Feature, modelFor, serverProviders } from '@/lib/ai';
+import { aiErrorMessage, FEATURES, modelFor, serverProviders } from '@/lib/ai';
 import { canRun, findModel, PROVIDERS, type ProviderId, providerOf } from '@/lib/ai-models';
 import { encryptSecret } from '@/lib/crypto';
 
@@ -118,27 +118,25 @@ export async function saveInstruction(_prev: InstructionState, formData: FormDat
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in required.' };
 
-  const feature = String(formData.get('feature') ?? '') as Feature;
-  if (!FEATURES.some((f) => f.id === feature)) {
-    return { error: 'Unknown feature.' };
-  }
+  const userId = session.user.id;
+  for (const { id: feature } of FEATURES) {
+    const text = String(formData.get(feature) ?? '')
+      .trim()
+      .slice(0, 2000);
 
-  const text = String(formData.get('text') ?? '')
-    .trim()
-    .slice(0, 2000);
-
-  if (!text) {
-    await db
-      .delete(userInstructions)
-      .where(and(eq(userInstructions.userId, session.user.id), eq(userInstructions.feature, feature)));
-  } else {
-    await db
-      .insert(userInstructions)
-      .values({ userId: session.user.id, feature, text })
-      .onConflictDoUpdate({
-        target: [userInstructions.userId, userInstructions.feature],
-        set: { text, updatedAt: new Date() }
-      });
+    if (!text) {
+      await db
+        .delete(userInstructions)
+        .where(and(eq(userInstructions.userId, userId), eq(userInstructions.feature, feature)));
+    } else {
+      await db
+        .insert(userInstructions)
+        .values({ userId, feature, text })
+        .onConflictDoUpdate({
+          target: [userInstructions.userId, userInstructions.feature],
+          set: { text, updatedAt: new Date() }
+        });
+    }
   }
 
   revalidatePath('/settings');

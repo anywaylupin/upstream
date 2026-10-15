@@ -13,13 +13,13 @@ export function AiKeyList({ keys }: { keys: { provider: string; hint: string }[]
   const [pending, startTransition] = useTransition();
 
   if (keys.length === 0) {
-    return <p className="text-muted-foreground text-sm">No keys. Using the shared key.</p>;
+    return <span className="text-muted-foreground text-sm">None, using the shared key</span>;
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-border">
+    <ul className="flex flex-col gap-1">
       {keys.map((key) => (
-        <li key={key.provider} className="flex items-center justify-between gap-2 py-2 text-sm">
+        <li key={key.provider} className="flex items-center justify-between gap-3 text-sm">
           <span className="flex items-center gap-2">
             <KeyRoundIcon className="size-4 text-muted-foreground" />
             <span className="font-medium">{providerOf(key.provider)?.label ?? key.provider}</span>

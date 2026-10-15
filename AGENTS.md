@@ -192,6 +192,10 @@ primary actions. A low score is grey, never red.
 Prefer an existing shadcn component over hand-rolling: `Empty` for empty states,
 `Spinner`, `Kbd`, `InputGroup`, `Item`, `Sheet`, `Tooltip`, `Field`.
 
+A responsive `Field` only goes side by side inside a `FieldGroup` (it is a
+container query). Settings rows use `SettingGroup` in `components/setting-row.tsx`,
+which is that group; without it every row stacks label over control.
+
 `components/ui/**` is generated. Hand-edits are wiped the next time that
 component is re-added - a `biome-ignore` there was lost exactly that way, which
 is why the a11y exceptions for that directory live in `biome.json` `overrides`.

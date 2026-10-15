@@ -4,7 +4,7 @@ import { SaveIcon, SendIcon } from 'lucide-react';
 import { useActionState, useEffect, useId, useMemo, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { type DigestState, saveDigestSettings, sendDigestNow } from '@/app/actions/settings';
-import { SettingRow } from '@/components/setting-row';
+import { SettingGroup, SettingRow } from '@/components/setting-row';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -102,7 +102,6 @@ export function DigestSettingsForm({
   dayOfMonth,
   intervalDays,
   lastDigestAt,
-  lastChecked,
   mailConfigured
 }: {
   email: string;
@@ -115,8 +114,6 @@ export function DigestSettingsForm({
   dayOfMonth: number;
   intervalDays: number;
   lastDigestAt: string | null;
-  /** When the cron last checked every repo, e.g. "5 minutes ago". */
-  lastChecked?: string;
   mailConfigured: boolean;
 }) {
   const [state, formAction, pending] = useActionState(saveDigestSettings, initialState);
@@ -174,7 +171,7 @@ export function DigestSettingsForm({
   const needsWeekday = freq === 'weekly' || freq === 'biweekly';
 
   return (
-    <form action={formAction} className="flex flex-col">
+    <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="enabled" value={on ? 'on' : ''} />
       <input type="hidden" name="frequency" value={freq} />
       <input type="hidden" name="hour" value={selectedHour} />
@@ -183,103 +180,95 @@ export function DigestSettingsForm({
       <input type="hidden" name="dayOfMonth" value={monthDay} />
       {freq !== 'custom' && <input type="hidden" name="intervalDays" value={gap} />}
 
-      <SettingRow label="Updates email" description="Off: no emails. Releases still sync." htmlFor={switchId}>
-        <Switch id={switchId} checked={on} onCheckedChange={setOn} aria-label="Send the updates email" />
-      </SettingRow>
+      <SettingGroup>
+        <SettingRow label="Updates email" htmlFor={switchId}>
+          <Switch id={switchId} checked={on} onCheckedChange={setOn} aria-label="Send the updates email" />
+        </SettingRow>
 
-      <SettingRow
-        label="Email address"
-        htmlFor={emailId}
-        description={fallbackEmail ? `Blank uses ${fallbackEmail}.` : 'Blank uses your GitHub email.'}
-      >
-        <Input
-          id={emailId}
-          name="email"
-          type="email"
-          autoComplete="email"
-          inputMode="email"
-          spellCheck={false}
-          defaultValue={email}
-          placeholder={fallbackEmail ?? 'you@example.com'}
-          disabled={pending || !on}
-          className="max-w-sm"
-        />
-      </SettingRow>
+        <SettingRow
+          label="Email address"
+          htmlFor={emailId}
+          description={fallbackEmail ? `Defaults to ${fallbackEmail}` : undefined}
+        >
+          <Input
+            id={emailId}
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            spellCheck={false}
+            defaultValue={email}
+            placeholder={fallbackEmail ?? 'you@example.com'}
+            disabled={pending || !on}
+            className="max-w-sm"
+          />
+        </SettingRow>
 
-      <SettingRow
-        label="Schedule"
-        description={
-          <>
-            {on && preview ? `Next: ${preview}.` : 'Paused.'}
-            {lastChecked && ` Repos checked ${lastChecked}.`}
-          </>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={freq}
-              onValueChange={(value) => setFreq(String(value) as DigestFrequency)}
-              disabled={!on || pending}
-            >
-              <SelectTrigger size="sm" className="w-40" aria-label="Frequency">
-                <SelectValue>
-                  {(value: string) => DIGEST_FREQUENCIES.find((item) => item.id === value)?.label ?? value}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {DIGEST_FREQUENCIES.map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        <SettingRow label="Schedule" description={on && preview ? `Next ${preview}` : 'Paused'}>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={freq}
+                onValueChange={(value) => setFreq(String(value) as DigestFrequency)}
+                disabled={!on || pending}
+              >
+                <SelectTrigger size="sm" className="w-40" aria-label="Frequency">
+                  <SelectValue>
+                    {(value: string) => DIGEST_FREQUENCIES.find((item) => item.id === value)?.label ?? value}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {DIGEST_FREQUENCIES.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={selectedHour} onValueChange={(value) => setSelectedHour(String(value))} disabled={!on}>
-              <SelectTrigger size="sm" className="w-24" aria-label="Hour">
-                <SelectValue>{(value: string) => `${value.padStart(2, '0')}:00`}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {HOURS.map((value) => (
-                  <SelectItem key={value} value={String(value)}>
-                    {String(value).padStart(2, '0')}:00
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select value={selectedHour} onValueChange={(value) => setSelectedHour(String(value))} disabled={!on}>
+                <SelectTrigger size="sm" className="w-24" aria-label="Hour">
+                  <SelectValue>{(value: string) => `${value.padStart(2, '0')}:00`}</SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {HOURS.map((value) => (
+                    <SelectItem key={value} value={String(value)}>
+                      {String(value).padStart(2, '0')}:00
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Select value={zone} onValueChange={(value) => setZone(String(value))} disabled={!on}>
-              <SelectTrigger size="sm" className="w-56" aria-label="Time zone">
-                <SelectValue>{(value: string) => value.replaceAll('_', ' ')}</SelectValue>
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {TIMEZONE_GROUPS.map((group) => (
-                  <SelectGroup key={group.region}>
-                    <SelectLabel>{group.region}</SelectLabel>
-                    {group.zones.map((tz) => (
-                      <SelectItem key={tz.id} value={tz.id}>
-                        {tz.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              <Select value={zone} onValueChange={(value) => setZone(String(value))} disabled={!on}>
+                <SelectTrigger size="sm" className="w-56" aria-label="Time zone">
+                  <SelectValue>{(value: string) => value.replaceAll('_', ' ')}</SelectValue>
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {TIMEZONE_GROUPS.map((group) => (
+                    <SelectGroup key={group.region}>
+                      <SelectLabel>{group.region}</SelectLabel>
+                      {group.zones.map((tz) => (
+                        <SelectItem key={tz.id} value={tz.id}>
+                          {tz.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {needsWeekday && (
-            <Chips
-              legend="Day"
-              disabled={!on}
-              value={selectedDay}
-              onChange={setSelectedDay}
-              options={WEEKDAYS.map((day) => ({ value: day.value, chip: day.initial, title: day.label }))}
-            />
-          )}
+            {needsWeekday && (
+              <Chips
+                legend="Day"
+                disabled={!on}
+                value={selectedDay}
+                onChange={setSelectedDay}
+                options={WEEKDAYS.map((day) => ({ value: day.value, chip: day.initial, title: day.label }))}
+              />
+            )}
 
-          {freq === 'monthly' && (
-            <div className="flex flex-col gap-1.5">
+            {freq === 'monthly' && (
               <Chips
                 legend="Date"
                 disabled={!on}
@@ -287,59 +276,53 @@ export function DigestSettingsForm({
                 onChange={setMonthDay}
                 options={MONTH_DAYS.map((day) => ({ value: day, chip: String(day), title: `Day ${day}` }))}
               />
-              <p className="text-muted-foreground text-sm">Stops at {MAX_DAY_OF_MONTH} so every month has the date.</p>
-            </div>
-          )}
+            )}
 
-          {freq === 'custom' && (
-            <div className="flex items-center gap-2">
-              <label htmlFor={gapId} className="text-sm">
-                Every
-              </label>
-              <Input
-                id={gapId}
-                name="intervalDays"
-                type="number"
-                inputMode="numeric"
-                min={MIN_INTERVAL_DAYS}
-                max={MAX_INTERVAL_DAYS}
-                value={gap}
-                onChange={(event) => setGap(event.target.value)}
-                disabled={!on}
-                className="w-20"
-              />
-              <span className="text-muted-foreground text-sm">days</span>
-            </div>
-          )}
-        </div>
-      </SettingRow>
+            {freq === 'custom' && (
+              <div className="flex items-center gap-2">
+                <label htmlFor={gapId} className="text-sm">
+                  Every
+                </label>
+                <Input
+                  id={gapId}
+                  name="intervalDays"
+                  type="number"
+                  inputMode="numeric"
+                  min={MIN_INTERVAL_DAYS}
+                  max={MAX_INTERVAL_DAYS}
+                  value={gap}
+                  onChange={(event) => setGap(event.target.value)}
+                  disabled={!on}
+                  className="w-20"
+                />
+                <span className="text-muted-foreground text-sm">days</span>
+              </div>
+            )}
+          </div>
+        </SettingRow>
 
-      <SettingRow
-        label="Test send"
-        description={
-          mailConfigured ? 'The last 7 days, now. Does not shift the schedule.' : 'Needs RESEND_API_KEY on the server.'
-        }
-      >
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={sending || !mailConfigured}
-          aria-busy={sending}
-          onClick={() => {
-            startSending(async () => {
-              const result = await sendDigestNow();
-              if (result.error) toast.error(result.error);
-              else toast.success(result.message ?? 'Digest sent');
-            });
-          }}
-        >
-          {sending ? <Spinner data-icon="inline-start" /> : <SendIcon data-icon="inline-start" />}
-          Send now
-        </Button>
-      </SettingRow>
+        <SettingRow label="Test email" description={mailConfigured ? undefined : 'Needs RESEND_API_KEY'}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={sending || !mailConfigured}
+            aria-busy={sending}
+            onClick={() => {
+              startSending(async () => {
+                const result = await sendDigestNow();
+                if (result.error) toast.error(result.error);
+                else toast.success(result.message ?? 'Digest sent');
+              });
+            }}
+          >
+            {sending ? <Spinner data-icon="inline-start" /> : <SendIcon data-icon="inline-start" />}
+            Send now
+          </Button>
+        </SettingRow>
+      </SettingGroup>
 
-      <div className="flex justify-end border-border border-t pt-4">
+      <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={pending} aria-busy={pending}>
           {pending ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
           Save

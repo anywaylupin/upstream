@@ -1,10 +1,18 @@
 import type { ReactNode } from 'react';
-import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { cn } from 'tailwind-variants';
+import { Field, FieldContent, FieldDescription, FieldGroup, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 /**
- * One setting as shadcn's responsive Field: label and help on the left, the control on the right, stacking on narrow screens.
- * Kept as a component only because every settings row repeats the same four Field parts.
+ * One bordered block of settings rows.
+ * It has to be a `FieldGroup`: shadcn's responsive `Field` only lays out side by side inside that container query, and without it every row stacked label over control.
  */
+export function SettingGroup({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <FieldGroup className={cn('gap-0 divide-y divide-border rounded-xl border px-5', className)}>{children}</FieldGroup>
+  );
+}
+
+/** One setting: label and an optional short hint on the left, the control on the right. */
 export function SettingRow({
   label,
   description,
@@ -17,7 +25,7 @@ export function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <Field orientation="responsive" className="border-border border-b py-5 first:pt-0 last:border-b-0">
+    <Field orientation="responsive" className="py-4">
       <FieldContent>
         {htmlFor ? <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel> : <FieldTitle>{label}</FieldTitle>}
         {description && <FieldDescription>{description}</FieldDescription>}

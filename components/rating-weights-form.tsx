@@ -44,22 +44,14 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
             <Field orientation="horizontal">
               <FieldContent>
                 <FieldTitle>{p.label}</FieldTitle>
-                <FieldDescription>
-                  {p.description} Most weight:{' '}
-                  {CRITERIA.filter((c) => p.weights[c.id] === Math.max(...Object.values(p.weights)))
-                    .map((c) => c.label)
-                    .join(', ')}
-                  .
-                </FieldDescription>
+                <FieldDescription>{p.description}</FieldDescription>
               </FieldContent>
               <RadioGroupItem value={p.id} id={`preset-${p.id}`} />
             </Field>
           </FieldLabel>
         ))}
       </RadioGroup>
-      {!preset && <p className="-mt-2 text-muted-foreground text-sm">Custom weights</p>}
-
-      <ul className="flex flex-col gap-2.5">
+      <ul className="flex flex-col gap-3 rounded-xl border p-5">
         {CRITERIA.map((c) => {
           const w = weights[c.id];
           const share = total ? Math.round((w / total) * 100) : 0;
@@ -95,7 +87,7 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
         })}
       </ul>
 
-      <div>
+      <div className="flex justify-end">
         <Button type="button" size="sm" onClick={save} disabled={saving} aria-busy={saving}>
           {saving ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
           Save

@@ -20,7 +20,7 @@ export const DEFAULT_INSTRUCTIONS_HASH = 'default';
 export const FEATURES = [
   {
     id: 'global',
-    label: 'All AI features',
+    label: 'All features',
     hint: 'Default for every feature.',
     placeholder: 'e.g. I work on a Next.js + Postgres app and care about upgrade risk.'
   },

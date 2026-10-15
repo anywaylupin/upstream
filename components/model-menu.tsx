@@ -1,20 +1,13 @@
 'use client';
 
 import { CheckIcon, ChevronDownIcon, KeyRoundIcon, LockIcon, SparklesIcon } from 'lucide-react';
-import { useActionState, useEffect, useId, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
-import { type KeyState, saveAiKey, selectAiModel } from '@/app/actions/ai';
+import { selectAiModel } from '@/app/actions/ai';
+import { AddKeyDialog } from '@/components/add-key-dialog';
 import { ProviderIcon } from '@/components/provider-icon';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,21 +17,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { canRun, findModel, PROVIDERS, type ProviderId, providerOf, sortedModelsByProvider } from '@/lib/ai-models';
-
-const initialState: KeyState = {};
+import { canRun, findModel, PROVIDERS, type ProviderId, sortedModelsByProvider } from '@/lib/ai-models';
 
 /**
  * Only models that will actually run: own key unlocks a provider, the shared key covers its free tier.
  * Listing a model that fails on use is worse than hiding it.
- *
- * Keyed on the provider: switching it unmounts the selected item, and base-ui resets its own value to null rather than to the new list's first entry.
- * Remounting re-seeds it from `modelId`.
  */
 export function ModelMenu({
   activeModelId,
@@ -52,21 +38,9 @@ export function ModelMenu({
   serverProviders: string[];
 }) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [provider, setProvider] = useState<ProviderId>('groq');
-  const [modelId, setModelId] = useState(sortedModelsByProvider('groq')[0]?.id ?? '');
   const [pending, startTransition] = useTransition();
-  const [state, formAction, saving] = useActionState(saveAiKey, initialState);
-  const apiKeyId = useId();
 
   const active = findModel(activeModelId);
-
-  useEffect(() => {
-    if (state.error) toast.error('Key rejected', { description: state.error });
-    else if (state.success) {
-      toast.success('Key saved', { description: 'Model switched.' });
-      setDialogOpen(false);
-    }
-  }, [state]);
 
   function choose(id: string) {
     startTransition(async () => {
@@ -148,101 +122,7 @@ export function ModelMenu({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add an AI key</DialogTitle>
-            <DialogDescription>Encrypted. Tested before saving.</DialogDescription>
-          </DialogHeader>
-
-          <form action={formAction} className="flex flex-col gap-3">
-            <input type="hidden" name="provider" value={provider} />
-            <input type="hidden" name="model" value={modelId} />
-
-            <div className="flex flex-col gap-1.5">
-              <span className="font-medium text-sm">Provider</span>
-              <Select
-                value={provider}
-                onValueChange={(value) => {
-                  const next = String(value) as ProviderId;
-                  setProvider(next);
-                  setModelId(sortedModelsByProvider(next)[0]?.id ?? '');
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {(value: string) => (
-                      <span className="flex min-w-0 items-center gap-2">
-                        <ProviderIcon provider={value as ProviderId} />
-                        <span className="truncate">{providerOf(value)?.label ?? 'Choose a provider'}</span>
-                      </span>
-                    )}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {PROVIDERS.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      <ProviderIcon provider={p.id} />
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <span className="font-medium text-sm">Model</span>
-              <Select key={provider} value={modelId} onValueChange={(value) => setModelId(String(value))}>
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {(value: string) => <span className="truncate">{findModel(value)?.label ?? 'Choose a model'}</span>}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {sortedModelsByProvider(provider).map((model) => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor={apiKeyId} className="font-medium text-sm">
-                API key
-              </label>
-              <Input
-                id={apiKeyId}
-                name="apiKey"
-                type="password"
-                autoComplete="off"
-                spellCheck={false}
-                required
-                placeholder={providerOf(provider)?.keyPrefix}
-                className="font-mono"
-                disabled={saving}
-                aria-busy={saving}
-              />
-              <a
-                href={providerOf(provider)?.keysUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted-foreground text-xs underline transition-colors hover:text-foreground"
-              >
-                Get a {providerOf(provider)?.label} key
-              </a>
-            </div>
-
-            <DialogFooter>
-              <Button type="submit" disabled={saving} aria-busy={saving}>
-                {saving && <Spinner />}
-                {saving ? 'Checking…' : 'Save key'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddKeyDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </>
   );
 }
