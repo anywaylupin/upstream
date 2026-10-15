@@ -174,13 +174,14 @@ Users without instructions keep hitting the shared cache.
 
 ## Theming
 
-The look is a river gauge station. The base is fixed: Glacier page, Silt rules,
-Riverbed ink and solid buttons. The three upgrade stages are fixed colours
+The look is a river gauge station: Glacier page, Silt rules, Riverbed ink. The
+neutrals carry a faint tint of the palette hue, so each palette gets a matching
+page. The three upgrade stages are fixed colours
 (`--stage-flood`, `--stage-action`, `--stage-normal`) with fixed shapes in
 `StageMark` - solid triangle, outlined triangle, dot - so a stage reads without
 colour. Titles and big numbers are Bricolage Grotesque, everything else
-Schibsted Grotesk. Only the accent (`--brand`, the active tab, score rings,
-focus) follows the palette picker.
+Schibsted Grotesk. The accent (`--brand`: the active tab, score rings, focus)
+and the neutral tint follow the palette picker; the stages never do.
 
 `--brand-h` and `--brand-c` (an OKLCH hue and chroma) drive the accent,
 so a palette is two numbers rather than a full set of colour variables. The 18

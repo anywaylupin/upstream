@@ -56,9 +56,10 @@
 }
 
 :root {
-  /* Direction A, the river gauge. The base is fixed: Glacier page, Silt rules,
-     Riverbed ink. Only the accent follows the palette picker, through one hue
-     and chroma pair. The three stage colours are fixed too, because they carry
+  /* Direction A, the river gauge: Glacier page, Silt rules, Riverbed ink.
+     The neutrals carry a faint tint of the palette hue, so every palette gets a
+     matching page instead of reds and violets sitting on a teal-green ground.
+     Teal, the default, is the original Glacier. The three stage colours are fixed too, because they carry
      meaning: flood is breaking, action is review, normal is safe. */
   --brand-h: 201;
   --brand-c: 0.08;
@@ -67,23 +68,23 @@
   --stage-action: oklch(0.75 0.15 78);
   --stage-normal: oklch(0.545 0.08 201);
 
-  --background: oklch(0.962 0.006 197);
-  --foreground: oklch(0.32 0.04 210);
-  --card: oklch(0.985 0.004 197);
-  --card-foreground: oklch(0.32 0.04 210);
-  --popover: oklch(0.99 0.003 197);
-  --popover-foreground: oklch(0.32 0.04 210);
-  --primary: oklch(0.32 0.04 210);
-  --primary-foreground: oklch(0.962 0.006 197);
-  --secondary: oklch(0.93 0.01 197);
-  --secondary-foreground: oklch(0.32 0.04 210);
-  --muted: oklch(0.935 0.009 197);
-  --muted-foreground: oklch(0.48 0.03 205);
+  --background: oklch(0.962 0.006 var(--brand-h));
+  --foreground: oklch(0.32 0.04 var(--brand-h));
+  --card: oklch(0.985 0.004 var(--brand-h));
+  --card-foreground: oklch(0.32 0.04 var(--brand-h));
+  --popover: oklch(0.99 0.003 var(--brand-h));
+  --popover-foreground: oklch(0.32 0.04 var(--brand-h));
+  --primary: oklch(0.32 0.04 var(--brand-h));
+  --primary-foreground: oklch(0.962 0.006 var(--brand-h));
+  --secondary: oklch(0.93 0.01 var(--brand-h));
+  --secondary-foreground: oklch(0.32 0.04 var(--brand-h));
+  --muted: oklch(0.935 0.009 var(--brand-h));
+  --muted-foreground: oklch(0.48 0.03 var(--brand-h));
   --accent: oklch(0.93 0.012 var(--brand-h));
-  --accent-foreground: oklch(0.32 0.04 210);
+  --accent-foreground: oklch(0.32 0.04 var(--brand-h));
   --destructive: var(--stage-flood);
-  --border: oklch(0.856 0.012 170);
-  --input: oklch(0.856 0.012 170);
+  --border: oklch(0.856 0.012 var(--brand-h));
+  --input: oklch(0.856 0.012 var(--brand-h));
   --ring: oklch(0.545 var(--brand-c) var(--brand-h));
   --brand: oklch(0.545 var(--brand-c) var(--brand-h));
   --chart-1: oklch(0.855 0.138 181.071);
@@ -92,13 +93,13 @@
   --chart-4: oklch(0.511 0.096 186.391);
   --chart-5: oklch(0.437 0.078 188.216);
   --radius: 0.375rem;
-  --sidebar: oklch(0.95 0.007 197);
-  --sidebar-foreground: oklch(0.32 0.04 210);
+  --sidebar: oklch(0.95 0.007 var(--brand-h));
+  --sidebar-foreground: oklch(0.32 0.04 var(--brand-h));
   --sidebar-primary: oklch(0.545 var(--brand-c) var(--brand-h));
-  --sidebar-primary-foreground: oklch(0.985 0.004 197);
-  --sidebar-accent: oklch(0.93 0.01 197);
-  --sidebar-accent-foreground: oklch(0.32 0.04 210);
-  --sidebar-border: oklch(0.856 0.012 170);
+  --sidebar-primary-foreground: oklch(0.985 0.004 var(--brand-h));
+  --sidebar-accent: oklch(0.93 0.01 var(--brand-h));
+  --sidebar-accent-foreground: oklch(0.32 0.04 var(--brand-h));
+  --sidebar-border: oklch(0.856 0.012 var(--brand-h));
   --sidebar-ring: oklch(0.545 var(--brand-c) var(--brand-h));
 }
 
@@ -107,20 +108,20 @@
   --stage-action: oklch(0.8 0.14 80);
   --stage-normal: oklch(0.7 0.09 201);
 
-  --background: oklch(0.2 0.025 215);
-  --foreground: oklch(0.95 0.008 197);
-  --card: oklch(0.245 0.028 212);
-  --card-foreground: oklch(0.95 0.008 197);
-  --popover: oklch(0.27 0.03 212);
-  --popover-foreground: oklch(0.95 0.008 197);
-  --primary: oklch(0.93 0.01 197);
-  --primary-foreground: oklch(0.22 0.03 212);
-  --secondary: oklch(0.3 0.03 210);
-  --secondary-foreground: oklch(0.95 0.008 197);
-  --muted: oklch(0.28 0.028 210);
-  --muted-foreground: oklch(0.74 0.02 200);
+  --background: oklch(0.2 0.025 var(--brand-h));
+  --foreground: oklch(0.95 0.008 var(--brand-h));
+  --card: oklch(0.245 0.028 var(--brand-h));
+  --card-foreground: oklch(0.95 0.008 var(--brand-h));
+  --popover: oklch(0.27 0.03 var(--brand-h));
+  --popover-foreground: oklch(0.95 0.008 var(--brand-h));
+  --primary: oklch(0.93 0.01 var(--brand-h));
+  --primary-foreground: oklch(0.22 0.03 var(--brand-h));
+  --secondary: oklch(0.3 0.03 var(--brand-h));
+  --secondary-foreground: oklch(0.95 0.008 var(--brand-h));
+  --muted: oklch(0.28 0.028 var(--brand-h));
+  --muted-foreground: oklch(0.74 0.02 var(--brand-h));
   --accent: oklch(0.31 0.035 var(--brand-h));
-  --accent-foreground: oklch(0.95 0.008 197);
+  --accent-foreground: oklch(0.95 0.008 var(--brand-h));
   --destructive: var(--stage-flood);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
@@ -131,12 +132,12 @@
   --chart-3: oklch(0.6 0.118 184.704);
   --chart-4: oklch(0.511 0.096 186.391);
   --chart-5: oklch(0.437 0.078 188.216);
-  --sidebar: oklch(0.23 0.027 213);
-  --sidebar-foreground: oklch(0.95 0.008 197);
+  --sidebar: oklch(0.23 0.027 var(--brand-h));
+  --sidebar-foreground: oklch(0.95 0.008 var(--brand-h));
   --sidebar-primary: oklch(0.7 var(--brand-c) var(--brand-h));
-  --sidebar-primary-foreground: oklch(0.22 0.03 212);
-  --sidebar-accent: oklch(0.3 0.03 210);
-  --sidebar-accent-foreground: oklch(0.95 0.008 197);
+  --sidebar-primary-foreground: oklch(0.22 0.03 var(--brand-h));
+  --sidebar-accent: oklch(0.3 0.03 var(--brand-h));
+  --sidebar-accent-foreground: oklch(0.95 0.008 var(--brand-h));
   --sidebar-border: oklch(1 0 0 / 12%);
   --sidebar-ring: oklch(0.7 var(--brand-c) var(--brand-h));
 }
