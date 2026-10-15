@@ -1,5 +1,6 @@
 'use client';
 
+import { Slider as SliderPrimitive } from '@base-ui/react/slider';
 import { SaveIcon, Trash2Icon } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -9,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CRITERIA, type CustomPreset, MAX_WEIGHT, PRESETS, sameWeights, type Weights } from '@/lib/repo-rating';
@@ -22,7 +22,7 @@ type Preset = { id: string; label: string; description: string; weights: Weights
  *
  * The selection is inferred from matching weights until a slider moves, then pinned: otherwise the first nudge matched nothing, cleared the radio, and hid "Update".
  *
- * An array value keeps the shadcn slider to one thumb; a bare number renders two.
+ * The slider is composed from base-ui parts rather than the shadcn wrapper, because the wrapper gives its thumb no accessible name: a screen reader announced only "slider, 2".
  */
 export function RatingWeightsForm({ initial, custom }: { initial: Weights; custom: CustomPreset[] }) {
   const presets: Preset[] = [
@@ -112,19 +112,27 @@ export function RatingWeightsForm({ initial, custom }: { initial: Weights; custo
                 </TooltipTrigger>
                 <TooltipContent>{c.hint}</TooltipContent>
               </Tooltip>
-              <Slider
-                id={`w-${c.id}`}
-                name={c.id}
-                aria-label={`${c.label} weight`}
+              <SliderPrimitive.Root
                 min={0}
                 max={MAX_WEIGHT}
                 step={1}
-                value={[w]}
+                value={w}
+                thumbAlignment="edge"
                 onValueChange={(next) => {
                   if (!selectedId && selected) setSelectedId(selected.id);
                   setWeights({ ...weights, [c.id]: Array.isArray(next) ? (next[0] ?? 0) : next });
                 }}
-              />
+              >
+                <SliderPrimitive.Control className="relative flex w-full touch-none select-none items-center">
+                  <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-muted">
+                    <SliderPrimitive.Indicator className="h-full bg-brand" />
+                  </SliderPrimitive.Track>
+                  <SliderPrimitive.Thumb
+                    aria-label={`${c.label} weight`}
+                    className="relative block size-3.5 shrink-0 rounded-full border border-ring bg-card ring-ring/40 after:absolute after:-inset-2.5 hover:ring-3 focus-visible:outline-hidden focus-visible:ring-3"
+                  />
+                </SliderPrimitive.Control>
+              </SliderPrimitive.Root>
               <span className="text-right text-muted-foreground text-xs tabular-nums">{share}%</span>
             </li>
           );

@@ -28,9 +28,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 - **Stack** - the repos a user follows. Deliberately not "watching" or "tracking":
   those words belong to GitHub and mean something else there.
-- **UI copy says "Following" and "Updates"**; code, routes and tables still say
-  `stack` and `digest`. Plain words for people, stable names for the code - so
-  `/stack` renders a page titled Following. Don't rename one to match the other.
+- **The app has two places: Home and Library.** Home (`/`) is what changed,
+  Library (`/stack`) is what you follow plus every way to follow more. They
+  replaced Dashboard + Updates and Following + Repositories, two pairs that
+  answered the same question. `/digest` and `/repositories` redirect, keeping
+  their query. Code and tables still say `stack` and `digest`; plain words for
+  people, stable names for the code.
 - **Catalogue** - the shared `repos` table. Visiting a repo page adds it to the
   catalogue but not to anyone's stack.
 
@@ -54,9 +57,9 @@ need is a negative signal.
 ```
 app/
   page.tsx              # dashboard, or <Landing/> when signed out
-  digest/               # release feed with filters
-  stack/                # the user's stack table
-  repositories/         # owned / watched / starred / search on GitHub
+  digest/               # redirect to / (Updates merged into Home)
+  stack/                # Library: following + owned / watched / starred / search
+  repositories/         # redirect to /stack?source=
   repos/[owner]/[name]/ # per-repo report
   search/               # stack + releases + GitHub
   settings/             # ?section= tabs, switched on the client
@@ -171,7 +174,15 @@ Users without instructions keep hitting the shared cache.
 
 ## Theming
 
-`--brand-h` and `--brand-c` (an OKLCH hue and chroma) drive every themed token,
+The look is a river gauge station. The base is fixed: Glacier page, Silt rules,
+Riverbed ink and solid buttons. The three upgrade stages are fixed colours
+(`--stage-flood`, `--stage-action`, `--stage-normal`) with fixed shapes in
+`StageMark` - solid triangle, outlined triangle, dot - so a stage reads without
+colour. Titles and big numbers are Bricolage Grotesque, everything else
+Schibsted Grotesk. Only the accent (`--brand`, the active tab, score rings,
+focus) follows the palette picker.
+
+`--brand-h` and `--brand-c` (an OKLCH hue and chroma) drive the accent,
 so a palette is two numbers rather than a full set of colour variables. The 18
 shadcn accent ramps live in `lib/theme.ts` and one `[data-theme]` block each in
 `app/globals.css`. The swatches set `data-theme` on themselves so each renders
@@ -184,7 +195,10 @@ avoids React 19's "script tag while rendering" error.
 ## Page anatomy
 
 Every tab is the same shape: `PageHeader` (title, one line, primary action on
-the right), then an optional toolbar, then content. Lists of repos are `RepoRow`
+the right), then an optional toolbar, then content. Home groups releases by
+stage (breaking, review, safe) and folds unsummarized ones into one row; its
+title counts before filters. Score rings and verdict badges carry a tooltip
+saying what they mean. The skip link targets `<main id="main">`. Lists of repos are `RepoRow`
 (avatar, name + description, one muted fact, badges, at most one action or a ⋯
 menu) with a stretched
 link, never multi-column tables. Headings use shadcn's scale: page `text-2xl`,

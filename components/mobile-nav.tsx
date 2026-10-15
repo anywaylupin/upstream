@@ -1,14 +1,6 @@
 'use client';
 
-import {
-  BellIcon,
-  BookmarkIcon,
-  FolderGit2Icon,
-  LayoutDashboardIcon,
-  MenuIcon,
-  SearchIcon,
-  SettingsIcon
-} from 'lucide-react';
+import { HouseIcon, LibraryIcon, MenuIcon, SearchIcon, SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -19,10 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 const LINKS = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { href: '/stack', label: 'Following', icon: BookmarkIcon },
-  { href: '/digest', label: 'Updates', icon: BellIcon },
-  { href: '/repositories', label: 'Repositories', icon: FolderGit2Icon },
+  { href: '/', label: 'Home', icon: HouseIcon },
+  { href: '/stack', label: 'Library', icon: LibraryIcon },
   { href: '/search', label: 'Search', icon: SearchIcon },
   { href: '/settings', label: 'Settings', icon: SettingsIcon }
 ];
@@ -35,7 +25,7 @@ export function MobileNav({ stackCount, digestCount }: { stackCount: number; dig
   const [open, setOpen] = useState(false);
 
   const counts: Record<string, number> = {
-    '/digest': digestCount,
+    '/': digestCount,
     '/stack': stackCount
   };
 
@@ -71,7 +61,7 @@ export function MobileNav({ stackCount, digestCount }: { stackCount: number; dig
                     : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                 )}
               >
-                <LinkPendingIcon icon={link.icon} className={cn('size-4', active && 'text-primary')} />
+                <LinkPendingIcon icon={link.icon} className={cn('size-4', active && 'text-brand')} />
                 {link.label}
                 {count !== undefined && count > 0 && (
                   <Badge variant="secondary" className="ml-auto tabular-nums">

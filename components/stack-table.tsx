@@ -73,7 +73,7 @@ export function StackTable({
               aria-label={row.guide ? 'AI guide ready' : 'No AI guide yet'}
               className="hidden sm:inline-flex"
             >
-              <SparklesIcon className={cn('size-4', row.guide ? 'text-primary' : 'text-muted-foreground/40')} />
+              <SparklesIcon className={cn('size-4', row.guide ? 'text-brand' : 'text-muted-foreground/40')} />
             </TooltipTrigger>
             <TooltipContent>{row.guide ? 'AI guide ready' : 'No guide yet. Explain it from the ⋯ menu'}</TooltipContent>
           </Tooltip>

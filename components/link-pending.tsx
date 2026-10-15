@@ -28,7 +28,7 @@ export function LinkPendingBar() {
     <span
       aria-hidden
       className={cn(
-        'pointer-events-none absolute inset-x-1 bottom-0 h-0.5 origin-left rounded-full bg-primary transition-opacity duration-150',
+        'pointer-events-none absolute inset-x-1 bottom-0 h-0.5 origin-left rounded-full bg-brand transition-opacity duration-150',
         pending ? 'animate-pulse opacity-100' : 'opacity-0'
       )}
     />

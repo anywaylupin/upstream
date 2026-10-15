@@ -8,7 +8,7 @@ export function RatingBars({ rating }: { rating: RepoRating }) {
           <span className="w-24 shrink-0">{part.label}</span>
           <span className="h-2 min-w-16 flex-1 overflow-hidden rounded-full bg-muted">
             <span
-              className="block h-full animate-grow rounded-full bg-primary"
+              className="block h-full animate-grow rounded-full bg-brand"
               style={{
                 width: `${part.score * 10}%`,
                 animationDelay: `${i * 70}ms`

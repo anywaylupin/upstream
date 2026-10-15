@@ -27,7 +27,7 @@ export async function AppHeader() {
         {user && <MobileNav stackCount={nav.stack} digestCount={nav.releases30d} />}
 
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
-          <GitGraphIcon className="size-5 text-primary" />
+          <GitGraphIcon className="size-5 text-brand" />
           <span className="font-heading font-semibold text-sm tracking-tight">Upstream</span>
         </Link>
 

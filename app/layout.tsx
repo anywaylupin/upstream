@@ -1,7 +1,7 @@
 import './globals.css';
 
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Bricolage_Grotesque, Geist_Mono, Schibsted_Grotesk } from 'next/font/google';
 import { cn } from 'tailwind-variants';
 import { AppHeader } from '@/components/app-header';
 import { AppShell } from '@/components/app-shell';
@@ -9,9 +9,17 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { THEME_SCRIPT } from '@/lib/theme';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+/** Body and UI text, with tabular figures for counts and versions. */
+const body = Schibsted_Grotesk({
+  variable: '--font-body',
   subsets: ['latin']
+});
+
+/** Page titles and big numbers, set slightly condensed. */
+const display = Bricolage_Grotesque({
+  variable: '--font-display',
+  subsets: ['latin'],
+  axes: ['wdth', 'opsz']
 });
 
 const geistMono = Geist_Mono({
@@ -50,7 +58,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      className={cn(geistSans.variable, geistMono.variable, geistSans.className, 'h-full antialiased')}
+      className={cn(body.variable, display.variable, geistMono.variable, body.className, 'h-full antialiased')}
       suppressHydrationWarning
     >
       <head>

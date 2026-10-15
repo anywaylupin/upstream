@@ -33,7 +33,6 @@ function guideInBackground(repoId: number, label: string) {
 
 function revalidateRepoViews(owner?: string, name?: string) {
   revalidatePath('/');
-  revalidatePath('/digest');
   revalidatePath('/repos');
   revalidatePath('/settings');
   if (owner && name) revalidatePath(`/repos/${owner}/${name}`);

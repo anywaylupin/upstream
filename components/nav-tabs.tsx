@@ -1,6 +1,6 @@
 'use client';
 
-import { BellIcon, BookmarkIcon, FolderGit2Icon, LayoutDashboardIcon, type LucideIcon } from 'lucide-react';
+import { HouseIcon, LibraryIcon, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from 'tailwind-variants';
@@ -9,15 +9,16 @@ import { Badge } from '@/components/ui/badge';
 
 type Tab = { href: string; label: string; icon: LucideIcon; count?: number };
 
-/** The underlined tab strip GitHub puts under the header on a profile. */
+/**
+ * Two places, one job each: Home is what changed, Library is what you follow.
+ * It was four tabs, and two pairs of them answered the same question.
+ */
 export function NavTabs({ stackCount, digestCount }: { stackCount: number; digestCount: number }) {
   const pathname = usePathname();
 
   const tabs: Tab[] = [
-    { href: '/', label: 'Dashboard', icon: LayoutDashboardIcon },
-    { href: '/stack', label: 'Following', icon: BookmarkIcon, count: stackCount },
-    { href: '/digest', label: 'Updates', icon: BellIcon, count: digestCount },
-    { href: '/repositories', label: 'Repositories', icon: FolderGit2Icon }
+    { href: '/', label: 'Home', icon: HouseIcon, count: digestCount },
+    { href: '/stack', label: 'Library', icon: LibraryIcon, count: stackCount }
   ];
 
   return (
@@ -40,10 +41,7 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
             >
               <LinkPendingIcon
                 icon={tab.icon}
-                className={cn(
-                  'size-4 transition-transform duration-200 group-hover:scale-110',
-                  active && 'text-primary'
-                )}
+                className={cn('size-4 transition-transform duration-200 group-hover:scale-110', active && 'text-brand')}
               />
               {tab.label}
               {tab.count !== undefined && tab.count > 0 && (
