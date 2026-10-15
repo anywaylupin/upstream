@@ -2,10 +2,9 @@
 
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { cn } from 'tailwind-variants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export type UrlTab = { id: string; label: string; count?: number; danger?: boolean };
+export type UrlTab = { id: string; label: string; count?: number };
 
 /**
  * Line tabs whose panels are rendered on the server once and switched here, so changing tab never refetches.
@@ -45,7 +44,7 @@ export function UrlTabs({
         className="w-full justify-start overflow-x-auto overflow-y-hidden border-border border-b"
       >
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.id} value={tab.id} className={cn('flex-none', tab.danger && 'text-destructive/80')}>
+          <TabsTrigger key={tab.id} value={tab.id} className="flex-none">
             {tab.label}
             {tab.count !== undefined && <span className="text-muted-foreground tabular-nums">{tab.count}</span>}
           </TabsTrigger>

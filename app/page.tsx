@@ -1,15 +1,16 @@
-import { ArrowRightIcon, ShieldCheckIcon, TriangleAlertIcon } from 'lucide-react';
+import { ArrowRightIcon, HourglassIcon, ShieldCheckIcon, TriangleAlertIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { auth } from '@/auth';
 import { DashboardEmpty } from '@/components/dashboard-empty';
 import { Landing } from '@/components/landing';
-import { OwnerAvatar } from '@/components/owner-avatar';
 import { PageHeader } from '@/components/page-header';
+import { RepoRow } from '@/components/repo-row';
 import { ScoreRing } from '@/components/score-ring';
+import { SummarizeButton } from '@/components/summarize-button';
 import { SyncStackButton } from '@/components/sync-stack-button';
 import { Badge } from '@/components/ui/badge';
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { ItemGroup } from '@/components/ui/item';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { upgradeVerdict } from '@/lib/digest-filters';
 import { formatRelative } from '@/lib/format';
@@ -46,6 +47,13 @@ function Section({
   );
 }
 
+/**
+ * The signed-in home.
+ * The title states the one thing that matters now, in order: breaking changes, then releases nobody has summarized yet, then all clear.
+ * "All clear" used to show over a backlog of unsummarized releases, which claimed a check that had never run.
+ *
+ * Latest updates shows one row per repo: a busy repo publishing three betas in a day used to take three of the five rows.
+ */
 export default async function Dashboard() {
   const session = await auth();
   const userId = session?.user?.id;
@@ -55,10 +63,10 @@ export default async function Dashboard() {
 
   if (repoIds.length === 0) return <DashboardEmpty />;
 
-  const [{ rows, totals }, weights, latest] = await Promise.all([
+  const [{ rows, totals }, weights, recent] = await Promise.all([
     getStackStats(userId),
     getRatingWeights(userId),
-    getRecentReleases(repoIds, windowStart(), 5)
+    getRecentReleases(repoIds, windowStart(), 40)
   ]);
 
   const lastSync = rows
@@ -72,7 +80,16 @@ export default async function Dashboard() {
     .sort((a, b) => b.row.breaking30d - a.row.breaking30d)
     .slice(0, 5);
 
-  const breaking = totals.breaking30d;
+  const byRepo = new Map<string, { release: (typeof recent)[number]; more: number }>();
+  for (const release of recent) {
+    const key = `${release.owner}/${release.name}`;
+    const seen = byRepo.get(key);
+    if (seen) seen.more += 1;
+    else byRepo.set(key, { release, more: 0 });
+  }
+  const latest = [...byRepo.values()].slice(0, 5);
+
+  const { breaking30d: breaking, pending30d: pending } = totals;
 
   return (
     <div className="flex w-full flex-col gap-8">
@@ -82,6 +99,11 @@ export default async function Dashboard() {
             <span className="flex items-center gap-2 text-destructive">
               <TriangleAlertIcon className="size-6" />
               {breaking} breaking change{breaking === 1 ? '' : 's'} this month
+            </span>
+          ) : pending > 0 ? (
+            <span className="flex items-center gap-2">
+              <HourglassIcon className="size-6 text-muted-foreground" />
+              {pending} release{pending === 1 ? '' : 's'} to summarize
             </span>
           ) : (
             <span className="flex items-center gap-2">
@@ -93,61 +115,53 @@ export default async function Dashboard() {
         description={`${totals.repos} repo${totals.repos === 1 ? '' : 's'} followed · ${totals.releases30d} release${
           totals.releases30d === 1 ? '' : 's'
         } this month · synced ${formatRelative(lastSync ?? null)}`}
-        action={<SyncStackButton />}
+        action={
+          <>
+            <SyncStackButton />
+            {pending > 0 && <SummarizeButton />}
+          </>
+        }
       />
 
       {attention.length > 0 && (
         <Section title="Needs attention" href="/stack" linkLabel="All repos">
           {attention.map(({ row, rating }) => (
-            <Item
+            <RepoRow
               key={row.repoId}
-              variant="outline"
-              className="hover:bg-muted/50"
-              render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+              owner={row.owner}
+              name={row.name}
+              iconUrl={row.iconUrl}
+              description={row.description ?? 'No description'}
             >
-              <ItemMedia>
-                <OwnerAvatar owner={row.owner} icon={row.iconUrl} size={28} />
-              </ItemMedia>
-              <ItemContent className="min-w-0">
-                <ItemTitle className="truncate">
-                  {row.owner}/{row.name}
-                </ItemTitle>
-                <ItemDescription className="truncate">{row.description ?? 'No description'}</ItemDescription>
-              </ItemContent>
               <Badge variant="destructive">{row.breaking30d} breaking</Badge>
               <ScoreRing score={rating.overall} size={36} />
-            </Item>
+            </RepoRow>
           ))}
         </Section>
       )}
 
       {latest.length > 0 && (
         <Section title="Latest updates" href="/digest" linkLabel="All updates">
-          {latest.map((row) => {
-            const parsed = ReleaseSummary.safeParse(row.data);
+          {latest.map(({ release, more }) => {
+            const parsed = ReleaseSummary.safeParse(release.data);
             return (
-              <Item
-                key={row.releaseId}
-                variant="outline"
-                className="hover:bg-muted/50"
-                render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+              <RepoRow
+                key={release.releaseId}
+                owner={release.owner}
+                name={release.name}
+                iconUrl={release.iconUrl}
+                tag={release.tag}
+                description={parsed.success ? parsed.data.headline : 'Not summarized yet'}
+                meta={more > 0 ? `+${more} more` : undefined}
               >
-                <ItemMedia>
-                  <OwnerAvatar owner={row.owner} icon={row.iconUrl} size={28} />
-                </ItemMedia>
-                <ItemContent className="min-w-0">
-                  <ItemTitle>
-                    <span className="truncate">
-                      {row.owner}/{row.name}
-                    </span>
-                    <span className="shrink-0 font-mono font-normal text-muted-foreground text-xs">{row.tag}</span>
-                  </ItemTitle>
-                  <ItemDescription className="truncate">
-                    {parsed.success ? parsed.data.headline : 'Waiting for a summary'}
-                  </ItemDescription>
-                </ItemContent>
-                {parsed.success && <VerdictBadge verdict={upgradeVerdict(parsed.data)} />}
-              </Item>
+                {parsed.success ? (
+                  <VerdictBadge verdict={upgradeVerdict(parsed.data)} />
+                ) : (
+                  <Badge variant="outline" className="text-muted-foreground">
+                    Pending
+                  </Badge>
+                )}
+              </RepoRow>
             );
           })}
         </Section>

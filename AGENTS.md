@@ -179,8 +179,9 @@ avoids React 19's "script tag while rendering" error.
 ## Page anatomy
 
 Every tab is the same shape: `PageHeader` (title, one line, primary action on
-the right), then an optional toolbar, then content. Lists of repos are one-line
-rows (avatar, name + description, facts, `ScoreRing`, actions) with a stretched
+the right), then an optional toolbar, then content. Lists of repos are `RepoRow`
+(avatar, name + description, one muted fact, badges, at most one action or a ⋯
+menu) with a stretched
 link, never multi-column tables. Headings use shadcn's scale: page `text-2xl`,
 section `text-lg`, body and meta `text-sm`. Colour carries meaning only: red for
 breaking, amber for review, green for safe, teal for score, the active tab and

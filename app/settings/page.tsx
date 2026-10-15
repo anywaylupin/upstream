@@ -4,11 +4,9 @@ import type { ReactNode } from 'react';
 import { AiKeyList } from '@/components/ai-key-list';
 import { DeleteAccountDialog } from '@/components/delete-account-dialog';
 import { DigestSettingsForm } from '@/components/digest-settings-form';
-import { FactGrid } from '@/components/fact-grid';
 import { InstructionTabs } from '@/components/instruction-tabs';
 import { PageHeader } from '@/components/page-header';
 import { RatingWeightsForm } from '@/components/rating-weights-form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UrlTabs } from '@/components/url-tabs';
 import { db } from '@/db';
 import { userInstructions, userPreferences } from '@/db/schema';
@@ -25,26 +23,19 @@ import { requireUser } from '@/lib/session';
 import { SETTINGS_SECTIONS, toSettingsSection } from '@/lib/settings-sections';
 import { getRecentRuns } from '@/lib/sync';
 
-/** A titled section of a settings tab: shadcn Card parts, nothing hand-rolled. */
-function Panel({
-  title,
-  description,
-  children,
-  danger
-}: {
-  title: string;
-  description?: string;
-  children: ReactNode;
-  danger?: boolean;
-}) {
+/**
+ * A titled block inside a settings tab.
+ * Plain section, no card: the tab already frames it, and a card inside a page inside a tab was one frame too many.
+ */
+function Panel({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <Card className={danger ? 'ring-destructive/40' : undefined}>
-      <CardHeader>
-        <CardTitle className={danger ? 'text-destructive' : undefined}>{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <h2 className="font-semibold text-lg tracking-tight">{title}</h2>
+        {description && <p className="text-muted-foreground text-sm">{description}</p>}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -109,7 +100,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
       <UrlTabs
         param="section"
         initial={section}
-        tabs={SETTINGS_SECTIONS.map((s) => ({ id: s.id, label: s.label, danger: s.id === 'danger' }))}
+        tabs={SETTINGS_SECTIONS.map((s) => ({ id: s.id, label: s.label }))}
         panels={{
           account: (
             <Panel title="GitHub account" description="Read from GitHub.">
@@ -138,16 +129,21 @@ export default async function Settings({ searchParams }: { searchParams: Promise
                     </div>
                   </div>
 
-                  <FactGrid
-                    facts={[
-                      { label: 'Email', value: fallbackEmail ?? 'not public' },
+                  <dl className="divide-y divide-border text-sm">
+                    {[
+                      { label: 'Email', value: fallbackEmail ?? 'Not public' },
                       { label: 'Public repos', value: profile.public_repos },
                       { label: 'Followers', value: profile.followers },
                       ...(profile.company ? [{ label: 'Company', value: profile.company }] : []),
                       ...(profile.location ? [{ label: 'Location', value: profile.location }] : []),
                       { label: 'Joined', value: formatDate(new Date(profile.created_at)) }
-                    ]}
-                  />
+                    ].map((fact) => (
+                      <div key={fact.label} className="flex justify-between gap-6 py-2.5">
+                        <dt className="text-muted-foreground">{fact.label}</dt>
+                        <dd className="truncate text-right tabular-nums">{fact.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
                 </div>
               ) : (
                 <p className="flex items-center gap-2 text-destructive text-sm">
@@ -204,7 +200,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
             </div>
           ),
           danger: (
-            <Panel title="Delete account" description="Permanent. Erases all your data." danger>
+            <Panel title="Delete account" description="Permanent. Erases all your data.">
               <DeleteAccountDialog preview={erasePreview} />
             </Panel>
           )

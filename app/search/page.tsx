@@ -1,10 +1,11 @@
 import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { LayersIcon, SearchIcon, SearchXIcon, TagIcon } from 'lucide-react';
-import Link from 'next/link';
 import { GitHubReposTable } from '@/components/github-repos-table';
+import { PageHeader } from '@/components/page-header';
+import { RepoRow } from '@/components/repo-row';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
-import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/components/ui/item';
+import { ItemGroup } from '@/components/ui/item';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
 import { releases, repos, stackRepos, summaries } from '@/db/schema';
@@ -24,7 +25,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       repoId: repos.id,
       owner: repos.owner,
       name: repos.name,
-      description: repos.description
+      description: repos.description,
+      iconUrl: repos.iconUrl
     })
     .from(stackRepos)
     .innerJoin(repos, eq(repos.id, stackRepos.repoId))
@@ -46,6 +48,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             publishedAt: releases.publishedAt,
             owner: repos.owner,
             name: repos.name,
+            iconUrl: repos.iconUrl,
             data: summaries.data
           })
           .from(releases)
@@ -89,8 +92,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <header className="flex flex-col gap-3">
-        <form action="/search">
+      <div className="flex flex-col gap-4">
+        <PageHeader title={q ? `Results for "${q}"` : 'Search'} description="Your repos, their releases, and GitHub." />
+        <form action="/search" className="sm:hidden">
           <Input
             id="site-search"
             name="q"
@@ -104,7 +108,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
             className="max-w-md"
           />
         </form>
-      </header>
+      </div>
 
       {nothing && (
         <Empty className="border">
@@ -126,19 +130,13 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </h2>
           <ItemGroup className="gap-2">
             {matchedRepos.map((row) => (
-              <Item
+              <RepoRow
                 key={row.repoId}
-                variant="outline"
-                className="hover:bg-muted/50"
-                render={<Link href={`/repos/${row.owner}/${row.name}`} />}
-              >
-                <ItemContent>
-                  <ItemTitle>
-                    {row.owner}/{row.name}
-                  </ItemTitle>
-                  <ItemDescription>{row.description ?? 'No description'}</ItemDescription>
-                </ItemContent>
-              </Item>
+                owner={row.owner}
+                name={row.name}
+                iconUrl={row.iconUrl}
+                description={row.description ?? 'No description'}
+              />
             ))}
           </ItemGroup>
         </section>
@@ -152,22 +150,17 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
           </h2>
           <ItemGroup className="gap-2">
             {matchedReleases.map((row) => (
-              <Item
+              <RepoRow
                 key={row.releaseId}
-                variant="outline"
-                className="hover:bg-muted/50"
-                render={<Link href={`/repos/${row.owner}/${row.name}`} />}
+                owner={row.owner}
+                name={row.name}
+                iconUrl={row.iconUrl}
+                tag={row.tag}
+                description={row.summary.headline}
+                meta={formatDate(row.publishedAt)}
               >
-                <ItemContent>
-                  <ItemTitle>
-                    {row.owner}/{row.name}
-                    <span className="font-mono font-normal text-muted-foreground text-xs">{row.tag}</span>
-                  </ItemTitle>
-                  <ItemDescription>{row.summary.headline}</ItemDescription>
-                </ItemContent>
                 <VerdictBadge verdict={upgradeVerdict(row.summary)} />
-                <span className="text-muted-foreground text-sm">{formatDate(row.publishedAt)}</span>
-              </Item>
+              </RepoRow>
             ))}
           </ItemGroup>
         </section>

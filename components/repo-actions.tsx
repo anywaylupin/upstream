@@ -1,9 +1,9 @@
 'use client';
 
-import { EllipsisIcon, ExternalLinkIcon, RefreshCwIcon, SparklesIcon } from 'lucide-react';
+import { EllipsisIcon, ExternalLinkIcon, MinusCircleIcon, RefreshCwIcon, SparklesIcon } from 'lucide-react';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
-import { buildRepoGuide, refreshRepo } from '@/app/actions/stack';
+import { buildRepoGuide, refreshRepo, removeFromStack } from '@/app/actions/stack';
 import { StackButton } from '@/components/stack-button';
 import { Button } from '@/components/ui/button';
 import {
@@ -19,19 +19,23 @@ import { Spinner } from '@/components/ui/spinner';
 /**
  * One visible action - follow - and the rest in a menu.
  * "Check for releases" and "Refresh guide" both looked like refresh buttons side by side, though one asks GitHub for releases and the other re-reads the README with AI.
+ *
+ * `inList` is the Following page, where every row is followed: a "Following" button on each row said nothing, so Unfollow moves into the menu.
  */
 export function RepoActions({
   repoId,
   owner,
   name,
   followed,
-  hasGuide
+  hasGuide,
+  inList = false
 }: {
   repoId: number;
   owner: string;
   name: string;
   followed: boolean;
   hasGuide: boolean;
+  inList?: boolean;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -52,9 +56,16 @@ export function RepoActions({
     });
   }
 
+  function unfollow() {
+    startTransition(async () => {
+      await removeFromStack(repoId);
+      toast.success(`Unfollowed ${owner}/${name}`);
+    });
+  }
+
   return (
     <div className="flex items-center gap-2">
-      <StackButton owner={owner} name={name} repoId={followed ? repoId : undefined} />
+      {!inList && <StackButton owner={owner} name={name} repoId={followed ? repoId : undefined} />}
       <DropdownMenu>
         <DropdownMenuTrigger
           render={<Button variant="outline" size="icon-sm" aria-label="More actions" aria-busy={pending} />}
@@ -83,6 +94,12 @@ export function RepoActions({
               <ExternalLinkIcon />
               Open on GitHub
             </DropdownMenuItem>
+            {inList && followed && (
+              <DropdownMenuItem variant="destructive" onClick={unfollow} disabled={pending}>
+                <MinusCircleIcon />
+                Unfollow
+              </DropdownMenuItem>
+            )}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

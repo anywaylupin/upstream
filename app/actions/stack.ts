@@ -13,6 +13,7 @@ import { aiErrorMessage, getAiContext } from '@/lib/ai';
 import { getGitHubToken, getReadme, getRepoMeta } from '@/lib/github';
 import { ingestRepo } from '@/lib/ingest';
 import { GUIDE_PROMPT_VERSION, generateRepoGuide } from '@/lib/repo-guide';
+import { getStackRepoIds } from '@/lib/repo-stats';
 import { RepoUrlInput } from '@/lib/repo-url';
 import { summarizePending } from '@/lib/summarize-batch';
 
@@ -264,4 +265,34 @@ export async function syncStack(): Promise<ActionResult> {
 
   revalidateRepoViews();
   return { success: true, message: `${synced}/${mine.length} synced` };
+}
+
+/**
+ * The Summarize now button.
+ * The first release is summarized inline so a failure (quota, a rejected key) comes back as a real reason in the toast instead of a silent backlog.
+ * The rest run in `after()`, because a backlog of dozens of sequential calls is far too slow to hold a click open for.
+ */
+export async function summarizeStack(): Promise<ActionResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: 'Sign in to summarize.' };
+
+  const repoIds = await getStackRepoIds(userId);
+  if (repoIds.length === 0) return { error: 'Follow a repo first.' };
+
+  const ai = await getAiContext(userId, 'summary');
+  const first = await summarizePending(ai, { repoIds, limit: 1 });
+  if (first.pending === 0) return { success: true, message: 'Everything is summarized' };
+  if (first.summarized === 0) return { error: aiErrorMessage(first.lastError, ai.ownKey) };
+
+  after(async () => {
+    try {
+      await summarizePending(ai, { repoIds, limit: 25 });
+    } catch (err) {
+      console.error('background summarize failed:', err);
+    }
+  });
+
+  revalidateRepoViews();
+  return { success: true, message: 'The rest are summarizing in the background' };
 }

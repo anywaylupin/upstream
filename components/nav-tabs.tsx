@@ -29,10 +29,7 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
     <nav className="min-w-0">
       <div className="flex gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => {
-          const active =
-            tab.href === '/'
-              ? pathname === '/'
-              : pathname.startsWith(tab.href) || (tab.href === '/stack' && pathname.startsWith('/repos/'));
+          const active = tab.href === '/' ? pathname === '/' : pathname.startsWith(tab.href);
 
           return (
             <Link

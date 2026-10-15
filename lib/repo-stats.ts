@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, inArray, isNotNull, max } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNotNull, isNull, max } from 'drizzle-orm';
 import { cache } from 'react';
 import type { StackRow } from '@/components/stack-table';
 import { db } from '@/db';
@@ -156,14 +156,14 @@ export const getStackStats = cache(async function getStackStats(
   if (repoIds.length === 0) {
     return {
       rows: [],
-      totals: { repos: 0, releases30d: 0, breaking30d: 0, summariesCached: 0 }
+      totals: { repos: 0, releases30d: 0, breaking30d: 0, pending30d: 0, summariesCached: 0 }
     };
   }
 
   const watchedIdByRepo = new Map(watched.map((w) => [w.repoId, w.watchedId]));
   const mine = inArray(releases.repoId, repoIds);
 
-  const [repoRows, totals, windowCounts, windowSummaries, ratingRows, guideRows] = await Promise.all([
+  const [repoRows, totals, windowCounts, windowSummaries, ratingRows, guideRows, [pendingRow]] = await Promise.all([
     db.select().from(repos).where(inArray(repos.id, repoIds)).orderBy(repos.owner, repos.name),
     db
       .select({
@@ -199,7 +199,15 @@ export const getStackStats = cache(async function getStackStats(
         data: repoGuides.data
       })
       .from(repoGuides)
-      .where(inArray(repoGuides.repoId, repoIds))
+      .where(inArray(repoGuides.repoId, repoIds)),
+    db
+      .select({ total: count() })
+      .from(releases)
+      .leftJoin(
+        summaries,
+        and(eq(summaries.bodyHash, releases.bodyHash), eq(summaries.instructionsHash, DEFAULT_INSTRUCTIONS_HASH))
+      )
+      .where(and(mine, isNull(summaries.id), isNotNull(releases.publishedAt), gte(releases.publishedAt, since)))
   ]);
 
   const guideByRepo = pickGuides(guideRows, wantedHash);
@@ -250,6 +258,7 @@ export const getStackStats = cache(async function getStackStats(
       repos: rows.length,
       releases30d: rows.reduce((sum, row) => sum + row.releases30d, 0),
       breaking30d: rows.reduce((sum, row) => sum + row.breaking30d, 0),
+      pending30d: pendingRow?.total ?? 0,
       summariesCached: windowSummaries.length
     }
   };

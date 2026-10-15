@@ -1,16 +1,20 @@
 import { eq, inArray } from 'drizzle-orm';
-import { BellIcon, CalendarDaysIcon, HourglassIcon, SearchXIcon } from 'lucide-react';
+import { BellIcon, CalendarDaysIcon, SearchXIcon } from 'lucide-react';
 import Link from 'next/link';
 import { DigestFilters } from '@/components/digest-filters';
 import { EmptyStack } from '@/components/empty-stack';
 import { PageHeader } from '@/components/page-header';
+import { RepoRow } from '@/components/repo-row';
+import { SummarizeButton } from '@/components/summarize-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { ItemGroup } from '@/components/ui/item';
 import { VerdictBadge } from '@/components/verdict-badge';
 import { db } from '@/db';
 import { repos, userInstructions } from '@/db/schema';
 import { CHANGE_TYPES, EFFORTS, upgradeVerdict, WINDOWS } from '@/lib/digest-filters';
+import { formatRelative } from '@/lib/format';
 import { getRecentReleases, getStackRepoIds, windowStart } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { type ReleaseSummary, ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
@@ -117,12 +121,15 @@ export default async function Digest({
   const keywords = keywordsFrom(byFeature.get('summary') ?? byFeature.get('global') ?? '');
 
   const entries: Entry[] = [];
-  let pending = 0;
+  const pendingRows: typeof rows = [];
   for (const row of rows) {
     const { releaseId, tag, publishedAt, owner, name, data } = row;
     if (!publishedAt) continue;
     if (data === null) {
-      pending += 1;
+      const repo = `${owner}/${name}`;
+      const matchesRepo = !repoFilter.length || repoFilter.includes(repo);
+      const matchesQuery = !q || `${repo} ${tag}`.toLowerCase().includes(q);
+      if (matchesRepo && matchesQuery && !types.length && !effort.length) pendingRows.push(row);
       continue;
     }
 
@@ -171,6 +178,7 @@ export default async function Digest({
   }
   const sortedWeeks = [...weeks.entries()].sort(([a], [b]) => b - a);
 
+  const pending = pendingRows.length;
   const breakingCount = entries.filter((entry) =>
     entry.summary.changes.some((change) => change.type === 'breaking')
   ).length;
@@ -186,6 +194,7 @@ export default async function Digest({
             {breakingCount > 0 && <Badge variant="destructive">{breakingCount} breaking</Badge>}
           </span>
         }
+        action={pending > 0 ? <SummarizeButton /> : undefined}
       />
 
       <DigestFilters
@@ -194,20 +203,9 @@ export default async function Digest({
       />
 
       {sortedWeeks.length === 0 &&
+        pending === 0 &&
         (repoIds.length === 0 ? (
           <EmptyStack icon={BellIcon} title="No releases yet" description="Add a repo to see its releases." />
-        ) : pending > 0 ? (
-          <Empty className="animate-rise border">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <HourglassIcon />
-              </EmptyMedia>
-              <EmptyTitle>
-                {pending} release{pending === 1 ? '' : 's'} waiting for a summary
-              </EmptyTitle>
-              <EmptyDescription>They appear here once summarized.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
         ) : (
           <Empty className="animate-rise border">
             <EmptyHeader>
@@ -279,6 +277,29 @@ export default async function Digest({
             </div>
           </section>
         ))}
+
+        {pending > 0 && (
+          <section className="flex flex-col gap-3">
+            <h2 className="font-semibold text-lg tracking-tight">Not summarized yet · {pending}</h2>
+            <ItemGroup className="animate-rise gap-2">
+              {pendingRows.map((row) => (
+                <RepoRow
+                  key={row.releaseId}
+                  owner={row.owner}
+                  name={row.name}
+                  iconUrl={row.iconUrl}
+                  tag={row.tag}
+                  description="Release notes not summarized yet"
+                  meta={row.publishedAt ? formatRelative(row.publishedAt) : undefined}
+                >
+                  <Badge variant="outline" className="text-muted-foreground">
+                    Pending
+                  </Badge>
+                </RepoRow>
+              ))}
+            </ItemGroup>
+          </section>
+        )}
       </div>
     </div>
   );

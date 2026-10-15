@@ -6,7 +6,6 @@ import { OwnerAvatar } from '@/components/owner-avatar';
 import { RepoOverview } from '@/components/repo/overview';
 import { ReleasesTable } from '@/components/repo/releases-table';
 import { RepoActions } from '@/components/repo-actions';
-import { ScoreRing } from '@/components/score-ring';
 import { Badge } from '@/components/ui/badge';
 import { UrlTabs } from '@/components/url-tabs';
 import { formatRelative } from '@/lib/format';
@@ -32,17 +31,6 @@ export default async function RepoReport({
     report;
 
   const facts: { label: string; value: ReactNode }[] = [
-    {
-      label: 'Score',
-      value: rating ? (
-        <span className="inline-flex items-center gap-2">
-          <ScoreRing score={rating.overall} size={28} />
-          <span className="text-muted-foreground">/ 10</span>
-        </span>
-      ) : (
-        '-'
-      )
-    },
     { label: 'Stars', value: (repo.stars ?? 0).toLocaleString() },
     { label: 'Releases', value: (totalRows[0]?.total ?? 0).toLocaleString() },
     { label: 'This month', value: windowRows[0]?.total ?? 0 },

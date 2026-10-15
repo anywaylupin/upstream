@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, isNull, type SQL } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, isNull, type SQL } from 'drizzle-orm';
 import { db } from '@/db';
 import { releases, repos, summaries } from '@/db/schema';
 import type { AiContext } from '@/lib/ai';
@@ -9,10 +9,11 @@ const CALL_SPACING_MS = 1_500;
 
 export async function summarizePending(
   ai: AiContext,
-  { repoId, limit = 10 }: { repoId?: number; limit?: number } = {}
+  { repoId, repoIds, limit = 10 }: { repoId?: number; repoIds?: number[]; limit?: number } = {}
 ) {
   const conditions: SQL[] = [isNotNull(releases.bodyHash), isNull(summaries.id)];
   if (repoId) conditions.push(eq(releases.repoId, repoId));
+  if (repoIds) conditions.push(inArray(releases.repoId, repoIds));
 
   const pending = await db
     .select({
@@ -32,6 +33,7 @@ export async function summarizePending(
     .limit(limit);
 
   let summarized = 0;
+  let lastError: unknown = null;
   for (const [index, row] of pending.entries()) {
     if (index > 0) {
       await new Promise((resolve) => setTimeout(resolve, CALL_SPACING_MS));
@@ -57,8 +59,9 @@ export async function summarizePending(
       summarized++;
     } catch (err) {
       console.error(`${owner}/${name} ${tag} failed:`, err);
+      lastError = err;
     }
   }
 
-  return { pending: pending.length, summarized };
+  return { pending: pending.length, summarized, lastError };
 }
