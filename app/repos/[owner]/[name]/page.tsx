@@ -102,6 +102,7 @@ export default async function RepoReport({
           releases: (
             <ReleasesTable
               releaseRows={releaseRows}
+              repoId={repo.id}
               owner={repo.owner}
               name={repo.name}
               followed={stackIdByRepo.has(repo.id)}

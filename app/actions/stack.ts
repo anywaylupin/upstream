@@ -296,3 +296,22 @@ export async function summarizeOneRelease(releaseId: number): Promise<ActionResu
   revalidateRepoViews();
   return { success: true, message: 'Summarized' };
 }
+
+/** Summarizes one followed repo's newest releases, for the button on its Releases tab. Same limit as the bulk button. */
+export async function summarizeRepo(repoId: number): Promise<ActionResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: 'Sign in to summarize.' };
+
+  const repoIds = await getStackRepoIds(userId);
+  if (!repoIds.includes(repoId)) return { error: 'Follow this repo to summarize its releases.' };
+
+  const ai = await summaryContext(userId);
+  const result = await summarizePending(ai, { repoId, limit: BULK_LIMIT });
+  if (result.pending === 0) return { success: true, message: 'Everything is summarized' };
+  if (result.summarized === 0) return { error: aiErrorMessage(result.lastError, ai.ownKey) };
+
+  revalidateRepoViews();
+  const more = result.pending === BULK_LIMIT ? ' Press again for more.' : '';
+  return { success: true, message: `Summarized ${result.summarized}.${more}` };
+}

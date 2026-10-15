@@ -4,10 +4,10 @@ export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 export const alt = 'Upstream - release updates for the repos you follow';
 
-const INK = '#fafaf9';
-const MUTED = '#a8a29e';
-const ACCENT = '#00786f';
-const DANGER = '#f87171';
+const INK = '#EEF4F4';
+const MUTED = '#9FB4B6';
+const ACCENT = '#5FB3BA';
+const DANGER = '#E8735F';
 
 /** Satori has no `display: contents` and no default flex, so every box is explicit. */
 function Chip({ label, color = MUTED }: { label: string; color?: string }) {
@@ -37,7 +37,7 @@ export default function Image() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        background: '#1c1917',
+        background: '#1E3A3F',
         padding: 80,
         fontFamily: 'sans-serif'
       }}

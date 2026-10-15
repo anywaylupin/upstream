@@ -216,7 +216,9 @@ A responsive `Field` only goes side by side inside a `FieldGroup` (it is a
 container query). Settings rows use `SettingGroup` in `components/setting-row.tsx`,
 which is that group; without it every row stacks label over control.
 
-`components/ui/**` is generated. Hand-edits are wiped the next time that
+`components/ui/button.tsx` is the one deliberate exception: its variants are
+restyled for the gauge-station look (transparent outline and ghost, 32px+ sizes),
+so diff it before re-adding. `components/ui/**` is otherwise generated. Hand-edits are wiped the next time that
 component is re-added - a `biome-ignore` there was lost exactly that way, which
 is why the a11y exceptions for that directory live in `biome.json` `overrides`.
 

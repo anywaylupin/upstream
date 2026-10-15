@@ -51,8 +51,9 @@ export function SummarizeReleaseButton({
         <TooltipContent>Release notes on GitHub</TooltipContent>
       </Tooltip>
       <Button
-        variant="outline"
+        variant="ghost"
         size="sm"
+        className="text-foreground"
         disabled={pending}
         aria-busy={pending}
         onClick={() => {

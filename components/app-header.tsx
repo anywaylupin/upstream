@@ -1,8 +1,9 @@
-import { GitGraphIcon, SearchIcon } from 'lucide-react';
+import { SearchIcon } from 'lucide-react';
 import Link from 'next/link';
 import { auth } from '@/auth';
 import { CreateMenu } from '@/components/create-menu';
 import { HeaderSearch } from '@/components/header-search';
+import { LogoMark } from '@/components/logo-mark';
 import { MobileNav } from '@/components/mobile-nav';
 import { ModelMenu } from '@/components/model-menu';
 import { NavTabs } from '@/components/nav-tabs';
@@ -27,7 +28,7 @@ export async function AppHeader() {
         {user && <MobileNav stackCount={nav.stack} digestCount={nav.releases30d} />}
 
         <Link href="/" className="flex shrink-0 items-center gap-2 transition-opacity hover:opacity-80">
-          <GitGraphIcon className="size-5 text-brand" />
+          <LogoMark className="size-5 text-foreground" />
           <span className="font-heading font-semibold text-sm tracking-tight">Upstream</span>
         </Link>
 
