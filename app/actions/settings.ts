@@ -1,6 +1,9 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
+import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { userPreferences } from '@/db/schema';
@@ -13,7 +16,8 @@ import {
   MAX_INTERVAL_DAYS,
   MIN_INTERVAL_DAYS
 } from '@/lib/digest-schedule';
-import { Weights } from '@/lib/repo-rating';
+import { type CustomPreset, MAX_CUSTOM_PRESETS, Weights } from '@/lib/repo-rating';
+import { getRatingPresets } from '@/lib/repo-stats';
 
 /** Weights arrive from a client form, so they are parsed, not trusted. */
 export async function saveRatingWeights(input: unknown): Promise<ActionResult> {
@@ -32,6 +36,63 @@ export async function saveRatingWeights(input: unknown): Promise<ActionResult> {
     });
 
   revalidatePath('/', 'layout');
+  return { success: true };
+}
+
+const SavePreset = z.object({
+  weights: Weights,
+  name: z.string().trim().min(1).max(40).optional(),
+  overrideId: z.string().optional()
+});
+
+/**
+ * Saves the current weights as a new custom preset, or over an existing custom one, and makes them active.
+ * Built-in presets are code, so an `overrideId` that is not one of the user's own presets is refused.
+ */
+export async function saveRatingPreset(input: unknown): Promise<ActionResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: 'Sign in required.' };
+
+  const parsed = SavePreset.safeParse(input);
+  if (!parsed.success) return { error: 'That preset is not valid.' };
+  const { weights, name, overrideId } = parsed.data;
+
+  const presets = await getRatingPresets(userId);
+  let next: CustomPreset[];
+  if (overrideId) {
+    if (!presets.some((p) => p.id === overrideId)) return { error: 'Only your own presets can be updated.' };
+    next = presets.map((p) => (p.id === overrideId ? { ...p, weights } : p));
+  } else {
+    if (!name) return { error: 'Name the preset.' };
+    if (presets.length >= MAX_CUSTOM_PRESETS) return { error: `Up to ${MAX_CUSTOM_PRESETS} presets.` };
+    next = [...presets, { id: randomUUID(), label: name, weights }];
+  }
+
+  await db
+    .insert(userPreferences)
+    .values({ userId, ratingWeights: weights, ratingPresets: next })
+    .onConflictDoUpdate({
+      target: userPreferences.userId,
+      set: { ratingWeights: weights, ratingPresets: next, updatedAt: new Date() }
+    });
+
+  revalidatePath('/', 'layout');
+  return { success: true, message: overrideId ? 'Preset updated' : `Saved "${name}"` };
+}
+
+export async function deleteRatingPreset(id: string): Promise<ActionResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: 'Sign in required.' };
+
+  const next = (await getRatingPresets(userId)).filter((p) => p.id !== id);
+  await db
+    .update(userPreferences)
+    .set({ ratingPresets: next, updatedAt: new Date() })
+    .where(eq(userPreferences.userId, userId));
+
+  revalidatePath('/settings');
   return { success: true };
 }
 

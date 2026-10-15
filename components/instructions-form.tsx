@@ -44,7 +44,7 @@ export function InstructionsForm({
               placeholder={field.placeholder}
               defaultValue={field.value}
               disabled={pending}
-              className="sm:max-w-md"
+              className="@md/field-group:w-96!"
             />
           </SettingRow>
         ))}

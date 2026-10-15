@@ -15,13 +15,8 @@ export function NavTabs({ stackCount, digestCount }: { stackCount: number; diges
 
   const tabs: Tab[] = [
     { href: '/', label: 'Dashboard', icon: LayoutDashboardIcon },
-    {
-      href: '/digest',
-      label: 'Updates',
-      icon: BellIcon,
-      count: digestCount
-    },
     { href: '/stack', label: 'Following', icon: BookmarkIcon, count: stackCount },
+    { href: '/digest', label: 'Updates', icon: BellIcon, count: digestCount },
     { href: '/repositories', label: 'Repositories', icon: FolderGit2Icon }
   ];
 

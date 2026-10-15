@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNotNull, isNull, type SQL } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, type SQL } from 'drizzle-orm';
 import { db } from '@/db';
 import { releases, repos, summaries } from '@/db/schema';
 import type { AiContext } from '@/lib/ai';
@@ -9,11 +9,17 @@ const CALL_SPACING_MS = 1_500;
 
 export async function summarizePending(
   ai: AiContext,
-  { repoId, repoIds, limit = 10 }: { repoId?: number; repoIds?: number[]; limit?: number } = {}
+  {
+    repoId,
+    repoIds,
+    releaseId,
+    limit = 10
+  }: { repoId?: number; repoIds?: number[]; releaseId?: number; limit?: number } = {}
 ) {
   const conditions: SQL[] = [isNotNull(releases.bodyHash), isNull(summaries.id)];
   if (repoId) conditions.push(eq(releases.repoId, repoId));
   if (repoIds) conditions.push(inArray(releases.repoId, repoIds));
+  if (releaseId) conditions.push(eq(releases.id, releaseId));
 
   const pending = await db
     .select({
@@ -30,6 +36,7 @@ export async function summarizePending(
       and(eq(summaries.bodyHash, releases.bodyHash), eq(summaries.instructionsHash, ai.instructionsHash))
     )
     .where(and(...conditions))
+    .orderBy(desc(releases.publishedAt))
     .limit(limit);
 
   let summarized = 0;

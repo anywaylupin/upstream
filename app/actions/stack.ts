@@ -7,9 +7,9 @@ import { redirect } from 'next/navigation';
 import { after } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
-import { repoGuides, repos, stackRepos } from '@/db/schema';
+import { releases, repoGuides, repos, stackRepos } from '@/db/schema';
 import { type ActionResult, errorMessage } from '@/lib/action-result';
-import { aiErrorMessage, getAiContext } from '@/lib/ai';
+import { aiErrorMessage, DEFAULT_INSTRUCTIONS_HASH, getAiContext } from '@/lib/ai';
 import { getGitHubToken, getReadme, getRepoMeta } from '@/lib/github';
 import { ingestRepo } from '@/lib/ingest';
 import { GUIDE_PROMPT_VERSION, generateRepoGuide } from '@/lib/repo-guide';
@@ -18,34 +18,11 @@ import { RepoUrlInput } from '@/lib/repo-url';
 import { summarizePending } from '@/lib/summarize-batch';
 
 /**
- * Summarizing is up to ten sequential LLM calls, which is far too slow to hold a click open for.
- * Ingest is what the user is waiting on; summaries land after the response and show up on the next view.
- * The queue is an anti-join, so a run that gets cut short simply resumes where it left off.
+ * Builds the guide for a freshly added repo after the response, so the redirect is instant.
+ * Release summaries are deliberately not started here: they are manual, because a backlog summarizing on its own left every release saying "Pending" with nothing visibly happening.
  */
-function summarizeInBackground(userId: string, repoId: number, label: string) {
+function guideInBackground(repoId: number, label: string) {
   after(async () => {
-    try {
-      const ai = await getAiContext(userId, 'summary');
-      await summarizePending(ai, { repoId, limit: 10 });
-    } catch (err) {
-      console.error(`background summarize failed for ${label}:`, err);
-    }
-  });
-}
-
-/**
- * Everything a freshly added repo needs to be worth looking at: its release summaries and its guide.
- * Runs after the response so the redirect is instant, and each piece is cached, so a repeat add costs nothing.
- */
-function analyzeInBackground(userId: string, repoId: number, label: string) {
-  after(async () => {
-    try {
-      const ai = await getAiContext(userId, 'summary');
-      await summarizePending(ai, { repoId, limit: 10 });
-    } catch (err) {
-      console.error(`background summarize failed for ${label}:`, err);
-    }
-
     try {
       await buildRepoGuide(repoId);
     } catch (err) {
@@ -87,7 +64,7 @@ async function watchAndIngest(userId: string, owner: string, name: string): Prom
     };
   }
 
-  analyzeInBackground(userId, repo.id, `${owner}/${name}`);
+  guideInBackground(repo.id, `${owner}/${name}`);
 
   revalidateRepoViews(owner, name);
   return { success: true };
@@ -143,12 +120,11 @@ export async function refreshRepo(repoId: number): Promise<ActionResult> {
 
   try {
     const { fetched, inserted } = await ingestRepo(repo);
-    summarizeInBackground(session.user.id, repoId, `${repo.owner}/${repo.name}`);
 
     revalidateRepoViews(repo.owner, repo.name);
     return {
       success: true,
-      message: `${fetched} checked · ${inserted} new · summarizing…`
+      message: `${fetched} checked · ${inserted} new`
     };
   } catch (err) {
     console.error(`refresh failed for ${repo.owner}/${repo.name}:`, err);
@@ -256,7 +232,6 @@ export async function syncStack(): Promise<ActionResult> {
   for (const repo of mine) {
     try {
       await ingestRepo(repo);
-      summarizeInBackground(session.user.id, repo.id, `${repo.owner}/${repo.name}`);
       synced += 1;
     } catch (err) {
       console.error(`sync failed for ${repo.owner}/${repo.name}:`, err);
@@ -268,9 +243,20 @@ export async function syncStack(): Promise<ActionResult> {
 }
 
 /**
- * The Summarize now button.
- * The first release is summarized inline so a failure (quota, a rejected key) comes back as a real reason in the toast instead of a silent backlog.
- * The rest run in `after()`, because a backlog of dozens of sequential calls is far too slow to hold a click open for.
+ * The model to summarize with: the user's own key and model, but the shared default prompt.
+ * Every feed reads the default-hash summary, so a personalised one would be written and then never shown.
+ */
+async function summaryContext(userId: string) {
+  const ai = await getAiContext(userId, 'summary');
+  return { ...ai, instructions: null, instructionsHash: DEFAULT_INSTRUCTIONS_HASH };
+}
+
+/** How many releases one bulk click summarizes while the user waits. */
+const BULK_LIMIT = 5;
+
+/**
+ * The bulk Summarize button: a few releases inline, then it says how many it did.
+ * It used to hand the rest to `after()`, which is exactly the invisible background work that made "Pending" confusing.
  */
 export async function summarizeStack(): Promise<ActionResult> {
   const session = await auth();
@@ -280,19 +266,34 @@ export async function summarizeStack(): Promise<ActionResult> {
   const repoIds = await getStackRepoIds(userId);
   if (repoIds.length === 0) return { error: 'Follow a repo first.' };
 
-  const ai = await getAiContext(userId, 'summary');
-  const first = await summarizePending(ai, { repoIds, limit: 1 });
-  if (first.pending === 0) return { success: true, message: 'Everything is summarized' };
-  if (first.summarized === 0) return { error: aiErrorMessage(first.lastError, ai.ownKey) };
-
-  after(async () => {
-    try {
-      await summarizePending(ai, { repoIds, limit: 25 });
-    } catch (err) {
-      console.error('background summarize failed:', err);
-    }
-  });
+  const ai = await summaryContext(userId);
+  const result = await summarizePending(ai, { repoIds, limit: BULK_LIMIT });
+  if (result.pending === 0) return { success: true, message: 'Everything is summarized' };
+  if (result.summarized === 0) return { error: aiErrorMessage(result.lastError, ai.ownKey) };
 
   revalidateRepoViews();
-  return { success: true, message: 'The rest are summarizing in the background' };
+  const more = result.pending === BULK_LIMIT ? ' Press again for more.' : '';
+  return { success: true, message: `Summarized ${result.summarized}.${more}` };
+}
+
+/** Summarizes one release, for the button on its row. Only releases from repos the user follows. */
+export async function summarizeOneRelease(releaseId: number): Promise<ActionResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { error: 'Sign in to summarize.' };
+
+  const [row] = await db
+    .select({ repoId: releases.repoId })
+    .from(releases)
+    .innerJoin(stackRepos, and(eq(stackRepos.repoId, releases.repoId), eq(stackRepos.userId, userId)))
+    .where(eq(releases.id, releaseId));
+  if (!row) return { error: 'Follow this repo to summarize its releases.' };
+
+  const ai = await summaryContext(userId);
+  const result = await summarizePending(ai, { releaseId, limit: 1 });
+  if (result.pending === 0) return { success: true, message: 'Already summarized' };
+  if (result.summarized === 0) return { error: aiErrorMessage(result.lastError, ai.ownKey) };
+
+  revalidateRepoViews();
+  return { success: true, message: 'Summarized' };
 }

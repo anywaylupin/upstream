@@ -6,6 +6,7 @@ import { EmptyStack } from '@/components/empty-stack';
 import { PageHeader } from '@/components/page-header';
 import { RepoRow } from '@/components/repo-row';
 import { SummarizeButton } from '@/components/summarize-button';
+import { SummarizeReleaseButton } from '@/components/summarize-release-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
@@ -280,7 +281,7 @@ export default async function Digest({
 
         {pending > 0 && (
           <section className="flex flex-col gap-3">
-            <h2 className="font-semibold text-lg tracking-tight">Not summarized yet · {pending}</h2>
+            <h2 className="font-semibold text-lg tracking-tight">Not summarized · {pending}</h2>
             <ItemGroup className="animate-rise gap-2">
               {pendingRows.map((row) => (
                 <RepoRow
@@ -289,12 +290,10 @@ export default async function Digest({
                   name={row.name}
                   iconUrl={row.iconUrl}
                   tag={row.tag}
-                  description="Release notes not summarized yet"
+                  description="Not summarized"
                   meta={row.publishedAt ? formatRelative(row.publishedAt) : undefined}
                 >
-                  <Badge variant="outline" className="text-muted-foreground">
-                    Pending
-                  </Badge>
+                  <SummarizeReleaseButton releaseId={row.releaseId} owner={row.owner} name={row.name} tag={row.tag} />
                 </RepoRow>
               ))}
             </ItemGroup>

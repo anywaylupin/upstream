@@ -99,7 +99,14 @@ export default async function RepoReport({
         ]}
         panels={{
           overview: <RepoOverview rating={rating} guide={guide} repo={repo} />,
-          releases: <ReleasesTable releaseRows={releaseRows} />,
+          releases: (
+            <ReleasesTable
+              releaseRows={releaseRows}
+              owner={repo.owner}
+              name={repo.name}
+              followed={stackIdByRepo.has(repo.id)}
+            />
+          ),
           alternatives: alternativesPanel
         }}
       />

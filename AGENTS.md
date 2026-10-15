@@ -132,8 +132,13 @@ Users without instructions keep hitting the shared cache.
   It resolves to a client-reference proxy, not the value. This has caused two
   runtime 500s. Shared constants live in a plain `lib/` module; icons are matched
   to ids inside the client component.
-- Long-running AI work goes in `after()` from `next/server`, never inline in a
-  click. Toasts for both success and failure, via sonner.
+- Release summaries are **manual** in the UI: each unsummarized release has a
+  Summarize button and a link to its notes on GitHub, and the bulk button does
+  five inline. Sync, add and refresh never start summaries; background
+  summarizing left every row saying "Pending" with nothing visibly running.
+  Only the scheduled cron summarizes on its own, because the email needs it.
+  The guide build after adding a repo is the one `after()` left. Toasts for
+  both success and failure, via sonner.
 - **Same-route param changes should not round-trip.** Settings sections used to
   navigate `?section=`, which re-ran two GitHub calls and the whole page to swap
   a panel. The page renders every panel once and `UrlTabs` switches them

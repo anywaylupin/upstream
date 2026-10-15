@@ -1,3 +1,4 @@
+import { SummarizeReleaseButton } from '@/components/summarize-release-button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -19,9 +20,16 @@ const BADGE_VARIANT: Record<
 
 /** The release history, newest first, each with its upgrade verdict. */
 export function ReleasesTable({
-  releaseRows
+  releaseRows,
+  owner,
+  name,
+  followed
 }: {
   releaseRows: { releaseId: number; tag: string; publishedAt: Date | null; data: unknown }[];
+  owner: string;
+  name: string;
+  /** Summarizing needs the repo in the stack; otherwise the row only links to the notes. */
+  followed: boolean;
 }) {
   return releaseRows.length === 0 ? (
     <p className="text-muted-foreground text-sm">No releases yet. Check for new releases from the menu.</p>
@@ -47,7 +55,20 @@ export function ReleasesTable({
                   {formatDate(row.publishedAt)}
                 </TableCell>
                 <TableCell className="whitespace-normal text-muted-foreground">
-                  {parsed.success ? parsed.data.headline : 'Waiting for a summary'}
+                  {parsed.success ? (
+                    parsed.data.headline
+                  ) : followed ? (
+                    <SummarizeReleaseButton releaseId={row.releaseId} owner={owner} name={name} tag={row.tag} />
+                  ) : (
+                    <a
+                      href={`https://github.com/${owner}/${name}/releases/tag/${encodeURIComponent(row.tag)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-4 hover:text-foreground"
+                    >
+                      Read on GitHub
+                    </a>
+                  )}
                 </TableCell>
                 <TableCell className="hidden lg:table-cell">
                   {parsed.success && (

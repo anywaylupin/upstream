@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/page-header';
 import { RepoRow } from '@/components/repo-row';
 import { ScoreRing } from '@/components/score-ring';
 import { SummarizeButton } from '@/components/summarize-button';
+import { SummarizeReleaseButton } from '@/components/summarize-release-button';
 import { SyncStackButton } from '@/components/sync-stack-button';
 import { Badge } from '@/components/ui/badge';
 import { ItemGroup } from '@/components/ui/item';
@@ -151,15 +152,18 @@ export default async function Dashboard() {
                 name={release.name}
                 iconUrl={release.iconUrl}
                 tag={release.tag}
-                description={parsed.success ? parsed.data.headline : 'Not summarized yet'}
+                description={parsed.success ? parsed.data.headline : 'Not summarized'}
                 meta={more > 0 ? `+${more} more` : undefined}
               >
                 {parsed.success ? (
                   <VerdictBadge verdict={upgradeVerdict(parsed.data)} />
                 ) : (
-                  <Badge variant="outline" className="text-muted-foreground">
-                    Pending
-                  </Badge>
+                  <SummarizeReleaseButton
+                    releaseId={release.releaseId}
+                    owner={release.owner}
+                    name={release.name}
+                    tag={release.tag}
+                  />
                 )}
               </RepoRow>
             );

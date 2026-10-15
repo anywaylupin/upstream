@@ -80,8 +80,28 @@ export function parseWeights(value: unknown): Weights {
   return parsed.success ? parsed.data : DEFAULT_WEIGHTS;
 }
 
+export function sameWeights(a: Weights, b: Weights) {
+  return CRITERIA.every((c) => a[c.id] === b[c.id]);
+}
+
 export function presetFor(weights: Weights) {
-  return PRESETS.find((preset) => CRITERIA.every((c) => preset.weights[c.id] === weights[c.id])) ?? null;
+  return PRESETS.find((preset) => sameWeights(preset.weights, weights)) ?? null;
+}
+
+/**
+ * A preset the user saved.
+ * The built-in four are code and never change, so an edited built-in is saved as one of these instead.
+ */
+export const CustomPreset = z.object({ id: z.string(), label: z.string().min(1).max(40), weights: Weights });
+export type CustomPreset = z.infer<typeof CustomPreset>;
+
+/** Enough for real use; the list lives in one jsonb cell. */
+export const MAX_CUSTOM_PRESETS = 12;
+
+/** Stored jsonb is untrusted: a malformed list reads as no custom presets. */
+export function parsePresets(value: unknown): CustomPreset[] {
+  const parsed = z.array(CustomPreset).safeParse(value);
+  return parsed.success ? parsed.data : [];
 }
 
 export type RepoRating = {

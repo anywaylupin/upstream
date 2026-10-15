@@ -5,7 +5,7 @@ import { db } from '@/db';
 import { releases, repoGuides, repos, stackRepos, summaries, userPreferences } from '@/db/schema';
 import { DEFAULT_INSTRUCTIONS_HASH } from '@/lib/ai';
 import { RepoGuide } from '@/lib/repo-guide';
-import { parseWeights, RATING_WINDOW_DAYS } from '@/lib/repo-rating';
+import { parsePresets, parseWeights, RATING_WINDOW_DAYS } from '@/lib/repo-rating';
 import { ReleaseSummary } from '@/lib/summarize';
 
 export const WINDOW_DAYS = 30;
@@ -296,6 +296,15 @@ export const getRatingWeights = cache(async function getRatingWeights(userId: st
     .where(eq(userPreferences.userId, userId));
   return parseWeights(row?.weights);
 });
+
+/** The presets the user saved, on top of the built-in four. */
+export async function getRatingPresets(userId: string) {
+  const [row] = await db
+    .select({ presets: userPreferences.ratingPresets })
+    .from(userPreferences)
+    .where(eq(userPreferences.userId, userId));
+  return parsePresets(row?.presets);
+}
 
 /**
  * Releases in the window across the given repos, newest first, each joined to its shared summary.

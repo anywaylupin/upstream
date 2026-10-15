@@ -145,7 +145,7 @@ export function AddKeyButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
-      <Button size="sm" onClick={() => setOpen(true)}>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
         <KeyRoundIcon data-icon="inline-start" />
         Add an API key
       </Button>

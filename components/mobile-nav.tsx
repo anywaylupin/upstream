@@ -20,8 +20,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 
 const LINKS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboardIcon },
-  { href: '/digest', label: 'Updates', icon: BellIcon },
   { href: '/stack', label: 'Following', icon: BookmarkIcon },
+  { href: '/digest', label: 'Updates', icon: BellIcon },
   { href: '/repositories', label: 'Repositories', icon: FolderGit2Icon },
   { href: '/search', label: 'Search', icon: SearchIcon },
   { href: '/settings', label: 'Settings', icon: SettingsIcon }

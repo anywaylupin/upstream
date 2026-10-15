@@ -1,30 +1,52 @@
 'use client';
 
-import { SaveIcon } from 'lucide-react';
+import { SaveIcon, Trash2Icon } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { cn } from 'tailwind-variants';
-import { saveRatingWeights } from '@/app/actions/settings';
+import { deleteRatingPreset, saveRatingPreset, saveRatingWeights } from '@/app/actions/settings';
 import { Button } from '@/components/ui/button';
 import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
 import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { CRITERIA, MAX_WEIGHT, PRESETS, presetFor, type Weights } from '@/lib/repo-rating';
+import { CRITERIA, type CustomPreset, MAX_WEIGHT, PRESETS, sameWeights, type Weights } from '@/lib/repo-rating';
 
-/** An array value keeps the shadcn wrapper to one thumb; a bare number renders two. */
-export function RatingWeightsForm({ initial }: { initial: Weights }) {
+type Preset = { id: string; label: string; description: string; weights: Weights; custom: boolean };
+
+/**
+ * Presets plus fine-tuning.
+ * The four built-ins are code and never change: once the sliders move off the selected preset, plain Save gives way to "Save as new preset", and "Update" when the selected one is the user's own.
+ *
+ * The selection is inferred from matching weights until a slider moves, then pinned: otherwise the first nudge matched nothing, cleared the radio, and hid "Update".
+ *
+ * An array value keeps the shadcn slider to one thumb; a bare number renders two.
+ */
+export function RatingWeightsForm({ initial, custom }: { initial: Weights; custom: CustomPreset[] }) {
+  const presets: Preset[] = [
+    ...PRESETS.map((p) => ({ ...p, custom: false })),
+    ...custom.map((p) => ({ ...p, description: 'Your preset', custom: true }))
+  ];
+
   const [weights, setWeights] = useState<Weights>(initial);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [name, setName] = useState('');
   const [saving, startSaving] = useTransition();
-  const preset = presetFor(weights);
+
+  const selected = presets.find((p) => p.id === selectedId) ?? presets.find((p) => sameWeights(p.weights, weights));
+  const edited = !selected || !sameWeights(selected.weights, weights);
   const total = CRITERIA.reduce((sum, c) => sum + weights[c.id], 0);
 
-  function save() {
+  function run(action: () => Promise<{ error?: string; message?: string }>, done?: () => void) {
     startSaving(async () => {
-      const res = await saveRatingWeights(weights);
+      const res = await action();
       if (res.error) toast.error(res.error);
-      else toast.success('Rating weights saved');
+      else {
+        toast.success(res.message ?? 'Rating saved');
+        done?.();
+      }
     });
   }
 
@@ -33,24 +55,45 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
       <RadioGroup
         aria-label="Preset"
         className="grid gap-2 sm:grid-cols-2"
-        value={preset?.id ?? ''}
+        value={selected?.id ?? ''}
         onValueChange={(id) => {
-          const picked = PRESETS.find((p) => p.id === id);
-          if (picked) setWeights(picked.weights);
+          const picked = presets.find((p) => p.id === id);
+          if (!picked) return;
+          setSelectedId(picked.id);
+          setWeights(picked.weights);
         }}
       >
-        {PRESETS.map((p) => (
+        {presets.map((p) => (
           <FieldLabel key={p.id} htmlFor={`preset-${p.id}`}>
             <Field orientation="horizontal">
               <FieldContent>
                 <FieldTitle>{p.label}</FieldTitle>
                 <FieldDescription>{p.description}</FieldDescription>
               </FieldContent>
+              {p.custom && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Delete ${p.label}`}
+                  disabled={saving}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    run(
+                      () => deleteRatingPreset(p.id).then((res) => ({ ...res, message: `Deleted "${p.label}"` })),
+                      () => selectedId === p.id && setSelectedId(null)
+                    );
+                  }}
+                >
+                  <Trash2Icon />
+                </Button>
+              )}
               <RadioGroupItem value={p.id} id={`preset-${p.id}`} />
             </Field>
           </FieldLabel>
         ))}
       </RadioGroup>
+
       <ul className="flex flex-col gap-3 rounded-xl border p-5">
         {CRITERIA.map((c) => {
           const w = weights[c.id];
@@ -77,9 +120,10 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
                 max={MAX_WEIGHT}
                 step={1}
                 value={[w]}
-                onValueChange={(next) =>
-                  setWeights({ ...weights, [c.id]: Array.isArray(next) ? (next[0] ?? 0) : next })
-                }
+                onValueChange={(next) => {
+                  if (!selectedId && selected) setSelectedId(selected.id);
+                  setWeights({ ...weights, [c.id]: Array.isArray(next) ? (next[0] ?? 0) : next });
+                }}
               />
               <span className="text-right text-muted-foreground text-xs tabular-nums">{share}%</span>
             </li>
@@ -87,12 +131,62 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
         })}
       </ul>
 
-      <div className="flex justify-end">
-        <Button type="button" size="sm" onClick={save} disabled={saving} aria-busy={saving}>
-          {saving ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
-          Save
-        </Button>
-      </div>
+      {edited ? (
+        <form
+          className="flex flex-wrap items-center justify-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            run(
+              () => saveRatingPreset({ weights, name }),
+              () => {
+                setName('');
+                setSelectedId(null);
+              }
+            );
+          }}
+        >
+          {selected?.custom && (
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={saving}
+              onClick={() => run(() => saveRatingPreset({ weights, overrideId: selected.id }))}
+            >
+              Update {selected.label}
+            </Button>
+          )}
+          <Input
+            name="presetName"
+            type="text"
+            autoComplete="off"
+            required
+            maxLength={40}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="Preset name"
+            aria-label="Preset name"
+            className="h-8 w-44"
+          />
+          <Button type="submit" size="sm" disabled={saving || !name.trim()} aria-busy={saving}>
+            {saving ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
+            Save as new preset
+          </Button>
+        </form>
+      ) : (
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            size="sm"
+            disabled={saving}
+            aria-busy={saving}
+            onClick={() => run(() => saveRatingWeights(weights))}
+          >
+            {saving ? <Spinner data-icon="inline-start" /> : <SaveIcon data-icon="inline-start" />}
+            Save
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

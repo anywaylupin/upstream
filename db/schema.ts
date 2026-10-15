@@ -184,6 +184,7 @@ export const userPreferences = pgTable('user_preferences', {
    * Null means the default preset.
    */
   ratingWeights: jsonb('rating_weights'),
+  ratingPresets: jsonb('rating_presets'),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 

@@ -20,7 +20,7 @@ import { previewErase } from '@/lib/erase-account';
 import { formatDate } from '@/lib/format';
 import { getGitHubToken } from '@/lib/github';
 import { cachedGitHubUser, cachedPrimaryEmail } from '@/lib/github-cache';
-import { getRatingWeights } from '@/lib/repo-stats';
+import { getRatingPresets, getRatingWeights } from '@/lib/repo-stats';
 import { requireUser } from '@/lib/session';
 import { SETTINGS_SECTIONS, toSettingsSection } from '@/lib/settings-sections';
 
@@ -37,7 +37,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
       ])
     : [null, null];
 
-  const [[prefs], instructionRows, ai, erasePreview, weights] = await Promise.all([
+  const [[prefs], instructionRows, ai, erasePreview, weights, presets] = await Promise.all([
     db
       .select({
         digestEmail: userPreferences.digestEmail,
@@ -61,7 +61,8 @@ export default async function Settings({ searchParams }: { searchParams: Promise
       .where(eq(userInstructions.userId, user.id)),
     getUserAiSummary(user.id),
     previewErase(user.id),
-    getRatingWeights(user.id)
+    getRatingWeights(user.id),
+    getRatingPresets(user.id)
   ]);
 
   const byFeature = new Map(instructionRows.map((row) => [row.feature, row.text]));
@@ -91,7 +92,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <PageHeader title="Settings" action={<AddKeyButton />} />
+      <PageHeader title="Settings" />
       <UrlTabs
         param="section"
         initial={section}
@@ -152,7 +153,7 @@ export default async function Settings({ searchParams }: { searchParams: Promise
               mailConfigured={mailProviderConfigured()}
             />
           ),
-          rating: <RatingWeightsForm initial={weights} />,
+          rating: <RatingWeightsForm initial={weights} custom={presets} />,
           ai: (
             <div className="flex flex-col gap-6">
               <SettingGroup>
@@ -160,7 +161,10 @@ export default async function Settings({ searchParams }: { searchParams: Promise
                   <span className="text-muted-foreground text-sm">{findModel(ai.modelId)?.label ?? ai.modelId}</span>
                 </SettingRow>
                 <SettingRow label="Your keys" description={ai.keys.length ? 'Encrypted' : undefined}>
-                  <AiKeyList keys={ai.keys} />
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <AiKeyList keys={ai.keys} />
+                    <AddKeyButton />
+                  </div>
                 </SettingRow>
               </SettingGroup>
               <section className="flex flex-col gap-3">
