@@ -17,10 +17,9 @@ import { RepoUrlInput } from '@/lib/repo-url';
 import { summarizePending } from '@/lib/summarize-batch';
 
 /**
- * Summarizing is up to ten sequential LLM calls, which is far too slow to hold
- * a click open for. Ingest is what the user is waiting on; summaries land after
- * the response and show up on the next view. The queue is an anti-join, so a
- * run that gets cut short simply resumes where it left off.
+ * Summarizing is up to ten sequential LLM calls, which is far too slow to hold a click open for.
+ * Ingest is what the user is waiting on; summaries land after the response and show up on the next view.
+ * The queue is an anti-join, so a run that gets cut short simply resumes where it left off.
  */
 function summarizeInBackground(userId: string, repoId: number, label: string) {
   after(async () => {
@@ -34,9 +33,8 @@ function summarizeInBackground(userId: string, repoId: number, label: string) {
 }
 
 /**
- * Everything a freshly added repo needs to be worth looking at: its release
- * summaries and its guide. Runs after the response so the redirect is instant,
- * and each piece is cached, so a repeat add costs nothing.
+ * Everything a freshly added repo needs to be worth looking at: its release summaries and its guide.
+ * Runs after the response so the redirect is instant, and each piece is cached, so a repeat add costs nothing.
  */
 function analyzeInBackground(userId: string, repoId: number, label: string) {
   after(async () => {
@@ -63,7 +61,11 @@ function revalidateRepoViews(owner?: string, name?: string) {
   if (owner && name) revalidatePath(`/repos/${owner}/${name}`);
 }
 
-/** Adds the repo if it's new, watches it for the user, then pulls its releases. */
+/**
+ * Adds the repo if it's new, watches it for the user, then pulls its releases.
+ *
+ * Always queued, not just for new releases: a repo can already be in the database with a backlog nobody has summarized yet.
+ */
 async function watchAndIngest(userId: string, owner: string, name: string): Promise<ActionResult> {
   await db.insert(repos).values({ owner, name }).onConflictDoNothing();
   const [repo] = await db
@@ -84,8 +86,6 @@ async function watchAndIngest(userId: string, owner: string, name: string): Prom
     };
   }
 
-  // Always queued, not just for new releases: a repo can already be in the
-  // database with a backlog nobody has summarized yet.
   analyzeInBackground(userId, repo.id, `${owner}/${name}`);
 
   revalidateRepoViews(owner, name);
@@ -109,14 +109,17 @@ export async function addRepoByUrl(_prevState: AddRepoState, formData: FormData)
   redirect(`/repos/${owner}/${name}`);
 }
 
-/** One-click watch from the repo tables, where owner/name are already known. */
+/**
+ * One-click watch from the repo tables, where owner/name are already known.
+ *
+ * Land on the repo's own page, where the analysis is already running.
+ */
 export async function addToStack(owner: string, name: string): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in to add repos.' };
 
   const result = await watchAndIngest(session.user.id, owner, name);
   if (result.error) return result;
-  // Land on the repo's own page, where the analysis is already running.
   redirect(`/repos/${owner}/${name}`);
 }
 
@@ -152,7 +155,13 @@ export async function refreshRepo(repoId: number): Promise<ActionResult> {
   }
 }
 
-/** Generates (or refreshes) the "what is this / how do I use it" guide for a repo. */
+/**
+ * Generates (or refreshes) the "what is this / how do I use it" guide for a repo.
+ *
+ * The prompt asks for real repos, but a model cannot be held to that: it misremembers owners and names repos that were renamed or never existed.
+ * Each one is checked against GitHub, which also returns the canonical name for a renamed repo.
+ * Anything that does not resolve is dropped.
+ */
 export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in to generate guides.' };
@@ -175,7 +184,6 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
       .from(repoGuides)
       .where(and(eq(repoGuides.repoId, repoId), eq(repoGuides.instructionsHash, ai.instructionsHash)));
 
-    // Same README, same prompt - the stored guide still stands.
     if (existing?.readmeHash === readmeHash && existing.promptVersion === GUIDE_PROMPT_VERSION) {
       return { success: true, message: 'Guide is already up to date' };
     }
@@ -190,10 +198,6 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
     );
     console.log(`guide ${repo.owner}/${repo.name} - ${usage.totalTokens} tokens`);
 
-    // The prompt asks for real repos, but a model cannot be held to that: it
-    // misremembers owners and names repos that were renamed or never existed.
-    // Each one is checked against GitHub, which also returns the canonical
-    // name for a renamed repo. Anything that does not resolve is dropped.
     const checked = await Promise.all(
       output.alternatives.map(async (alt) => {
         const [owner, name] = alt.repo.split('/');
@@ -233,7 +237,10 @@ export async function buildRepoGuide(repoId: number): Promise<ActionResult> {
   }
 }
 
-/** Sync every repo in the caller's stack. Failures are per-repo, never fatal. */
+/**
+ * Sync every repo in the caller's stack.
+ * Failures are per-repo, never fatal.
+ */
 export async function syncStack(): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in to sync.' };

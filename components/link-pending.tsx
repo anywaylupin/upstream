@@ -8,10 +8,8 @@ import { Spinner } from '@/components/ui/spinner';
 /**
  * Swaps a nav icon for a spinner while its own `<Link>` is navigating.
  *
- * `useLinkStatus` only works inside a descendant of the Link, which is why this
- * is its own component rather than a prop on the link. The pending phase is
- * skipped entirely when the route is already prefetched - this covers the case
- * `loading.tsx` cannot, the gap before the transition commits.
+ * `useLinkStatus` only works inside a descendant of the Link, which is why this is its own component rather than a prop on the link.
+ * The pending phase is skipped entirely when the route is already prefetched - this covers the case `loading.tsx` cannot, the gap before the transition commits.
  */
 export function LinkPendingIcon({ icon: Icon, className }: { icon: LucideIcon; className?: string }) {
   const { pending } = useLinkStatus();
@@ -20,8 +18,8 @@ export function LinkPendingIcon({ icon: Icon, className }: { icon: LucideIcon; c
 }
 
 /**
- * A bar that fills while the link is pending. Fixed height whether or not it is
- * showing, so it can never shift the layout it sits in.
+ * A bar that fills while the link is pending.
+ * Fixed height whether or not it is showing, so it can never shift the layout it sits in.
  */
 export function LinkPendingBar() {
   const { pending } = useLinkStatus();

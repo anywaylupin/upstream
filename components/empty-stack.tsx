@@ -6,12 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 
 /**
- * The one way out of an empty stack, shared by the dashboard, the digest and
- * the stack table.
+ * The one way out of an empty stack, shared by the dashboard, the digest and the stack table.
  *
- * The wording and the icon change with the page - an empty digest is not the
- * same news as an empty stack - but the actions are deliberately identical
- * everywhere, so there is one thing to learn rather than three.
+ * The wording and the icon change with the page - an empty digest is not the same news as an empty stack - but the actions are deliberately identical everywhere, so there is one thing to learn rather than three.
  */
 export function EmptyStackActions() {
   return (

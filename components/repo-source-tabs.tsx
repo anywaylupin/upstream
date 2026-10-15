@@ -7,12 +7,9 @@ import { LinkPendingIcon } from '@/components/link-pending';
 import { REPO_SOURCES, type RepoSource } from '@/lib/repo-sources';
 
 /**
- * Icons and colours are matched to ids here rather than passed in: these tabs
- * are a client component, and a server component cannot hand it a component
- * reference without it arriving as a client-reference proxy.
+ * Icons and colours are matched to ids here rather than passed in: these tabs are a client component, and a server component cannot hand it a component reference without it arriving as a client-reference proxy.
  *
- * Each source gets its own hue so the four views stay distinguishable at a
- * glance - they are different accounts of your GitHub, not steps in a flow.
+ * Each source gets its own hue so the four views stay distinguishable at a glance - they are different accounts of your GitHub, not steps in a flow.
  */
 const LOOKS: Record<RepoSource, { icon: LucideIcon; active: string; idle: string }> = {
   owned: {

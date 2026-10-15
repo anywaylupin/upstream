@@ -13,9 +13,8 @@ export async function signOutAction() {
 }
 
 /**
- * Deletes the Upstream account: user row, and by cascade the linked GitHub
- * account, stack and preferences. Repos, releases and summaries are shared
- * across users and deliberately survive.
+ * Deletes the Upstream account: user row, and by cascade the linked GitHub account, stack and preferences.
+ * Repos, releases and summaries are shared across users and deliberately survive.
  */
 export async function deleteAccount(): Promise<ActionResult> {
   const session = await auth();

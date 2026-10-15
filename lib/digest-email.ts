@@ -59,8 +59,10 @@ function appUrl() {
 /**
  * Everything released in the window across the user's stack, newest first.
  *
- * Only summarized releases make it in. An unsummarized release has nothing to
- * say yet, and shipping the raw changelog body would defeat the point.
+ * Only summarized releases make it in.
+ * An unsummarized release has nothing to say yet, and shipping the raw changelog body would defeat the point.
+ *
+ * One body hash can back several summary rows; one line per release is enough.
  */
 export async function buildDigest(userId: string, options: { since?: Date } = {}): Promise<BuiltDigest | null> {
   const since = options.since ?? new Date(Date.now() - DEFAULT_WINDOW_DAYS * 24 * 60 * 60 * 1000);
@@ -87,7 +89,6 @@ export async function buildDigest(userId: string, options: { since?: Date } = {}
   const seen = new Set<string>();
 
   for (const row of rows) {
-    // One body hash can back several summary rows; one line per release is enough.
     const key = `${row.owner}/${row.name}@${row.tag}`;
     if (seen.has(key)) continue;
 
@@ -127,9 +128,8 @@ export async function buildDigest(userId: string, options: { since?: Date } = {}
 }
 
 /**
- * Inline styles and a table wrapper, because that is what mail clients
- * reliably render. Every interpolated string is escaped: release bodies and
- * model output are both untrusted input.
+ * Inline styles and a table wrapper, because that is what mail clients reliably render.
+ * Every interpolated string is escaped: release bodies and model output are both untrusted input.
  */
 function renderHtml(entries: DigestEntry[], meta: { breakingCount: number; repoCount: number; since: Date }) {
   const font = '-apple-system,Segoe UI,sans-serif';
@@ -206,8 +206,8 @@ export function mailProviderConfigured() {
 }
 
 /**
- * Resend over plain fetch. A mail SDK would be one more dependency for one HTTP
- * call, and this REST shape is stable.
+ * Resend over plain fetch.
+ * A mail SDK would be one more dependency for one HTTP call, and this REST shape is stable.
  */
 export async function deliver(message: { to: string; subject: string; html: string; text: string }) {
   const apiKey = process.env.RESEND_API_KEY;
@@ -252,9 +252,8 @@ export async function resolveDigestEmail(userId: string) {
 }
 
 /**
- * Build and send in one step. Used by both the cron tick and the Send now
- * button, so a manual send is a genuine rehearsal of the scheduled one rather
- * than a second code path that can drift.
+ * Build and send in one step.
+ * Used by both the cron tick and the Send now button, so a manual send is a genuine rehearsal of the scheduled one rather than a second code path that can drift.
  */
 export async function sendDigestToUser(userId: string, options: { since?: Date } = {}) {
   const to = await resolveDigestEmail(userId);

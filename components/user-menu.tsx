@@ -30,8 +30,11 @@ const MODES: { id: Mode; icon: typeof SunIcon; label: string }[] = [
 ];
 
 /**
- * Every row is a real menu item - the appearance controls used to be bespoke
- * button grids, which looked nothing like the rest of the menu.
+ * Every row is a real menu item - the appearance controls used to be bespoke button grids, which looked nothing like the rest of the menu.
+ *
+ * A grid, not a list: eighteen stacked rows would run off the screen, and swatches are recognised by colour anyway.
+ *
+ * data-theme scopes --brand-* to this swatch, so the background resolves against them here.
  */
 export function UserMenu({ name, image }: { name: string; image?: string }) {
   const [mode, setMode] = useState<Mode>(DEFAULT_MODE);
@@ -120,8 +123,6 @@ export function UserMenu({ name, image }: { name: string; image?: string }) {
               <PaletteIcon />
               Palette
             </DropdownMenuSubTrigger>
-            {/* A grid, not a list: eighteen stacked rows would run off the
-                screen, and swatches are recognised by colour anyway. */}
             <DropdownMenuSubContent className="w-auto p-2">
               <DropdownMenuRadioGroup
                 className="grid grid-cols-6 gap-1"
@@ -141,8 +142,6 @@ export function UserMenu({ name, image }: { name: string; image?: string }) {
                           />
                         }
                       >
-                        {/* data-theme scopes --brand-* to this swatch, so the
-                            background resolves against them here. */}
                         <span
                           data-theme={option.id}
                           className={cn(

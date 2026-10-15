@@ -1,6 +1,6 @@
 /**
- * What every server action returns. Lives outside the 'use server' files,
- * which may only export async functions.
+ * What every server action returns.
+ * Lives outside the 'use server' files, which may only export async functions.
  */
 export type ActionResult = {
   error?: string;

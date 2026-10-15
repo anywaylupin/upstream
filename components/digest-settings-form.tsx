@@ -37,8 +37,8 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const MONTH_DAYS = Array.from({ length: MAX_DAY_OF_MONTH }, (_, index) => index + 1);
 
 /**
- * A row of round chips. The weekday ones carry a single letter, so two pairs
- * collide (S/S and T/T) - the tooltip and the aria-label carry the real name.
+ * A row of round chips.
+ * The weekday ones carry a single letter, so two pairs collide (S/S and T/T) - the tooltip and the aria-label carry the real name.
  */
 function Chips({
   legend,
@@ -86,6 +86,11 @@ function Chips({
   );
 }
 
+/**
+ * Computed after mount so the server and client never disagree on "now".
+ *
+ * The Switch is controlled; the hidden field is what the action reads.
+ */
 export function DigestSettingsForm({
   email,
   fallbackEmail,
@@ -133,7 +138,6 @@ export function DigestSettingsForm({
     else if (state.success) toast.success('Digest settings saved');
   }, [state]);
 
-  // Computed after mount so the server and client never disagree on "now".
   const [preview, setPreview] = useState<string | null>(null);
 
   const schedule = useMemo(
@@ -171,7 +175,6 @@ export function DigestSettingsForm({
 
   return (
     <form action={formAction} className="flex flex-col">
-      {/* The Switch is controlled; the hidden field is what the action reads. */}
       <input type="hidden" name="enabled" value={on ? 'on' : ''} />
       <input type="hidden" name="frequency" value={freq} />
       <input type="hidden" name="hour" value={selectedHour} />

@@ -19,12 +19,10 @@ import { Spinner } from '@/components/ui/spinner';
 const initialState: AddRepoState = {};
 
 /**
- * The add-repo dialog, so there is exactly one place in the app that starts
- * this action. It is reached from the header's create menu and from an empty
- * stack, which is where someone is most likely to want it.
+ * The add-repo dialog, so there is exactly one place in the app that starts this action.
+ * It is reached from the header's create menu and from an empty stack, which is where someone is most likely to want it.
  *
- * With a `trigger` it opens itself; without one the caller drives `open`, which
- * is what the create menu needs because its own menu item closes the menu first.
+ * With a `trigger` it opens itself; without one the caller drives `open`, which is what the create menu needs because its own menu item closes the menu first.
  */
 export function AddRepoDialog({
   trigger,

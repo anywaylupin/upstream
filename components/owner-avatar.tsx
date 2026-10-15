@@ -3,8 +3,8 @@
 import { useState } from 'react';
 
 /**
- * The repo's homepage icon when ingest found one, else the owner's avatar,
- * which GitHub serves at /{owner}.png with no API call. A dead icon falls back.
+ * The repo's homepage icon when ingest found one, else the owner's avatar, which GitHub serves at /{owner}.png with no API call.
+ * A dead icon falls back.
  */
 export function OwnerAvatar({ owner, icon, size = 20 }: { owner: string; icon?: string | null; size?: number }) {
   const [broken, setBroken] = useState(false);

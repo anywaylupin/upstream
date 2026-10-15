@@ -1,9 +1,8 @@
 import type { ReleaseSummary } from '@/lib/summarize';
 
 /**
- * Shared by the server page and the client filter bar. These must live outside
- * the "use client" module: a server component importing a value from one gets a
- * client-reference proxy, not the array.
+ * Shared by the server page and the client filter bar.
+ * These must live outside the "use client" module: a server component importing a value from one gets a client-reference proxy, not the array.
  */
 export const CHANGE_TYPES = [
   'breaking',
@@ -26,12 +25,10 @@ export type DigestFilterState = {
 };
 
 /**
- * Colours for the filter options, as literal class strings so Tailwind can see
- * them. Shared with the server page for the same reason the arrays above are:
- * a "use client" module cannot export a value into a server component.
+ * Colours for the filter options, as literal class strings so Tailwind can see them.
+ * Shared with the server page for the same reason the arrays above are: a "use client" module cannot export a value into a server component.
  *
- * Breaking and high effort deliberately borrow the destructive hue - they are
- * the two things the digest exists to warn you about.
+ * Breaking and high effort deliberately borrow the destructive hue - they are the two things the digest exists to warn you about.
  */
 export const CHANGE_TYPE_DOT: Record<string, string> = {
   breaking: 'bg-red-500',

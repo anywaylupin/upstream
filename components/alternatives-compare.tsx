@@ -17,6 +17,7 @@ export type CompareRow = {
   repoId?: number;
 };
 
+/** The current repo already has this action in the page header. */
 export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
   return (
     <Card className="overflow-hidden py-0">
@@ -76,7 +77,6 @@ export function AlternativesCompare({ rows }: { rows: CompareRow[] }) {
                   {row.tradeoff ?? '-'}
                 </TableCell>
                 <TableCell className="text-right">
-                  {/* The current repo already has this action in the page header. */}
                   {!row.isCurrent && owner && name && <StackButton owner={owner} name={name} repoId={row.repoId} />}
                 </TableCell>
               </TableRow>

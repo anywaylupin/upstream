@@ -26,9 +26,7 @@ function labelFor(value: string, all: string) {
 /**
  * A small colour key, so the option means something before you read it.
  *
- * `self-center` matters: shadcn's SelectItem lays its text out as a flex row
- * that defaults to `stretch`, so a fixed-height dot pins to the top of the row
- * instead of sitting level with the label.
+ * `self-center` matters: shadcn's SelectItem lays its text out as a flex row that defaults to `stretch`, so a fixed-height dot pins to the top of the row instead of sitting level with the label.
  */
 function Dot({ tone }: { tone: string | undefined }) {
   return (
@@ -49,7 +47,10 @@ function Chosen({ tone, children }: { tone?: string; children: string }) {
   );
 }
 
-/** The three questions most people come with. Each is just a preset of params. */
+/**
+ * The three questions most people come with.
+ * Each is just a preset of params.
+ */
 const VIEWS = [
   { id: 'all', label: 'All', types: null, effort: null },
   { id: 'breaking', label: 'Breaking', types: 'breaking', effort: null },
@@ -57,8 +58,10 @@ const VIEWS = [
 ] as const;
 
 /**
- * A segmented view up front, the finer selects behind a toggle. Most visits
- * want one of three answers; four dropdowns made every visit pay for the rare one.
+ * A segmented view up front, the finer selects behind a toggle.
+ * Most visits want one of three answers; four dropdowns made every visit pay for the rare one.
+ *
+ * Pressing the active view again would empty the group; that is ignored.
  */
 export function DigestFilters({ repos, selected }: { repos: string[]; selected: DigestFilterState }) {
   const router = useRouter();
@@ -95,7 +98,6 @@ export function DigestFilters({ repos, selected }: { repos: string[]; selected: 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        {/* Pressing the active view again would empty the group; that is ignored. */}
         <ToggleGroup
           aria-label="View"
           variant="outline"

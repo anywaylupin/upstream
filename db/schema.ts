@@ -56,8 +56,7 @@ export const summaries = pgTable(
   {
     id: serial('id').primaryKey(),
     bodyHash: text('body_hash').notNull(),
-    // "default" for the shared, instruction-free summary everyone reuses;
-    // a hash of the user's AI instructions when the output is personalised.
+    // "default" for the shared, instruction-free summary everyone reuses; a hash of the user's AI instructions when the output is personalised.
     instructionsHash: text('instructions_hash').notNull().default('default'),
     model: text('model').notNull(),
     promptVersion: text('prompt_version').notNull(),
@@ -70,8 +69,8 @@ export const summaries = pgTable(
 export type Repo = typeof repos.$inferSelect;
 export type NewRepo = typeof repos.$inferInsert;
 
-// Auth.js (next-auth v5) tables. Session strategy is JWT, so no sessions or
-// verificationTokens table is needed - the adapter only handles user/account linking.
+// Auth.js (next-auth v5) tables.
+// Session strategy is JWT, so no sessions or verificationTokens table is needed - the adapter only handles user/account linking.
 export const users = pgTable('users', {
   id: text('id')
     .primaryKey()
@@ -102,8 +101,10 @@ export const accounts = pgTable(
   (t) => [primaryKey({ columns: [t.provider, t.providerAccountId] })]
 );
 
-/** The repos a user has put in their stack. Deliberately not "watching":
- * that word belongs to GitHub and means something else. */
+/**
+ * The repos a user has put in their stack.
+ * Deliberately not "watching": that word belongs to GitHub and means something else.
+ */
 export const stackRepos = pgTable(
   'stack_repos',
   {
@@ -119,8 +120,8 @@ export const stackRepos = pgTable(
   (t) => [unique().on(t.userId, t.repoId)]
 );
 
-// "What is this repo / how do I use it" guides. Keyed on repoId, with the
-// README hash stored so a stale guide can be regenerated when the README moves on.
+// "What is this repo / how do I use it" guides.
+// Keyed on repoId, with the README hash stored so a stale guide can be regenerated when the README moves on.
 export const repoGuides = pgTable(
   'repo_guides',
   {
@@ -146,29 +147,50 @@ export const userPreferences = pgTable('user_preferences', {
   /** Encrypted at rest; never sent to the client. */
   googleApiKey: text('google_api_key'),
   googleApiKeyHint: text('google_api_key_hint'),
-  /** provider model id, e.g. "gemini-3.6-flash". Null uses the server default. */
+  /**
+   * provider model id, e.g. "gemini-3.6-flash".
+   * Null uses the server default.
+   */
   aiModel: text('ai_model'),
-  /** Where digests go. Defaults to the GitHub account email. */
+  /**
+   * Where digests go.
+   * Defaults to the GitHub account email.
+   */
   digestEmail: text('digest_email'),
   digestEnabled: boolean('digest_enabled').notNull().default(true),
   digestFrequency: text('digest_frequency').$type<DigestFrequency>().notNull().default('weekly'),
-  /** Hour 0-23, read in `digestTimezone`. Cron ticks hourly and picks up whoever is due. */
+  /**
+   * Hour 0-23, read in `digestTimezone`.
+   * Cron ticks hourly and picks up whoever is due.
+   */
   digestHour: integer('digest_hour').notNull().default(7),
-  /** 0 = Sunday. Used by the weekly and biweekly frequencies. */
+  /**
+   * 0 = Sunday.
+   * Used by the weekly and biweekly frequencies.
+   */
   digestWeekday: integer('digest_weekday').notNull().default(1),
   /** IANA zone the hour above is read in, e.g. "Asia/Bangkok". */
   digestTimezone: text('digest_timezone').notNull().default('UTC'),
-  /** 1-28, used by the monthly frequency. Capped so every month has the date. */
+  /**
+   * 1-28, used by the monthly frequency.
+   * Capped so every month has the date.
+   */
   digestDayOfMonth: integer('digest_day_of_month').notNull().default(1),
   /** Gap in days, used by the custom frequency. */
   digestIntervalDays: integer('digest_interval_days').notNull().default(14),
   lastDigestAt: timestamp('last_digest_at'),
-  /** Per-criterion weights for the repo rating. Null means the default preset. */
+  /**
+   * Per-criterion weights for the repo rating.
+   * Null means the default preset.
+   */
   ratingWeights: jsonb('rating_weights'),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
-/** One provider key per user. Encrypted; the hint is the only part shown back. */
+/**
+ * One provider key per user.
+ * Encrypted; the hint is the only part shown back.
+ */
 export const aiKeys = pgTable(
   'ai_keys',
   {
@@ -185,8 +207,7 @@ export const aiKeys = pgTable(
 );
 
 /**
- * Instructions are per feature, so "explain repos like I'm new to the stack"
- * does not also rewrite every release summary.
+ * Instructions are per feature, so "explain repos like I'm new to the stack" does not also rewrite every release summary.
  */
 export const userInstructions = pgTable(
   'user_instructions',
@@ -203,8 +224,8 @@ export const userInstructions = pgTable(
 );
 
 /**
- * One row per ingestion run, scheduled or manual. This is where the real cost
- * and cache-hit numbers for the README come from.
+ * One row per ingestion run, scheduled or manual.
+ * This is where the real cost and cache-hit numbers for the README come from.
  */
 export const runs = pgTable(
   'runs',

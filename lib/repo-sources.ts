@@ -1,9 +1,8 @@
 /**
  * The GitHub views on /repositories.
  *
- * Plain module, no icons: the tab strip is a client component, and importing a
- * value out of one into a server component yields a client-reference proxy
- * rather than the value. Icons are matched to these ids inside the component.
+ * Plain module, no icons: the tab strip is a client component, and importing a value out of one into a server component yields a client-reference proxy rather than the value.
+ * Icons are matched to these ids inside the component.
  */
 export const REPO_SOURCES = [
   { id: 'owned', label: 'Owned', empty: 'No public repos on your account.' },

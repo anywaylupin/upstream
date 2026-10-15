@@ -1,7 +1,6 @@
 /**
- * GitHub has no repo logo, so the closest thing is the icon of the repo's
- * homepage. The homepage is set by the repo owner, so it is untrusted: https
- * only, public hostnames only, a short timeout and a size cap.
+ * GitHub has no repo logo, so the closest thing is the icon of the repo's homepage.
+ * The homepage is set by the repo owner, so it is untrusted: https only, public hostnames only, a short timeout and a size cap.
  */
 const PRIVATE_HOST = /^(localhost|.*\.local|.*\.internal|\d+\.\d+\.\d+\.\d+|\[.*\])$/i;
 const MAX_BYTES = 64 * 1024;
@@ -30,6 +29,7 @@ export function pickIcon(html: string, base: URL): string | null {
   return null;
 }
 
+/** The icon links live in <head>; the first 64 KB is plenty. */
 export async function findRepoIcon(homepage: string | null | undefined): Promise<string | null> {
   const page = homepage ? publicHttps(homepage.includes('://') ? homepage : `https://${homepage}`) : null;
   if (!page) return null;
@@ -39,7 +39,6 @@ export async function findRepoIcon(homepage: string | null | undefined): Promise
     if (!res.ok || !res.body || !publicHttps(res.url)) return null;
     if (!res.headers.get('content-type')?.includes('text/html')) return null;
 
-    // The icon links live in <head>; the first 64 KB is plenty.
     const reader = res.body.getReader();
     let html = '';
     const decoder = new TextDecoder();

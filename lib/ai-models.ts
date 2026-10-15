@@ -1,9 +1,8 @@
 /**
  * The model catalogue.
  *
- * Pure and client-safe - no `db`, no `process.env`. Which providers are
- * actually usable depends on server env keys and the user's own stored keys,
- * and that is resolved server-side in `lib/ai-settings.ts` then passed down.
+ * Pure and client-safe - no `db`, no `process.env`.
+ * Which providers are actually usable depends on server env keys and the user's own stored keys, and that is resolved server-side in `lib/ai-settings.ts` then passed down.
  */
 
 export const PROVIDERS = [
@@ -90,16 +89,12 @@ export type ModelOption = {
 };
 
 /**
- * Model ids go stale - `gemini-2.5-flash` was retired mid-project and broke
- * every summary silently. Nothing here is trusted: a model is probed with a
- * live call before it is saved, so a dead id fails at the picker rather than
- * halfway through a run.
+ * Model ids go stale - `gemini-2.5-flash` was retired mid-project and broke every summary silently.
+ * Nothing here is trusted: a model is probed with a live call before it is saved, so a dead id fails at the picker rather than halfway through a run.
  *
- * OpenRouter alone proxies hundreds of models, so this is a curated catalogue
- * rather than a literal mirror of every provider's list.
+ * OpenRouter alone proxies hundreds of models, so this is a curated catalogue rather than a literal mirror of every provider's list.
  */
 export const MODELS: ModelOption[] = [
-  // --- Google -------------------------------------------------------------
   {
     id: 'gemini-3.6-flash',
     provider: 'google',
@@ -122,7 +117,6 @@ export const MODELS: ModelOption[] = [
     note: 'Strongest reasoning.'
   },
 
-  // --- Groq ---------------------------------------------------------------
   {
     id: 'llama-3.3-70b-versatile',
     provider: 'groq',
@@ -173,7 +167,6 @@ export const MODELS: ModelOption[] = [
     note: 'Reasoning distill.'
   },
 
-  // --- Mistral ------------------------------------------------------------
   {
     id: 'mistral-small-latest',
     provider: 'mistral',
@@ -224,7 +217,6 @@ export const MODELS: ModelOption[] = [
     note: 'Code-focused.'
   },
 
-  // --- OpenAI -------------------------------------------------------------
   {
     id: 'gpt-5',
     provider: 'openai',
@@ -275,7 +267,6 @@ export const MODELS: ModelOption[] = [
     note: 'Reasoning, cheap.'
   },
 
-  // --- Anthropic ----------------------------------------------------------
   {
     id: 'claude-sonnet-5',
     provider: 'anthropic',
@@ -298,7 +289,6 @@ export const MODELS: ModelOption[] = [
     note: 'Fast and cheap.'
   },
 
-  // --- DeepSeek -----------------------------------------------------------
   {
     id: 'deepseek-chat',
     provider: 'deepseek',
@@ -314,7 +304,6 @@ export const MODELS: ModelOption[] = [
     note: 'Reasoning, still cheap.'
   },
 
-  // --- xAI ----------------------------------------------------------------
   {
     id: 'grok-4',
     provider: 'xai',
@@ -330,7 +319,6 @@ export const MODELS: ModelOption[] = [
     note: 'Cheaper, quick.'
   },
 
-  // --- OpenRouter ---------------------------------------------------------
   {
     id: 'deepseek/deepseek-chat-v3.1:free',
     provider: 'openrouter',
@@ -419,9 +407,8 @@ export function modelsByProvider(provider: ProviderId) {
 }
 
 /**
- * Whether a model can actually run for this user. Their own key runs anything
- * from that provider; the shared server key runs free-tier models only, since
- * a paid call on it would bill whoever hosts the app.
+ * Whether a model can actually run for this user.
+ * Their own key runs anything from that provider; the shared server key runs free-tier models only, since a paid call on it would bill whoever hosts the app.
  */
 export function canRun(model: ModelOption, keys: { own: readonly string[]; server: readonly string[] }) {
   if (keys.own.includes(model.provider)) return true;

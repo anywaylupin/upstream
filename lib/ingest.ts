@@ -31,8 +31,6 @@ async function fetchReleases(owner: string, name: string): Promise<GitHubRelease
     }
   });
 
-  // TODO: log res.headers.get("x-ratelimit-remaining")
-
   if (!res.ok) {
     throw new Error(`GitHub API error for ${owner}/${name}: ${res.status} ${res.statusText}`);
   }
@@ -53,6 +51,9 @@ function toRow(repoId: number, release: GitHubRelease) {
   };
 }
 
+/**
+ * Refresh the card metadata and stamp the run, so the dashboard can show what a repo is and when it was last checked.
+ */
 export async function ingestRepo(repo: { id: number; owner: string; name: string }) {
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
   if (!GITHUB_TOKEN) throw new Error('GITHUB_TOKEN is not set');
@@ -65,8 +66,6 @@ export async function ingestRepo(repo: { id: number; owner: string; name: string
       ? []
       : await db.insert(releasesTable).values(rows).onConflictDoNothing().returning({ id: releasesTable.id });
 
-  // Refresh the card metadata and stamp the run, so the dashboard can show
-  // what a repo is and when it was last checked.
   const meta = await getRepoMeta(repo.owner, repo.name, GITHUB_TOKEN).catch((err: unknown) => {
     console.error(`metadata refresh failed for ${repo.owner}/${repo.name}:`, err);
     return null;

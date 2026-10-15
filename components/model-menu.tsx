@@ -33,6 +33,13 @@ import { canRun, findModel, PROVIDERS, type ProviderId, providerOf, sortedModels
 
 const initialState: KeyState = {};
 
+/**
+ * Only models that will actually run: own key unlocks a provider, the shared key covers its free tier.
+ * Listing a model that fails on use is worse than hiding it.
+ *
+ * Keyed on the provider: switching it unmounts the selected item, and base-ui resets its own value to null rather than to the new list's first entry.
+ * Remounting re-seeds it from `modelId`.
+ */
 export function ModelMenu({
   activeModelId,
   keyedProviders,
@@ -69,8 +76,6 @@ export function ModelMenu({
     });
   }
 
-  // Only models that will actually run: own key unlocks a provider, the shared
-  // key covers its free tier. Listing a model that fails on use is worse than hiding it.
   const keys = { own: keyedProviders, server: serverProviders };
   const runnable = (p: ProviderId) => sortedModelsByProvider(p).filter((m) => canRun(m, keys));
   const offered = PROVIDERS.filter((p) => runnable(p.id).length > 0);
@@ -161,7 +166,6 @@ export function ModelMenu({
                 onValueChange={(value) => {
                   const next = String(value) as ProviderId;
                   setProvider(next);
-                  // sorted, so this lands on a free model when the provider has one
                   setModelId(sortedModelsByProvider(next)[0]?.id ?? '');
                 }}
               >
@@ -188,9 +192,6 @@ export function ModelMenu({
 
             <div className="flex flex-col gap-1.5">
               <span className="font-medium text-sm">Model</span>
-              {/* Keyed on the provider: switching it unmounts the selected item,
-                  and base-ui resets its own value to null rather than to the new
-                  list's first entry. Remounting re-seeds it from `modelId`. */}
               <Select key={provider} value={modelId} onValueChange={(value) => setModelId(String(value))}>
                 <SelectTrigger className="w-full">
                   <SelectValue>

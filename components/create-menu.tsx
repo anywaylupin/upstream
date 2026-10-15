@@ -15,8 +15,10 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 /**
- * The header "+" menu. Owns the add-repo dialog so there is exactly one place
- * in the app that starts this action.
+ * The header "+" menu.
+ * Owns the add-repo dialog so there is exactly one place in the app that starts this action.
+ *
+ * Auto width with nowrap items: a fixed width wrapped the longest label.
  */
 export function CreateMenu() {
   const [open, setOpen] = useState(false);
@@ -28,7 +30,6 @@ export function CreateMenu() {
           <PlusIcon />
           <ChevronDownIcon className="size-3 opacity-60" />
         </DropdownMenuTrigger>
-        {/* Auto width with nowrap items: a fixed width wrapped the longest label. */}
         <DropdownMenuContent
           align="end"
           className="w-auto min-w-52 [&_[data-slot=dropdown-menu-item]]:whitespace-nowrap"

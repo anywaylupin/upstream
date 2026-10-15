@@ -28,8 +28,7 @@ const LINKS = [
 ];
 
 /**
- * The tab strip does not survive a phone-width header, so below md the nav
- * moves in here instead of being squeezed off the edge.
+ * The tab strip does not survive a phone-width header, so below md the nav moves in here instead of being squeezed off the edge.
  */
 export function MobileNav({ stackCount, digestCount }: { stackCount: number; digestCount: number }) {
   const pathname = usePathname();

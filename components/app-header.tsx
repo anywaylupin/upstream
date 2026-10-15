@@ -33,7 +33,6 @@ export async function AppHeader() {
           <span className="font-heading font-semibold text-sm tracking-tight">Upstream</span>
         </Link>
 
-        {/* Nav lives in the header itself rather than a second strip below it. */}
         {user && (
           <div className="hidden min-w-0 flex-1 md:block">
             <NavTabs stackCount={nav.stack} digestCount={nav.releases30d} />

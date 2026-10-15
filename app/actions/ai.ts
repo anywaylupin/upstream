@@ -80,7 +80,10 @@ export async function removeAiKey(provider: string): Promise<ActionResult> {
   return { success: true };
 }
 
-/** Switches the active model. Rejects one the user has no key for. */
+/**
+ * Switches the active model.
+ * Rejects one the user has no key for.
+ */
 export async function selectAiModel(modelId: string): Promise<ActionResult> {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in required.' };
@@ -107,7 +110,10 @@ export async function selectAiModel(modelId: string): Promise<ActionResult> {
 
 export type InstructionState = { error?: string; success?: boolean };
 
-/** Per-feature instructions. Empty clears that feature's override. */
+/**
+ * Per-feature instructions.
+ * Empty clears that feature's override.
+ */
 export async function saveInstruction(_prev: InstructionState, formData: FormData): Promise<InstructionState> {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in required.' };

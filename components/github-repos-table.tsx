@@ -30,7 +30,6 @@ export function GitHubReposTable({
     );
   }
 
-  // Same one-line row as the Following list, so the two tabs read as one app.
   return (
     <ItemGroup className="animate-rise gap-2">
       {repos.map((repo) => (

@@ -1,8 +1,7 @@
 /**
  * IANA zones grouped by region for the digest schedule picker.
  *
- * Built from `Intl.supportedValuesOf`, so the list matches whatever ICU data
- * the runtime actually has rather than a hand-copied snapshot that goes stale.
+ * Built from `Intl.supportedValuesOf`, so the list matches whatever ICU data the runtime actually has rather than a hand-copied snapshot that goes stale.
  * The fallback covers runtimes without it.
  */
 
@@ -56,14 +55,16 @@ export const TIMEZONE_GROUPS: TimezoneGroup[] = (() => {
       zones: zones.sort((a, b) => a.label.localeCompare(b.label))
     }))
     .sort((a, b) => {
-      // "Other" holds UTC, which belongs at the top of the list.
       if (a.region === 'Other') return -1;
       if (b.region === 'Other') return 1;
       return a.region.localeCompare(b.region);
     });
 })();
 
-/** The browser's own zone, used to prefill the picker. Server-safe. */
+/**
+ * The browser's own zone, used to prefill the picker.
+ * Server-safe.
+ */
 export function guessTimezone() {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';

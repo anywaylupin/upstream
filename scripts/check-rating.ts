@@ -1,4 +1,7 @@
-/** Asserts the rating weights maths. Run with `pnpm check:rating`; needs no env. */
+/**
+ * Asserts the rating weights maths.
+ * Run with `pnpm check:rating`; needs no env.
+ */
 import assert from 'node:assert/strict';
 import { canRun, findModel } from '@/lib/ai-models';
 import { upgradeVerdict } from '@/lib/digest-filters';

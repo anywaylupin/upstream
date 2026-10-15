@@ -66,7 +66,6 @@ export default async function Dashboard() {
     .filter((date): date is Date => date !== null)
     .sort((a, b) => b.getTime() - a.getTime())[0];
 
-  // Only repos that actually need something. When nothing does, the title says so.
   const attention = rows
     .filter((row) => row.breaking30d > 0)
     .map((row) => ({ row, rating: rateRepo(row, weights) }))

@@ -14,19 +14,18 @@ export type EraseReport = {
 /**
  * Deletes everything attributable to one user.
  *
- * The foreign keys cascade the obvious rows (account, keys, instructions,
- * preferences, stack). Three things they cannot reach, and this handles:
+ * The foreign keys cascade the obvious rows (account, keys, instructions, preferences, stack).
+ * Three things they cannot reach, and this handles:
  *
- *  1. AI output generated from the user's own instructions. Those rows are
- *     keyed by a hash of the instruction text rather than by user id, so a
- *     cascade never sees them.
- *  2. Repos nobody else keeps in a stack, plus their releases and guides.
- *     `releases.repo_id` is ON DELETE NO ACTION, so releases must go first.
- *  3. Summaries left referenced by no remaining release.
+ * 1. AI output generated from the user's own instructions.
+ *    Those rows are keyed by a hash of the instruction text rather than by user id, so a cascade never sees them.
+ * 2. Repos nobody else keeps in a stack, plus their releases and guides.
+ *    `releases.repo_id` is ON DELETE NO ACTION, so releases must go first.
+ * 3. Summaries left referenced by no remaining release.
  *
- * The neon-http driver is stateless and has no interactive transactions, so
- * this runs as ordered statements. The order is chosen so a failure part-way
- * leaves orphaned cache rather than a broken foreign key.
+ * The neon-http driver is stateless and has no interactive transactions, so this runs as ordered statements.
+ * The order is chosen so a failure part-way leaves orphaned cache rather than a broken foreign key.
+ * Instruction hashes are read first, because the user's cascade removes the rows they come from.
  */
 export async function eraseAccount(userId: string): Promise<EraseReport> {
   const report: EraseReport = {
@@ -37,7 +36,6 @@ export async function eraseAccount(userId: string): Promise<EraseReport> {
     orphanedSummaries: 0
   };
 
-  // 1. Hashes of this user's own instructions, read before the cascade removes them.
   const instructionRows = await db
     .select({ text: userInstructions.text })
     .from(userInstructions)
@@ -61,7 +59,6 @@ export async function eraseAccount(userId: string): Promise<EraseReport> {
     report.personalisedGuides = deletedGuides.length;
   }
 
-  // 2. Repos that only this user keeps, so removing them takes nothing from anyone.
   const mine = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
 
   const others = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(ne(stackRepos.userId, userId));
@@ -76,13 +73,10 @@ export async function eraseAccount(userId: string): Promise<EraseReport> {
       .returning({ id: releases.id });
     report.releases = deletedReleases.length;
 
-    // Cascades repo_guides and stack_repos for these repos.
     const deletedRepos = await db.delete(repos).where(inArray(repos.id, orphaned)).returning({ id: repos.id });
     report.repos = deletedRepos.length;
   }
 
-  // 3. Summaries no surviving release points at. They are a body-hash cache,
-  //    so once the releases are gone nothing can ever read them again.
   const survivingHashes = await db.selectDistinct({ bodyHash: releases.bodyHash }).from(releases);
 
   const keep = survivingHashes.map((row) => row.bodyHash).filter((hash): hash is string => hash !== null);
@@ -93,7 +87,6 @@ export async function eraseAccount(userId: string): Promise<EraseReport> {
     .returning({ id: summaries.id });
   report.orphanedSummaries = orphanedSummaries.length;
 
-  // 4. The user itself, cascading account, keys, instructions, preferences, stack.
   await db.delete(users).where(eq(users.id, userId));
 
   return report;

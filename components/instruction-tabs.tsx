@@ -12,7 +12,11 @@ export type InstructionTab = {
   value: string;
 };
 
-/** One instruction at a time: the three stacked forms buried the last two. */
+/**
+ * One instruction at a time: the three stacked forms buried the last two.
+ *
+ * Keyed so switching tabs resets the textarea to that tab's value.
+ */
 export function InstructionTabs({ tabs }: { tabs: InstructionTab[] }) {
   const [active, setActive] = useState(tabs[0]?.id ?? '');
   const current = tabs.find((tab) => tab.id === active) ?? tabs[0];
@@ -34,7 +38,6 @@ export function InstructionTabs({ tabs }: { tabs: InstructionTab[] }) {
         </TabsList>
       </Tabs>
 
-      {/* Keyed so switching tabs resets the textarea to that tab's value. */}
       <InstructionForm
         key={current.id}
         feature={current.id}

@@ -11,12 +11,10 @@ const SUMMARIES_PER_REPO = 5;
 
 /**
  * The scheduled run: every repo that at least one user keeps in their stack.
- * Repos nobody tracks are left alone - the catalogue also holds repos people
- * merely looked at once.
+ * Repos nobody tracks are left alone - the catalogue also holds repos people merely looked at once.
  *
- * Errors are per repo. One dead repo or one rate-limited call must not end the
- * run, and because the summary queue is an anti-join, a run cut short simply
- * resumes where it left off next time.
+ * Errors are per repo.
+ * One dead repo or one rate-limited call must not end the run, and because the summary queue is an anti-join, a run cut short simply resumes where it left off next time.
  */
 export async function runIngest(trigger: 'cron' | 'manual') {
   const [run] = await db.insert(runs).values({ trigger }).returning({ id: runs.id });

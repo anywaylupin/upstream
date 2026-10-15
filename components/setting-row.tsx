@@ -2,9 +2,8 @@ import type { ReactNode } from 'react';
 import { Field, FieldContent, FieldDescription, FieldLabel, FieldTitle } from '@/components/ui/field';
 
 /**
- * One setting as shadcn's responsive Field: label and help on the left, the
- * control on the right, stacking on narrow screens. Kept as a component only
- * because every settings row repeats the same four Field parts.
+ * One setting as shadcn's responsive Field: label and help on the left, the control on the right, stacking on narrow screens.
+ * Kept as a component only because every settings row repeats the same four Field parts.
  */
 export function SettingRow({
   label,

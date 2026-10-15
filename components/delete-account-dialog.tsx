@@ -20,6 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 
 const CONFIRM = 'delete';
 
+/** Spelled out rather than summarised: this is not reversible. */
 export function DeleteAccountDialog({
   preview
 }: {
@@ -34,7 +35,6 @@ export function DeleteAccountDialog({
   const [typed, setTyped] = useState('');
   const [pending, startTransition] = useTransition();
 
-  // Spelled out rather than summarised: this is not reversible.
   const erased = [
     'Your GitHub connection and stored tokens',
     'Every AI key you added',

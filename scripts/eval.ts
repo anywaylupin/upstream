@@ -1,16 +1,13 @@
 /**
- * Measures how well summaries catch breaking changes. Run with `pnpm eval`.
+ * Measures how well summaries catch breaking changes.
+ * Run with `pnpm eval`.
  *
- * Each case in eval/cases.json is a release body with a hand-assigned
- * `breaking` label. The case runs through the real `summarizeRelease`, with
- * the same prompt and schema the app uses, and the output counts as "breaking"
- * if any change has type `breaking`.
+ * Each case in eval/cases.json is a release body with a hand-assigned `breaking` label.
+ * The case runs through the real `summarizeRelease`, with the same prompt and schema the app uses, and the output counts as "breaking" if any change has type `breaking`.
  *
- * Recall is the number that matters: a missed breaking change is the expensive
- * error, a false alarm only costs a closer look.
+ * Recall is the number that matters: a missed breaking change is the expensive error, a false alarm only costs a closer look.
  *
- *   pnpm eval              score every labelled case
- *   pnpm eval --export 20  write 20 real releases from the database to
+ * pnpm eval              score every labelled case pnpm eval --export 20  write 20 real releases from the database to
  *                          eval/unlabelled.json, to label and move into cases
  */
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -79,6 +76,7 @@ async function exportUnlabelled(count: number) {
   );
 }
 
+/** A failed call is not a prediction; leave it out of the score but say so. */
 async function main() {
   const exportAt = process.argv.indexOf('--export');
   if (exportAt !== -1) return exportUnlabelled(Number(process.argv[exportAt + 1] ?? 20));
@@ -103,7 +101,6 @@ async function main() {
       });
       console.log(`${predicted === c.breaking ? 'ok  ' : 'MISS'} ${c.id}  (${modelId})`);
     } catch (err) {
-      // A failed call is not a prediction; leave it out of the score but say so.
       console.log(`ERR  ${c.id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }

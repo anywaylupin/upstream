@@ -70,6 +70,9 @@ function keywordsFrom(instructions: string) {
   ].slice(0, 25);
 }
 
+/**
+ * An empty stack and an over-tight filter are different problems, so only the first one offers the add-a-repo actions.
+ */
 export default async function Digest({
   searchParams
 }: {
@@ -110,7 +113,6 @@ export default async function Digest({
       .where(eq(userInstructions.userId, user.id))
   ]);
 
-  // The digest highlights against the summary instruction, else the global one.
   const byFeature = new Map(preferences.map((row) => [row.feature, row.text]));
   const keywords = keywordsFrom(byFeature.get('summary') ?? byFeature.get('global') ?? '');
 
@@ -192,8 +194,6 @@ export default async function Digest({
       />
 
       {sortedWeeks.length === 0 &&
-        // An empty stack and an over-tight filter are different problems, so
-        // only the first one offers the add-a-repo actions.
         (repoIds.length === 0 ? (
           <EmptyStack icon={BellIcon} title="No releases yet" description="Add a repo to see its releases." />
         ) : pending > 0 ? (

@@ -8,10 +8,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export type UrlTab = { id: string; label: string; count?: number; danger?: boolean };
 
 /**
- * Line tabs whose panels are rendered on the server once and switched here, so
- * changing tab never refetches. The URL follows through replaceState, which
- * keeps a tab linkable without asking the router for anything. The first tab
- * is the default and leaves the param off the URL.
+ * Line tabs whose panels are rendered on the server once and switched here, so changing tab never refetches.
+ * The URL follows through replaceState, which keeps a tab linkable without asking the router for anything.
+ * The first tab is the default and leaves the param off the URL.
+ *
+ * The entrance animation sits on an inner div, not the panel: base-ui waits for animations on the panel to end before hiding it, which left the old panel on screen during every switch.
  */
 export function UrlTabs({
   param,
@@ -50,9 +51,6 @@ export function UrlTabs({
           </TabsTrigger>
         ))}
       </TabsList>
-      {/* The entrance animation sits on an inner div, not the panel: base-ui waits
-          for animations on the panel to end before hiding it, which left the old
-          panel on screen during every switch. */}
       {tabs.map((tab) => (
         <TabsContent key={tab.id} value={tab.id}>
           <div className="animate-panel">{panels[tab.id]}</div>

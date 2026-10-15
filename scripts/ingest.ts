@@ -17,7 +17,6 @@ async function main() {
       );
     } catch (err) {
       console.error(`${repo.owner}/${repo.name} failed:`, err);
-      // continue to the next repo - one bad repo shouldn't kill the run
     }
   }
 

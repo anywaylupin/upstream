@@ -1,11 +1,8 @@
 /**
- * Checks the digest schedule maths. Run with `pnpm check:schedule`.
+ * Checks the digest schedule maths.
+ * Run with `pnpm check:schedule`.
  *
- * There is no test framework in this project on purpose, but this is the one
- * piece of non-obvious arithmetic - wall-clock time in an arbitrary IANA zone,
- * across DST and half-hour offsets - and it is where the bugs actually were:
- * a correction measured against the running guess instead of the target, and
- * a whole-hour rounding that put +05:30 zones half an hour late.
+ * There is no test framework in this project on purpose, but this is the one piece of non-obvious arithmetic - wall-clock time in an arbitrary IANA zone, across DST and half-hour offsets - and it is where the bugs actually were: a correction measured against the running guess instead of the target, and a whole-hour rounding that put +05:30 zones half an hour late.
  *
  * Needs no env: everything here is pure.
  */

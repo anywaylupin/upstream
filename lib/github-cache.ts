@@ -11,19 +11,15 @@ import {
 /**
  * Cross-request caching for the user-scoped GitHub reads.
  *
- * Without this, every `?source=` tab and every settings visit re-hit the API,
- * so the page sat on a skeleton for a second each time to fetch a list that had
- * not changed. React's `cache()` does not help here - it only dedupes within a
- * single request.
+ * Without this, every `?source=` tab and every settings visit re-hit the API, so the page sat on a skeleton for a second each time to fetch a list that had not changed.
+ * React's `cache()` does not help here - it only dedupes within a single request.
  *
- * The access token is deliberately NOT part of the cache key. It rotates every
- * eight hours, and keying on it would miss the cache on every refresh while
- * writing short-lived credentials into cache keys. The identity that matters is
- * the user, so that is what the key parts carry.
+ * The access token is deliberately NOT part of the cache key.
+ * It rotates every eight hours, and keying on it would miss the cache on every refresh while writing short-lived credentials into cache keys.
+ * The identity that matters is the user, so that is what the key parts carry.
  *
- * `unstable_cache` is the deprecated API in Next 16; the replacement, `use
- * cache`, requires turning on Cache Components, which changes prerendering for
- * the whole app. Not worth it for five calls.
+ * `unstable_cache` is the deprecated API in Next 16; the replacement, `use cache`, requires turning on Cache Components, which changes prerendering for the whole app.
+ * Not worth it for five calls.
  */
 const TTL_SECONDS = 300;
 
@@ -32,8 +28,8 @@ export function githubTag(userId: string) {
 }
 
 /**
- * Drops every cached GitHub read for one user. Next 16 wants a revalidation
- * profile alongside the tag; "max" is the recommended default.
+ * Drops every cached GitHub read for one user.
+ * Next 16 wants a revalidation profile alongside the tag; "max" is the recommended default.
  */
 export async function refreshGitHubCache(userId: string) {
   revalidateTag(githubTag(userId), 'max');

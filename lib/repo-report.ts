@@ -11,15 +11,17 @@ import { ReleaseSummary as ReleaseSummarySchema } from '@/lib/summarize';
 
 /**
  * Everything the repo page shows, in one place so the page only renders.
- * Visiting a repo adds it to the shared catalogue (not to anyone's stack) so a
- * guide and releases have an id to hang off. Null when GitHub has no such repo.
+ * Visiting a repo adds it to the shared catalogue (not to anyone's stack) so a guide and releases have an id to hang off.
+ * Null when GitHub has no such repo.
+ *
+ * Every repo gets a page, stacked or not.
+ * On first visit the repo is added to the shared catalogue - not to anyone's stack - so it has an id to hang a guide and releases off, and Explain works straight away.
+ *
+ * Resolve the alternatives the guide named against repos we already know about, so anything tracked can be compared on the same rating scale.
  */
 export async function getRepoReport(userId: string, owner: string, name: string) {
   const ai = await getAiContext(userId);
 
-  // Every repo gets a page, stacked or not. On first visit the repo is added to
-  // the shared catalogue - not to anyone's stack - so it has an id to hang a
-  // guide and releases off, and Explain works straight away.
   let [repo] = await db
     .select()
     .from(repos)
@@ -94,8 +96,6 @@ export async function getRepoReport(userId: string, owner: string, name: string)
     return parsed.success && parsed.data.changes.some((change) => change.type === 'breaking');
   }).length;
 
-  // Resolve the alternatives the guide named against repos we already know about,
-  // so anything tracked can be compared on the same rating scale.
   const alternatives = guide?.alternatives ?? [];
   const altPairs = alternatives
     .map((alt) => alt.repo.split('/'))

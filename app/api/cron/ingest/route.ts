@@ -5,8 +5,14 @@ import { getDueUsers, markDigestSent, runIngest } from '@/lib/sync';
 export const maxDuration = 300;
 
 /**
- * Vercel Cron hits this on a schedule. It also sends the CRON_SECRET as a
- * bearer token, so the endpoint is not open to anyone who finds the URL.
+ * Vercel Cron hits this on a schedule.
+ * It also sends the CRON_SECRET as a bearer token, so the endpoint is not open to anyone who finds the URL.
+ *
+ * Vercel Cron is project-wide, so the per-user schedule is resolved here: the tick runs hourly and only whoever is due this hour is picked up.
+ *
+ * Nothing new still counts as handled: the schedule is a cadence, not a queue, so an empty week should not carry over into the next tick.
+ *
+ * One undeliverable address must not stop the rest of the run, and the user is left unmarked so the next tick tries again.
  */
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
@@ -21,8 +27,6 @@ export async function GET(request: Request) {
   try {
     const result = await runIngest('cron');
 
-    // Vercel Cron is project-wide, so the per-user schedule is resolved here:
-    // the tick runs hourly and only whoever is due this hour is picked up.
     const due = await getDueUsers();
 
     const handled: string[] = [];
@@ -34,14 +38,10 @@ export async function GET(request: Request) {
       try {
         const outcome = await sendDigestToUser(user.userId);
 
-        // Nothing new still counts as handled: the schedule is a cadence, not
-        // a queue, so an empty week should not carry over into the next tick.
         handled.push(user.userId);
         if (outcome.sent) sent += 1;
         else empty += 1;
       } catch (err) {
-        // One undeliverable address must not stop the rest of the run, and the
-        // user is left unmarked so the next tick tries again.
         failed += 1;
         console.error(`cron digest for ${user.userId} failed:`, err);
       }

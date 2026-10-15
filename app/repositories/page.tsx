@@ -12,6 +12,11 @@ import { cachedOwnRepos, cachedStarredRepos, cachedWatchedRepos } from '@/lib/gi
 import { emptyMessageFor, type RepoSource, toRepoSource } from '@/lib/repo-sources';
 import { requireUser } from '@/lib/session';
 
+/**
+ * Cached per user, so switching tabs does not re-hit the API each time.
+ *
+ * Search is a different query every time; caching it would only bloat.
+ */
 export default async function RepositoriesPage({
   searchParams
 }: {
@@ -38,12 +43,10 @@ export default async function RepositoriesPage({
     error = 'Your GitHub sign-in has expired. Sign out and back in to reconnect.';
   } else {
     try {
-      // Cached per user, so switching tabs does not re-hit the API each time.
       if (source === 'owned') results = await cachedOwnRepos(user.id, token);
       else if (source === 'watched') {
         results = await cachedWatchedRepos(user.id, token);
       } else if (source === 'starred') results = await cachedStarredRepos(user.id, token);
-      // Search is a different query every time; caching it would only bloat.
       else if (q) results = await searchRepos(token, q);
     } catch (err) {
       console.error(`GitHub lookup failed for ${source}:`, err);

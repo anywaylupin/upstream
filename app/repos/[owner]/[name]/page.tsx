@@ -13,6 +13,7 @@ import { formatRelative } from '@/lib/format';
 import { getRepoReport } from '@/lib/repo-report';
 import { requireUser } from '@/lib/session';
 
+/** The one-line verdict is the most useful sentence on the page, so it leads. */
 export default async function RepoReport({
   params,
   searchParams
@@ -73,7 +74,6 @@ export default async function RepoReport({
                 {repo.name}
               </span>
             </h1>
-            {/* The one-line verdict is the most useful sentence on the page, so it leads. */}
             {guide?.verdict && <p className="max-w-2xl text-base">{guide.verdict}</p>}
             <p className="max-w-2xl text-muted-foreground text-sm">
               {guide?.whatItIs ?? repo.description ?? 'No description yet.'}

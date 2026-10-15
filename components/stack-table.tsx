@@ -65,7 +65,6 @@ export function StackTable({
               <OwnerAvatar owner={row.owner} icon={row.iconUrl} size={32} />
             </ItemMedia>
             <ItemContent className="min-w-0">
-              {/* Stretched link: the whole row navigates, the buttons stay buttons. */}
               <ItemTitle>
                 <Link
                   href={`/repos/${row.owner}/${row.name}`}

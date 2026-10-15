@@ -37,7 +37,11 @@ export async function saveRatingWeights(input: unknown): Promise<ActionResult> {
 
 export type DigestState = { error?: string; success?: boolean };
 
-/** Email address, opt-out and per-user schedule, saved together. */
+/**
+ * Email address, opt-out and per-user schedule, saved together.
+ *
+ * Zones come from the runtime's own ICU list, but the form is still a boundary.
+ */
 export async function saveDigestSettings(_prev: DigestState, formData: FormData): Promise<DigestState> {
   const session = await auth();
   if (!session?.user?.id) return { error: 'Sign in required.' };
@@ -68,7 +72,6 @@ export async function saveDigestSettings(_prev: DigestState, formData: FormData)
   if (!Number.isInteger(intervalDays) || intervalDays < MIN_INTERVAL_DAYS || intervalDays > MAX_INTERVAL_DAYS) {
     return { error: `Pick a gap between ${MIN_INTERVAL_DAYS} and ${MAX_INTERVAL_DAYS} days.` };
   }
-  // Zones come from the runtime's own ICU list, but the form is still a boundary.
   if (!isValidTimeZone(timezone)) {
     return { error: 'That is not a time zone Upstream recognises.' };
   }
@@ -99,10 +102,8 @@ export async function saveDigestSettings(_prev: DigestState, formData: FormData)
 /**
  * Send the digest right now, on demand.
  *
- * Runs the same `sendDigestToUser` path the cron tick uses, so this doubles as
- * a rehearsal of the scheduled send rather than a parallel implementation that
- * can drift. Deliberately does NOT touch `lastDigestAt`: a test send should not
- * push the next scheduled one out by a cycle.
+ * Runs the same `sendDigestToUser` path the cron tick uses, so this doubles as a rehearsal of the scheduled send rather than a parallel implementation that can drift.
+ * Deliberately does NOT touch `lastDigestAt`: a test send should not push the next scheduled one out by a cycle.
  */
 export async function sendDigestNow(): Promise<ActionResult> {
   const session = await auth();

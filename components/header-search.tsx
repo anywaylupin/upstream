@@ -6,7 +6,10 @@ import { useEffect, useRef, useState } from 'react';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Kbd } from '@/components/ui/kbd';
 
-/** Searches the stack, its releases and GitHub. "/" focuses it, like GitHub. */
+/**
+ * Searches the stack, its releases and GitHub.
+ * "/" focuses it, like GitHub.
+ */
 export function HeaderSearch() {
   const router = useRouter();
   const searchParams = useSearchParams();

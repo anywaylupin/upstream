@@ -1,8 +1,8 @@
 import { cn } from 'tailwind-variants';
 
 /**
- * A 0-10 score as a ring. Teal scales with the score; a low score turns grey,
- * not red - red is kept for breaking changes, and a quiet repo is not a danger.
+ * A 0-10 score as a ring.
+ * Teal scales with the score; a low score turns grey, not red - red is kept for breaking changes, and a quiet repo is not a danger.
  */
 export function ScoreRing({ score, size = 56, className }: { score: number; size?: number; className?: string }) {
   const stroke = Math.max(3, size / 14);

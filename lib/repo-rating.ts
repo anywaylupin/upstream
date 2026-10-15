@@ -103,17 +103,23 @@ function daysSince(date: Date | null) {
 }
 
 /**
- * Measured where possible, judged only where it has to be. Everything except
- * Docs and Ease comes from GitHub numbers and this app's own release history.
+ * Measured where possible, judged only where it has to be.
+ * Everything except Docs and Ease comes from GitHub numbers and this app's own release history.
  *
- * Note: GitHub's "used by" (dependents) count is not in the REST API - it only
- * exists on the dependency-graph HTML page - so it is deliberately absent.
+ * Note: GitHub's "used by" (dependents) count is not in the REST API - it only exists on the dependency-graph HTML page - so it is deliberately absent.
+ *
+ * Shipping cadence, with a hard cut for projects that stopped shipping.
+ *
+ * Forks and watchers say more about real use than stars alone.
+ *
+ * An archived repo is unmaintained by definition; otherwise recency of any push, nudged down when the issue tracker is very large relative to stars.
+ *
+ * Every weight at zero would divide by zero; read that as "no preference".
  */
 export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS): RepoRating {
   const sinceRelease = daysSince(input.lastRelease);
   const sincePush = daysSince(input.pushedAt);
 
-  // Shipping cadence, with a hard cut for projects that stopped shipping.
   const activity = sinceRelease > 180 ? clamp(3 - sinceRelease / 365) : clamp(Math.log2(input.releases90d + 1) * 2.6);
 
   const stability =
@@ -123,11 +129,8 @@ export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS)
 
   const reach = clamp(Math.log10((input.stars ?? 0) + 1) * 2);
 
-  // Forks and watchers say more about real use than stars alone.
   const community = clamp(Math.log10((input.forks ?? 0) + (input.watchers ?? 0) + 1) * 2.4);
 
-  // An archived repo is unmaintained by definition; otherwise recency of any
-  // push, nudged down when the issue tracker is very large relative to stars.
   const issueDrag =
     input.openIssues && input.stars ? Math.min(2, (input.openIssues / Math.max(input.stars, 1)) * 20) : 0;
   const upkeep = input.archived ? 0 : clamp(10 - sincePush / 30 - issueDrag);
@@ -191,7 +194,6 @@ export function rateRepo(input: RatingInput, weights: Weights = DEFAULT_WEIGHTS)
     );
   }
 
-  // Every weight at zero would divide by zero; read that as "no preference".
   const active = parts.some((part) => weights[part.id] > 0) ? weights : DEFAULT_WEIGHTS;
   const totalWeight = parts.reduce((sum, part) => sum + active[part.id], 0);
   const overall = round(parts.reduce((sum, part) => sum + part.score * active[part.id], 0) / totalWeight);

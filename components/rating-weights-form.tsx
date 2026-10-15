@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CRITERIA, MAX_WEIGHT, PRESETS, presetFor, type Weights } from '@/lib/repo-rating';
 
+/** An array value keeps the shadcn wrapper to one thumb; a bare number renders two. */
 export function RatingWeightsForm({ initial }: { initial: Weights }) {
   const [weights, setWeights] = useState<Weights>(initial);
   const [saving, startSaving] = useTransition();
@@ -29,7 +30,6 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* shadcn's choice-card pattern: real radios, and FieldLabel styles the checked card. */}
       <RadioGroup
         aria-label="Preset"
         className="grid gap-2 sm:grid-cols-2"
@@ -77,7 +77,6 @@ export function RatingWeightsForm({ initial }: { initial: Weights }) {
                 </TooltipTrigger>
                 <TooltipContent>{c.hint}</TooltipContent>
               </Tooltip>
-              {/* An array value keeps the shadcn wrapper to one thumb; a bare number renders two. */}
               <Slider
                 id={`w-${c.id}`}
                 name={c.id}

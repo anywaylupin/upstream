@@ -7,6 +7,9 @@ import { addToStack, removeFromStack } from '@/app/actions/stack';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 
+/**
+ * addToStack redirects to the repo page on success, so nothing after the await runs - the toast has to be raised up front.
+ */
 export function StackButton({
   owner,
   name,
@@ -49,8 +52,6 @@ export function StackButton({
       aria-busy={pending}
       onClick={(event) => {
         event.stopPropagation();
-        // addToStack redirects to the repo page on success, so nothing after
-        // the await runs - the toast has to be raised up front.
         toast.success(`Following ${label}`, {
           description: 'Opening...'
         });

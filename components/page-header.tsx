@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { cn } from 'tailwind-variants';
 
 /**
- * The top of every page: a title, one line under it, the primary action on the
- * right. One shape for all tabs is what makes them read as one app.
+ * The top of every page: a title, one line under it, the primary action on the right.
+ * One shape for all tabs is what makes them read as one app.
  */
 export function PageHeader({
   title,

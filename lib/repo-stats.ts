@@ -25,8 +25,8 @@ function pickGuides(rows: { repoId: number; instructionsHash: string; data: unkn
 }
 
 /**
- * Release counts for the rating window. Activity counts every release; only
- * summarized ones can say whether something broke, so they are counted apart.
+ * Release counts for the rating window.
+ * Activity counts every release; only summarized ones can say whether something broke, so they are counted apart.
  */
 function tally90d(rows: { repoId: number; data: unknown }[]) {
   const byRepo = new Map<number, { total: number; summarized: number; breaking: number }>();
@@ -70,8 +70,8 @@ export type RatingInputs = {
 };
 
 /**
- * Rating inputs for any set of repos, watched or not. Used to line a repo up
- * against the alternatives its guide suggests.
+ * Rating inputs for any set of repos, watched or not.
+ * Used to line a repo up against the alternatives its guide suggests.
  */
 export async function getRatingInputs(repoIds: number[], wantedHash: string = DEFAULT_INSTRUCTIONS_HASH) {
   const result = new Map<number, RatingInputs>();
@@ -137,9 +137,8 @@ export async function getRatingInputs(repoIds: number[], wantedHash: string = DE
 }
 
 /**
- * Report numbers for the repos one user watches. Repos themselves are shared -
- * that is what keeps ingestion and summary dedupe global - but every view of
- * them is scoped to the person asking.
+ * Report numbers for the repos one user watches.
+ * Repos themselves are shared - that is what keeps ingestion and summary dedupe global - but every view of them is scoped to the person asking.
  */
 export const getStackStats = cache(async function getStackStats(
   userId: string,
@@ -257,8 +256,8 @@ export const getStackStats = cache(async function getStackStats(
 });
 
 /**
- * The ids of the repos a user follows. Cached per request, so the header's nav
- * counts and the page body share one query instead of each running it.
+ * The ids of the repos a user follows.
+ * Cached per request, so the header's nav counts and the page body share one query instead of each running it.
  */
 export const getStackRepoIds = cache(async function getStackRepoIds(userId: string) {
   const rows = await db.select({ repoId: stackRepos.repoId }).from(stackRepos).where(eq(stackRepos.userId, userId));
@@ -290,9 +289,8 @@ export const getRatingWeights = cache(async function getRatingWeights(userId: st
 });
 
 /**
- * Releases in the window across the given repos, newest first, each joined to
- * its shared summary. Left join: an unsummarized release still comes back with
- * `data: null`, so a page can say "waiting for a summary" instead of nothing.
+ * Releases in the window across the given repos, newest first, each joined to its shared summary.
+ * Left join: an unsummarized release still comes back with `data: null`, so a page can say "waiting for a summary" instead of nothing.
  */
 export async function getRecentReleases(repoIds: number[], since: Date, limit?: number) {
   if (repoIds.length === 0) return [];

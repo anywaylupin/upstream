@@ -17,9 +17,8 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 
 /**
- * One visible action - follow - and the rest in a menu. "Check for releases"
- * and "Refresh guide" both looked like refresh buttons side by side, though
- * one asks GitHub for releases and the other re-reads the README with AI.
+ * One visible action - follow - and the rest in a menu.
+ * "Check for releases" and "Refresh guide" both looked like refresh buttons side by side, though one asks GitHub for releases and the other re-reads the README with AI.
  */
 export function RepoActions({
   repoId,

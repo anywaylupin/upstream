@@ -2,9 +2,8 @@ export const MODES = ['light', 'dark', 'system'] as const;
 export type Mode = (typeof MODES)[number];
 
 /**
- * The shadcn accent ramps. Each is only a hue and a chroma: every themed
- * token in globals.css is derived from `--brand-h` / `--brand-c`, so a new
- * palette is two numbers rather than a whole set of colour variables.
+ * The shadcn accent ramps.
+ * Each is only a hue and a chroma: every themed token in globals.css is derived from `--brand-h` / `--brand-c`, so a new palette is two numbers rather than a whole set of colour variables.
  */
 export const PALETTES = [
   { id: 'slate', label: 'Slate' },
@@ -36,8 +35,7 @@ export const DEFAULT_PALETTE: Palette = 'teal';
 
 /**
  * Applies the stored theme to <html> before first paint, so there is no flash.
- * Rendered as a plain inline script from the server layout - keeping it out of a
- * client component is what avoids React 19's "script tag while rendering" warning.
+ * Rendered as a plain inline script from the server layout - keeping it out of a client component is what avoids React 19's "script tag while rendering" warning.
  */
 export const THEME_SCRIPT = `(function(){try{
 var m=localStorage.getItem(${JSON.stringify(MODE_KEY)})||${JSON.stringify(DEFAULT_MODE)};

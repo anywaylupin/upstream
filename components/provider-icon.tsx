@@ -5,12 +5,10 @@ import type { ProviderId } from '@/lib/ai-models';
 /**
  * Brand marks for the AI providers.
  *
- * Paths are lifted from simple-icons (CC0-1.0) rather than pulled in as a
- * dependency: the package is 53MB for the five marks it actually has, which is
- * a poor trade in a project that otherwise keeps its dependency list short.
+ * Paths are lifted from simple-icons (CC0-1.0) rather than pulled in as a dependency: the package is 53MB for the five marks it actually has, which is a poor trade in a project that otherwise keeps its dependency list short.
  *
- * Groq, OpenAI and xAI are not in simple-icons at all; theirs come from
- * lobehub/icons-static-svg the same way. No icon package ships in the bundle.
+ * Groq, OpenAI and xAI are not in simple-icons at all; theirs come from lobehub/icons-static-svg the same way.
+ * No icon package ships in the bundle.
  */
 const PATHS: Record<ProviderId, { d: string; color: string }> = {
   google: {
@@ -50,8 +48,7 @@ const PATHS: Record<ProviderId, { d: string; color: string }> = {
 };
 
 /**
- * Extra props are forwarded so callers can pass `data-icon="inline-start"`,
- * which is what the Button variants key their padding off.
+ * Extra props are forwarded so callers can pass `data-icon="inline-start"`, which is what the Button variants key their padding off.
  */
 export function ProviderIcon({
   provider,

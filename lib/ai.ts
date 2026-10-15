@@ -61,9 +61,8 @@ export type AiContext = {
 const MAX_FALLBACKS = 3;
 
 /**
- * Free models the shared key can run, other providers first: quotas are per
- * provider, so a different provider is the likeliest to have room. Never a
- * paid model, which would bill the host.
+ * Free models the shared key can run, other providers first: quotas are per provider, so a different provider is the likeliest to have room.
+ * Never a paid model, which would bill the host.
  */
 function fallbackChain(skipId: string): AiContext['fallbacks'] {
   const free = MODELS.filter((m) => m.tier === 'free' && m.id !== skipId && serverKeyFor(m.provider));
@@ -78,10 +77,9 @@ function fallbackChain(skipId: string): AiContext['fallbacks'] {
 }
 
 /**
- * Runs one AI call on the chosen model, then on each fallback until one
- * succeeds. Any failure moves on - quota, "high demand", or output that did
- * not fit the schema - because the next model may well manage. Returns which
- * model answered, so stored rows name the model that actually wrote them.
+ * Runs one AI call on the chosen model, then on each fallback until one succeeds.
+ * Any failure moves on - quota, "high demand", or output that did not fit the schema - because the next model may well manage.
+ * Returns which model answered, so stored rows name the model that actually wrote them.
  */
 export async function withFallback<T>(
   ai: AiContext,
@@ -101,12 +99,10 @@ export async function withFallback<T>(
 }
 
 /**
- * Server-side keys, one per provider. Written out statically rather than looked
- * up from `PROVIDERS[].envVar`: bundlers inline `process.env.X` by literal name,
- * and a dynamic index quietly resolves to undefined in some builds.
+ * Server-side keys, one per provider.
+ * Written out statically rather than looked up from `PROVIDERS[].envVar`: bundlers inline `process.env.X` by literal name, and a dynamic index quietly resolves to undefined in some builds.
  *
- * A provider with no key here is BYOK-only - it never appears in the picker
- * until the user adds their own key.
+ * A provider with no key here is BYOK-only - it never appears in the picker until the user adds their own key.
  */
 export function serverKeyFor(provider: ProviderId): string | undefined {
   switch (provider) {
@@ -153,7 +149,6 @@ function buildModel(provider: ProviderId, apiKey: string, modelId: string) {
     case 'xai':
       return createXai({ apiKey })(modelId);
     case 'openrouter':
-      // OpenRouter speaks the OpenAI protocol.
       return createOpenAI({
         apiKey,
         baseURL: 'https://openrouter.ai/api/v1'
@@ -168,8 +163,9 @@ export function modelFor(provider: ProviderId, apiKey: string, modelId: string) 
 
 /**
  * Resolves which model and instructions apply for one user and one feature.
- * A user's own key is preferred: it takes their work off the shared free-tier
- * quota, which is rate limited per project rather than unlimited.
+ * A user's own key is preferred: it takes their work off the shared free-tier quota, which is rate limited per project rather than unlimited.
+ *
+ * A saved choice can stop being runnable (key removed, paid model on the shared key); fall back to the default rather than fail every summary.
  */
 export async function getAiContext(userId: string, feature: Feature = 'global'): Promise<AiContext> {
   const [[prefs], keys, instructionRows] = await Promise.all([
@@ -187,22 +183,17 @@ export async function getAiContext(userId: string, feature: Feature = 'global'):
       .where(eq(userInstructions.userId, userId))
   ]);
 
-  // A feature's own instruction wins; otherwise the global one applies.
   const byFeature = new Map(instructionRows.map((row) => [row.feature, row.text]));
   const instructions = byFeature.get(feature)?.trim() || byFeature.get('global')?.trim() || null;
 
   const own = keys.map((key) => key.provider);
   const chosen = findModel(prefs?.aiModel);
-  // A saved choice can stop being runnable (key removed, paid model on the
-  // shared key); fall back to the default rather than fail every summary.
   const wanted = chosen && canRun(chosen, { own, server: serverProviders() }) ? chosen : findModel(DEFAULT_MODEL_ID);
   if (!wanted) throw new Error('No AI model configured.');
 
   const stored = keys.find((key) => key.provider === wanted.provider);
   const ownKey = stored ? decryptSecret(stored.encryptedKey) : null;
 
-  // The user's own key wins; otherwise fall back to a server key if one is set
-  // for that provider. Providers with neither are not offered in the picker.
   const apiKey = ownKey ?? serverKeyFor(wanted.provider);
 
   if (!apiKey) {
@@ -224,7 +215,6 @@ export function serverAiContext(): AiContext {
   const preferred = findModel(DEFAULT_MODEL_ID);
   const fallback = MODELS.find((model) => model.tier === 'free' && serverKeyFor(model.provider));
 
-  // The default model if its key is set, else any free model the server can run.
   const model = preferred && serverKeyFor(preferred.provider) ? preferred : fallback;
   const apiKey = model ? serverKeyFor(model.provider) : undefined;
 
@@ -243,8 +233,7 @@ export function serverAiContext(): AiContext {
 }
 
 /**
- * Free tiers are rate limited (requests per minute and per day), so a burst of
- * sequential calls trips them long before anything is "used up".
+ * Free tiers are rate limited (requests per minute and per day), so a burst of sequential calls trips them long before anything is "used up".
  */
 export function aiErrorMessage(err: unknown, ownKey: boolean) {
   const status = (err as { statusCode?: number })?.statusCode;

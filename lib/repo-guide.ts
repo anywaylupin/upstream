@@ -6,7 +6,10 @@ import { type AiContext, withFallback } from '@/lib/ai';
 /** v3: alternatives are verified against GitHub, so v2 guides may hold dead links. */
 export const GUIDE_PROMPT_VERSION = 'v3';
 
-/** README text sent to the model. Enough to work with, bounded for cost. */
+/**
+ * README text sent to the model.
+ * Enough to work with, bounded for cost.
+ */
 const README_LIMIT = 12_000;
 
 export const RepoGuide = z.object({

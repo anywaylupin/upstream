@@ -38,8 +38,9 @@ const RefreshResponse = z.object({
 
 /**
  * GitHub OAuth apps can be configured to expire access tokens (ours are 8h).
- * Auth.js stores the refresh token but never spends it, so without this every
- * user-scoped call starts 401ing a few hours after sign-in.
+ * Auth.js stores the refresh token but never spends it, so without this every user-scoped call starts 401ing a few hours after sign-in.
+ *
+ * GitHub answers 200 with {error: "bad_refresh_token"} when it is spent.
  */
 async function refreshGitHubToken(userId: string, refreshToken: string) {
   const clientId = process.env.AUTH_GITHUB_ID;
@@ -65,7 +66,6 @@ async function refreshGitHubToken(userId: string, refreshToken: string) {
 
   const parsed = RefreshResponse.safeParse(await res.json());
   if (!parsed.success) {
-    // GitHub answers 200 with {error: "bad_refresh_token"} when it is spent.
     console.error('GitHub token refresh rejected');
     return null;
   }
@@ -84,9 +84,10 @@ async function refreshGitHubToken(userId: string, refreshToken: string) {
 }
 
 /**
- * The user's GitHub token, refreshed when it has expired. Null means the user
- * has to sign in again - callers should say so rather than fall back to the
- * server PAT, which belongs to a different account entirely.
+ * The user's GitHub token, refreshed when it has expired.
+ * Null means the user has to sign in again - callers should say so rather than fall back to the server PAT, which belongs to a different account entirely.
+ *
+ * 60s of slack so a token does not die mid-request.
  */
 export async function getGitHubToken(userId: string) {
   const [account] = await db
@@ -100,7 +101,6 @@ export async function getGitHubToken(userId: string) {
 
   if (!account?.accessToken) return null;
 
-  // 60s of slack so a token does not die mid-request.
   const expired = account.expiresAt !== null && account.expiresAt * 1000 < Date.now() + 60_000;
 
   if (expired && account.refreshToken) {
@@ -130,7 +130,10 @@ async function githubFetch(path: string, token: string): Promise<unknown> {
   return res.json();
 }
 
-/** Repos the signed-in user owns. Private repos need the `repo` scope, which we don't request. */
+/**
+ * Repos the signed-in user owns.
+ * Private repos need the `repo` scope, which we don't request.
+ */
 export async function listOwnRepos(token: string) {
   const json = await githubFetch('/user/repos?type=owner&sort=updated&per_page=100', token);
   return RepoListSchema.parse(json);
@@ -176,8 +179,7 @@ export async function getGitHubUser(token: string) {
 }
 
 /**
- * GitHub only returns `email` on /user when it is public, so fall back to the
- * verified primary from /user/emails when the scope allows it.
+ * GitHub only returns `email` on /user when it is public, so fall back to the verified primary from /user/emails when the scope allows it.
  */
 export async function getPrimaryEmail(token: string) {
   const res = await fetch('https://api.github.com/user/emails', {

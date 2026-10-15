@@ -1,6 +1,5 @@
 /**
- * Plain module on purpose: a server component importing a value from a
- * "use client" file gets a client-reference proxy, not the array.
+ * Plain module on purpose: a server component importing a value from a "use client" file gets a client-reference proxy, not the array.
  */
 export const SETTINGS_SECTIONS = [
   { id: 'account', label: 'Account' },
