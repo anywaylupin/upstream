@@ -1,136 +1,122 @@
-import { ArrowRightIcon, GitCompareIcon, LayersIcon, LogInIcon, NewspaperIcon, SparklesIcon } from 'lucide-react';
 import { signInWithGitHub } from '@/app/actions/account';
-import { RatingBars } from '@/components/rating-badge';
-import { Badge } from '@/components/ui/badge';
+import { OwnerAvatar } from '@/components/owner-avatar';
+import { GitHubIcon } from '@/components/provider-icon';
+import { ScoreRing } from '@/components/score-ring';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { VerdictBadge } from '@/components/verdict-badge';
+import type { UpgradeVerdict } from '@/lib/digest-filters';
 
-const SAMPLE_RATING = {
-  overall: 8.2,
-  parts: [
-    { label: 'Activity', score: 9.4, hint: '18 releases in 90d', weight: 3 },
-    { label: 'Stability', score: 7.8, hint: '2 breaking in 90d', weight: 3 },
-    { label: 'Popularity', score: 9.1, hint: '128,000 stars', weight: 2 },
-    { label: 'Adoption', score: 8.6, hint: '27,000 forks', weight: 2 },
-    { label: 'Maintained', score: 9.2, hint: 'pushed 1d ago', weight: 2 }
-  ]
+type Row = {
+  owner: string;
+  name: string;
+  tag: string;
+  when: string;
+  headline: string;
+  verdict: UpgradeVerdict;
+  score: number;
 };
 
-const HOW_IT_WORKS = [
+/**
+ * The feed as it looks after sign-in, drawn with the real row parts.
+ * It fades out at the bottom instead of carrying a "sample" caption: a visual that reads as the product needs no label.
+ */
+const ROWS: Row[] = [
   {
-    icon: LayersIcon,
-    title: 'Add a repo',
-    body: 'Paste a URL or pick from your GitHub.'
+    owner: 'vercel',
+    name: 'next.js',
+    tag: 'v16.3.0',
+    when: '2h',
+    headline: 'fetch() is no longer cached by default.',
+    verdict: 'breaking',
+    score: 8.2
   },
   {
-    icon: NewspaperIcon,
-    title: 'Changelogs, summarized',
-    body: 'Once per release, cached by content hash.'
+    owner: 'drizzle-team',
+    name: 'drizzle-orm',
+    tag: 'v0.45.2',
+    when: '5h',
+    headline: 'findMany returns [] instead of null when nothing matches.',
+    verdict: 'review',
+    score: 7.6
   },
   {
-    icon: SparklesIcon,
-    title: 'The short version',
-    body: 'What changed, what breaks, upgrade effort.'
+    owner: 'facebook',
+    name: 'react',
+    tag: 'v19.2.1',
+    when: '1d',
+    headline: 'Fixes a hydration warning inside Suspense boundaries.',
+    verdict: 'safe',
+    score: 9.1
+  },
+  {
+    owner: 'tailwindlabs',
+    name: 'tailwindcss',
+    tag: 'v4.2.0',
+    when: '2d',
+    headline: 'New @container query variants and faster rebuilds.',
+    verdict: 'safe',
+    score: 8.9
+  },
+  {
+    owner: 'nodejs',
+    name: 'node',
+    tag: 'v25.0.0',
+    when: '3d',
+    headline: 'Drops Node 20 era OpenSSL defaults.',
+    verdict: 'breaking',
+    score: 9.3
   }
 ];
 
+/** The signed-out home: one headline, one action, one picture of the product. */
 export function Landing() {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-10 py-8">
-      <header className="flex flex-col items-start gap-4">
-        <Badge variant="outline">GitHub sign-in required</Badge>
-        <h1 className="font-heading font-semibold text-4xl tracking-tight">
-          Release intel for the repos you depend on.
+    <div
+      data-landing
+      className="mx-auto flex h-full w-full max-w-3xl flex-col items-center gap-10 overflow-hidden pt-8 sm:pt-16"
+    >
+      <div className="flex flex-col items-center gap-6 text-center">
+        <h1 className="max-w-2xl text-balance font-heading font-semibold text-4xl tracking-tight sm:text-5xl">
+          Know what breaks before you upgrade.
         </h1>
-        <p className="max-w-xl text-muted-foreground">
-          Every changelog you follow, summarized. Breaking changes first.
+        <p className="max-w-md text-balance text-lg text-muted-foreground">
+          Release notes from every repo you depend on, summarized.
         </p>
         <form action={signInWithGitHub}>
-          <Button type="submit" size="lg" className="group">
-            <LogInIcon data-icon="inline-start" className="transition-transform duration-200 group-hover:scale-110" />
+          <Button type="submit" size="lg">
+            <GitHubIcon data-icon="inline-start" />
             Sign in with GitHub
-            <ArrowRightIcon className="transition-transform duration-200 group-hover:translate-x-0.5" />
           </Button>
         </form>
-        <p className="text-muted-foreground text-xs">Read-only. Public repos only.</p>
-      </header>
+      </div>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wider">How it works</h2>
-        <div className="grid gap-3 md:grid-cols-3">
-          {HOW_IT_WORKS.map((step, i) => (
-            <Card key={step.title} size="sm" style={{ animationDelay: `${i * 60}ms` }} className="animate-rise">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="flex size-5 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary text-xs tabular-nums">
-                    {i + 1}
-                  </span>
-                  {step.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">{step.body}</p>
-              </CardContent>
-            </Card>
+      <div
+        aria-hidden="true"
+        className="min-h-0 w-full flex-1 animate-rise overflow-hidden rounded-xl border bg-card p-2 shadow-sm [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
+      >
+        <ItemGroup className="gap-1">
+          {ROWS.map((row) => (
+            <Item key={row.name} size="sm">
+              <ItemMedia>
+                <OwnerAvatar owner={row.owner} size={28} />
+              </ItemMedia>
+              <ItemContent className="min-w-0">
+                <ItemTitle>
+                  {row.name}
+                  <span className="font-mono font-normal text-muted-foreground text-xs">{row.tag}</span>
+                </ItemTitle>
+                <ItemDescription className="truncate">{row.headline}</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <span className="hidden text-muted-foreground text-xs tabular-nums sm:inline">{row.when}</span>
+                <VerdictBadge verdict={row.verdict} />
+                <ScoreRing score={row.score} size={32} className="hidden sm:inline-flex" />
+              </ItemActions>
+            </Item>
           ))}
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="font-medium text-muted-foreground text-xs uppercase tracking-wider">Preview</h2>
-
-        <div className="grid gap-3 lg:grid-cols-2">
-          <Card size="sm" className="ring-2 ring-destructive/50">
-            <CardHeader>
-              <CardTitle className="flex flex-wrap items-baseline gap-2">
-                vercel/next.js
-                <span className="font-mono font-normal text-muted-foreground text-xs">v16.3.0</span>
-                <Badge variant="destructive">breaking</Badge>
-                <span className="ml-auto font-normal text-muted-foreground text-xs">medium effort</span>
-              </CardTitle>
-              <span className="text-muted-foreground text-sm">New caching model for route handlers.</span>
-            </CardHeader>
-            <CardContent>
-              <ul className="flex flex-col gap-1.5 text-sm">
-                <li className="flex items-start gap-2">
-                  <Badge variant="destructive" className="mt-0.5 shrink-0">
-                    breaking
-                  </Badge>
-                  <span className="font-medium">fetch() no longer cached by default</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <Badge className="mt-0.5 shrink-0">feature</Badge>
-                  <span className="text-muted-foreground">`use cache` directive</span>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Rating
-                <Badge>8.2 / 10</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-3">
-              <RatingBars rating={SAMPLE_RATING} />
-              <Item size="sm" className="p-0">
-                <ItemMedia>
-                  <GitCompareIcon className="size-4 text-muted-foreground" />
-                </ItemMedia>
-                <ItemContent>
-                  <ItemTitle>Alternatives</ItemTitle>
-                  <ItemDescription>remix-run/react-router · tanstack/router</ItemDescription>
-                </ItemContent>
-              </Item>
-            </CardContent>
-          </Card>
-        </div>
-
-        <p className="text-muted-foreground text-xs">Sample data.</p>
-      </section>
+        </ItemGroup>
+      </div>
     </div>
   );
 }

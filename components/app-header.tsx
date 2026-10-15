@@ -1,13 +1,11 @@
 import { GitGraphIcon, SearchIcon } from 'lucide-react';
 import Link from 'next/link';
-import { signInWithGitHub } from '@/app/actions/account';
 import { auth } from '@/auth';
 import { CreateMenu } from '@/components/create-menu';
 import { HeaderSearch } from '@/components/header-search';
 import { MobileNav } from '@/components/mobile-nav';
 import { ModelMenu } from '@/components/model-menu';
 import { NavTabs } from '@/components/nav-tabs';
-import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { UserMenu } from '@/components/user-menu';
 import { getUserAiSummary } from '@/lib/ai-settings';
@@ -68,13 +66,7 @@ export async function AppHeader() {
 
               <UserMenu name={user.name ?? user.email ?? 'You'} image={user.image ?? undefined} />
             </>
-          ) : (
-            <form action={signInWithGitHub}>
-              <Button type="submit" size="sm" variant="outline">
-                Sign in with GitHub
-              </Button>
-            </form>
-          )}
+          ) : null}
         </div>
       </div>
     </header>
